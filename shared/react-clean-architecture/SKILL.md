@@ -1,0 +1,575 @@
+---
+name: react-clean-architecture
+description: Principles for structuring React applications with clean architecture. Use when refactoring, reviewing code, deciding when to abstract, or understanding layer responsibilities. Covers the WHY behind structure decisions.
+---
+
+# React Clean Architecture Principles
+
+## Overview
+
+This skill provides the **principles and decision-making framework** for building maintainable React applications. It answers WHEN and WHY to structure code, while `create-feature` provides the HOW.
+
+**Core philosophy:** Structure exists to manage change. Good architecture makes future changes easy; bad architecture makes them expensive.
+
+## Related Skills
+
+| Skill | Relationship |
+|-------|-------------|
+| `create-feature` | Implementation templates for these principles |
+| `prd-to-ux` | UX foundations before building |
+| `ux-to-prompt` | Build-order prompts for implementation |
+| `frontend-testing` | Testing the structured code |
+
+## The First Draft Philosophy
+
+### Start Working, Then Structure
+
+Don't design upfront. Get something on screen first.
+
+```tsx
+// ✅ First draft: Everything in one component
+export default function PromptPage() {
+  const [prompt, setPrompt] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/prompts/active')
+      .then(res => res.json())
+      .then(setPrompt)
+  }, [])
+
+  return (
+    <div>
+      <h1>{prompt?.title}</h1>
+      {prompt?.answered ? (
+        prompt.answers.map(a => <div key={a.id}>{a.text}</div>)
+      ) : (
+        <form>...</form>
+      )}
+    </div>
+  )
+}
+```
+
+This is fine for:
+- Validating an idea
+- Prototyping UI
+- Exploring new technology
+- Pre-demo crunch
+
+**When to stop and structure:** When the first draft works and you're not in prototype mode.
+
+### The Editing Mindset
+
+Think of code like writing:
+1. **First draft** - Get it working, ignore structure
+2. **Editing** - Apply principles, extract layers
+3. **Ship** - Clean, maintainable code
+
+Don't skip step 1. Don't skip step 2.
+
+---
+
+## Layer Separation
+
+### The Three Layers
+
+```
+┌─────────────────────────────────────────┐
+│           PRESENTATION LAYER            │
+│  Components, JSX, event handlers        │
+│  "What to render"                       │
+├─────────────────────────────────────────┤
+│           BUSINESS LOGIC LAYER          │
+│  Custom hooks, domain services          │
+│  "What to do with data"                 │
+├─────────────────────────────────────────┤
+│           TRANSPORT LAYER               │
+│  HTTP clients, API adapters             │
+│  "How to get data"                      │
+└─────────────────────────────────────────┘
+```
+
+### Why Layers Matter
+
+Different layers change at different rates:
+- **Transport** changes rarely (API endpoints are stable)
+- **Business logic** changes sometimes (new features, rules)
+- **Presentation** changes often (UI tweaks, styling)
+
+When layers are mixed, a simple UI change requires understanding HTTP logic. When separated, changes stay contained.
+
+### Layer Rules
+
+| Layer | Can Import From | Never Imports |
+|-------|-----------------|---------------|
+| Transport (`api/`) | Domain schemas | React, hooks, components |
+| Business Logic (`hooks/`, `domain/`) | Transport, domain | Components |
+| Presentation (`components/`) | Hooks, domain services | Transport directly |
+
+```tsx
+// ❌ Component importing transport layer
+import { axios } from 'axios'
+
+const PaymentCard = () => {
+  useEffect(() => {
+    axios.get('/payments').then(...)  // Layer violation
+  }, [])
+}
+
+// ✅ Component using hook (which hides transport)
+const PaymentCard = () => {
+  const { data } = usePayments()  // Clean separation
+}
+```
+
+---
+
+## Deep vs Shallow Modules
+
+### The Iceberg Principle
+
+A **deep module** has a small API surface hiding large complexity (like an iceberg).
+
+```tsx
+// Deep module: Simple API, complex internals
+const { prompt, handleSubmit } = usePrompt()
+
+// Inside usePrompt: query client, mutations, caching, error handling,
+// refetch logic, optimistic updates... all hidden
+```
+
+A **shallow module** exposes too much, hiding little.
+
+```tsx
+// Shallow module: Large API, simple internals
+const {
+  data,
+  isLoading,
+  isError,
+  error,
+  refetch,
+  queryKey,
+  queryFn,
+  staleTime,
+  ...
+} = usePromptQuery()
+
+// Just wraps useQuery with no added value
+```
+
+### When to Abstract
+
+Create abstractions when they're **deep**:
+- Hide 5+ lines of logic behind 1 function call
+- Encapsulate decisions (caching, error handling)
+- Provide domain-specific names (`usePrompt` not `useQueryWithConfig`)
+
+Don't create abstractions when they're **shallow**:
+- Just renaming existing functions
+- Adding a layer that passes everything through
+- Wrapping with no added behavior
+
+---
+
+## Guard Clauses
+
+### Eliminate Nested Conditionals
+
+Nested ternaries in JSX signal a component needs splitting.
+
+```tsx
+// ❌ Nested conditionals
+return (
+  <main>
+    {prompt ? (
+      prompt.answered ? (
+        <AnswersList answers={prompt.answers} />
+      ) : (
+        <AnswerForm />
+      )
+    ) : (
+      <LoadingQuote />
+    )}
+  </main>
+)
+
+// ✅ Guard clause pattern
+if (!prompt) {
+  return <LoadingQuote />
+}
+
+return (
+  <main>
+    <PromptContent prompt={prompt} />
+  </main>
+)
+
+// In PromptContent:
+function PromptContent({ prompt }) {
+  if (!prompt.answered) {
+    return <AnswerForm />
+  }
+  return <AnswersList answers={prompt.answers} />
+}
+```
+
+### Guard Clause Rules
+
+1. **Check faulty state first** - Handle edge cases at the top
+2. **Return early** - Don't nest the happy path
+3. **Invert conditions** - Use `if (!x)` not `if (x) { ... } else`
+
+```tsx
+// ❌ Else statement
+function canRefund(payment) {
+  if (payment.status === 'succeeded') {
+    return Date.now() - payment.createdAt < REFUND_WINDOW
+  } else {
+    return false
+  }
+}
+
+// ✅ Guard clause
+function canRefund(payment) {
+  if (payment.status !== 'succeeded') return false
+  return Date.now() - payment.createdAt < REFUND_WINDOW
+}
+```
+
+---
+
+## Trust Boundary Validation
+
+### Validate at the Edge
+
+Validate data where it enters your application, not where it's used.
+
+```tsx
+// ❌ Validation in component
+function AnswersList({ answers }) {
+  if (!Array.isArray(answers)) return null
+  if (!answers.every(a => a.text && a.author)) return null
+  // Now render...
+}
+
+// ❌ Validation in hook
+function usePrompt() {
+  const { data } = useQuery(...)
+  if (!data?.answers) return { prompt: null }
+  // Check every field...
+}
+
+// ✅ Validation in transport layer
+export function getActivePrompt() {
+  const { data } = await client.get('/prompts/active')
+  return promptSchema.parse(data)  // Zod validates here
+}
+```
+
+### Why Edge Validation Works
+
+1. **Single point of validation** - Don't repeat checks everywhere
+2. **Fail fast** - Bad data caught immediately
+3. **Type safety downstream** - After validation, types are guaranteed
+4. **No runtime surprises** - Components never see malformed data
+
+### TypeScript Casting is Not Validation
+
+```tsx
+// ❌ False security
+const data = response.data as Prompt  // No runtime check
+
+// ✅ Actual validation
+const data = promptSchema.parse(response.data)  // Runtime + types
+```
+
+---
+
+## Domain-Driven API Design
+
+### Design for Access Patterns, Not REST Purity
+
+Build APIs around what the UI needs, not generic REST conventions.
+
+```
+❌ RESTful purism:
+GET /prompts                    → Get list
+GET /prompts?active=true        → Get current ID
+GET /prompts/:id                → Get prompt data
+GET /prompts/:id/answers        → Get answers
+GET /users/:id/answered/:promptId → Check if answered
+
+= 5 requests, complex client logic
+
+✅ Domain-driven:
+GET /prompt/active              → Everything the page needs
+
+= 1 request, simple client
+```
+
+### The Purism Trap
+
+When APIs are too generic:
+- **Frontend becomes the driver** - Business logic leaks to client
+- **Overfetching** - Get data you won't use
+- **Waterfall requests** - Wait for each response
+- **Complexity migration** - Not eliminated, just moved
+
+### Backend Decides What, Frontend Decides How
+
+- **Backend:** What data to return, what's allowed
+- **Frontend:** How to render, what to show
+
+Don't build a generic API and force the frontend to assemble data.
+
+---
+
+## Component Responsibility
+
+### Components Are Pure Renderers
+
+Ideal component: receives data, returns JSX.
+
+```tsx
+// ✅ Pure component
+function PromptPage() {
+  const { prompt, handleSubmit } = usePrompt()
+  
+  return (
+    <Layout>
+      <h1>{prompt.title}</h1>
+      {prompt.answered ? (
+        <AnswersList answers={prompt.answers} />
+      ) : (
+        <AnswerForm onSubmit={handleSubmit} />
+      )}
+    </Layout>
+  )
+}
+```
+
+The component doesn't know:
+- Where data comes from (HTTP? Cache? Mock?)
+- How submission works (POST? Optimistic? Retry?)
+- Caching strategy
+- Error recovery logic
+
+### Move Logic to Hooks
+
+```tsx
+// ❌ Logic in component
+function PromptPage() {
+  const [prompt, setPrompt] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+  
+  useEffect(() => {
+    setIsLoading(true)
+    fetch('/api/prompts/active')
+      .then(res => res.json())
+      .then(data => {
+        setPrompt({
+          ...data,
+          answers: data.answers.map(a => ({
+            ...a,
+            createdAt: dayjs(a.createdAt).fromNow()
+          }))
+        })
+      })
+      .catch(setError)
+      .finally(() => setIsLoading(false))
+  }, [])
+  
+  // Submit logic...
+}
+
+// ✅ Logic in hook
+function PromptPage() {
+  const { prompt, handleSubmit } = usePrompt()
+  // Just render
+}
+```
+
+---
+
+## Hardcoded Value Extraction
+
+### Extract Domain-Specific Constants
+
+Hardcoded strings become bugs when copied incorrectly.
+
+```tsx
+// ❌ Hardcoded everywhere
+useQuery({ queryKey: ['prompt'] })
+// ... elsewhere
+queryClient.invalidateQueries(['prompts'])  // Typo: 'prompts' vs 'prompt'
+
+// ✅ Centralized constants
+// query-keys.ts
+export const queryKeys = {
+  prompt: ['prompt'],
+  prompts: ['prompts'],
+}
+
+// Usage
+useQuery({ queryKey: queryKeys.prompt })
+queryClient.invalidateQueries(queryKeys.prompt)
+```
+
+### What to Extract
+
+| Type | Extract To |
+|------|-----------|
+| App routes | `shared/links/index.ts` via `links` object |
+| API endpoints | Const object at top of feature's `api/{feature}.api.ts` |
+| Query keys | `query-keys.ts` |
+| Status values | Domain enums |
+| Error messages | Error constants |
+
+> **Full rule:** See [centralized-links.mdc](mdc:.cursor/rules/centralized-links.mdc) for the complete centralized links & endpoints rule.
+
+```tsx
+// App routes — defined in shared/links/index.ts, used everywhere
+import { links, buildUrl } from '@/shared/links'
+
+redirect(links.public.signIn)
+router.push(links.private.dashboard)
+const url = buildUrl(links.public.signIn, { redirect: pathname })
+
+// API endpoints — defined once per feature, used in API adapter
+const paymentEndpoints = {
+  list: '/payments',
+  detail: (id: number) => `/payments/${id}`,
+} as const
+
+await client.get(paymentEndpoints.list)
+await client.get(paymentEndpoints.detail(id))
+```
+
+### What NOT to Extract
+
+Don't over-extract:
+- CSS class names (use Tailwind directly)
+- One-time strings (extract on second use)
+- Truly local constants (keep near usage)
+
+---
+
+## Extraction Triggers
+
+### When to Extract
+
+| Trigger | Action |
+|---------|--------|
+| Used 3+ times | Extract to shared location |
+| 50+ lines in component | Split into sub-components |
+| Nested conditional | Extract to child component |
+| `useEffect` with fetch | Extract to custom hook |
+| Data transformation | Move to hook or service |
+| Business rule check | Move to domain service |
+
+### When NOT to Extract
+
+| Situation | Keep Inline |
+|-----------|-------------|
+| Used once | Don't premature-abstract |
+| Simple ternary | Not every condition needs extraction |
+| Short component | Don't split for the sake of splitting |
+| Prototype code | Wait until patterns emerge |
+| Thin wrapper | A div with className + children is not worth a component |
+
+### Inline vs Extract: The Wrapper Test
+
+A component is a **thin wrapper** if it:
+- Has < 10 lines of JSX
+- Has no hook or logic (just props → JSX)
+- Adds only styling/layout (a `div` with `className`)
+- Is used in exactly one place
+
+**Thin wrappers should be inlined.** They add indirection without hiding complexity.
+
+```tsx
+// ❌ Thin wrapper — just a styled div
+export const PageToolbar = ({ children, className }) => (
+  <div className={cn('flex items-center gap-2 border-b px-4 py-2', className)}>
+    {children}
+  </div>
+)
+
+// ✅ Inline it in the parent
+<div className="flex items-center gap-2 border-b border-border px-4 py-2">
+  <BackButton href={backHref} />
+  <CheckoutGuideDialog ... />
+</div>
+```
+
+**Extract when:** the component has its own hook, manages state, or is used in 2+ places.
+
+---
+
+## Iterative Refinement Workflow
+
+### The Cycle
+
+```
+1. FIRST DRAFT
+   └─→ Get it working (ignore structure)
+   
+2. IDENTIFY ISSUES
+   └─→ Too many responsibilities?
+   └─→ Nested conditionals?
+   └─→ Repeated patterns?
+   
+3. APPLY PRINCIPLES
+   └─→ Extract layers
+   └─→ Create hooks
+   └─→ Add validation
+   
+4. VERIFY
+   └─→ Each piece has single responsibility?
+   └─→ Changes stay contained?
+   └─→ Easy to test?
+   
+5. SHIP
+```
+
+### Questions to Ask
+
+After first draft, ask:
+
+1. **Responsibilities:** Does this component know too much?
+2. **Layers:** Is transport mixed with presentation?
+3. **Conditionals:** Are there nested ternaries?
+4. **Validation:** Where does bad data get caught?
+5. **Reuse:** What would I copy-paste for similar features?
+
+---
+
+## Anti-Patterns
+
+See [references/anti-patterns.md](references/anti-patterns.md) for detailed examples including:
+- **Component Knows Too Much** -- mixing state, fetching, transforms, and business logic
+- **Shallow Abstraction** -- wrappers that add no value vs deep modules
+- **Validation in Wrong Place** -- scattered checks vs single boundary validation
+
+---
+
+## Mapping to create-feature Structure
+
+See [references/layer-mapping.md](references/layer-mapping.md) for the detailed diagram mapping these 3 layers to the `create-feature` folder structure.
+
+---
+
+## Next Step
+
+```
+Understand Principles (this skill)
+        ↓
+Scaffold Structure (create-feature skill)
+        ↓
+Write Tests (frontend-testing skill)
+```
+
+## Source
+
+Adapted from Alex Kondov's "Clean Architecture in React" from [The Full-Stack Tao](https://alexkondov.com/full-stack-tao-clean-architecture-react/).

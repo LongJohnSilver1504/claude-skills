@@ -1,0 +1,148 @@
+---
+description: Enforce TanStack Query conventions — query keys, hooks, error handling, and provider config
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# TanStack Query Patterns
+
+> **Scope:** These patterns apply to new code in `src/new-app/`. Legacy hooks in `src/api/hooks/` follow existing conventions.
+
+All server-state fetching/mutation uses `@tanstack/react-query`. Feature hooks wrap `useQuery`/`useMutation` — components never call the query client directly.
+
+> **Note:** The `QueryProvider` at `new-app/shared/providers/query-provider.tsx` needs to be created as part of the refactor setup.
+
+## Hard Rules
+
+1. **Every feature defines a query keys object** — never inline `queryKey` arrays.
+2. **Queries and mutations live in feature hooks** (`new-app/features/{feature}/hooks/`) — never in components.
+3. **Use `isPending`** (not deprecated `isLoading`) for mutation/query loading state.
+4. **Error handling uses `useError().showError()`** — never `toast.error()` directly.
+5. **Mutations always have `onError`** with `AppError.isAppError()` type guard.
+6. **Never import `QueryClient` directly** in feature code — use `useQueryClient()` hook.
+7. **Don't override default `staleTime` / `gcTime`** unless the feature has a specific reason.
+
+## Query Keys Convention
+
+```typescript
+// new-app/features/{feature}/queries/{feature}.keys.ts
+export const locationKeys = {
+  all: ['locations'] as const,
+  lists: () => ['locations', 'list'] as const,
+  list: (params?: LocationListParams) => ['locations', 'list', params] as const,
+  details: () => ['locations', 'detail'] as const,
+  detail: (id: number) => ['locations', 'detail', id] as const,
+} as const
+```
+
+**Key structure:** `[feature, scope, ...params]`
+
+## useQuery Pattern
+
+```typescript
+// new-app/features/{feature}/hooks/use-{feature}-list.ts
+import { useQuery } from '@tanstack/react-query'
+import { locationKeys } from '../queries/location.keys'
+import { locationApi } from '../api/location.api'
+
+export function useLocationList(params?: LocationListParams) {
+  return useQuery({
+    queryKey: locationKeys.list(params),
+    queryFn: () => locationApi.list(params),
+  })
+}
+```
+
+## useMutation Pattern
+
+```typescript
+// new-app/features/{feature}/hooks/use-create-{feature}.ts
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useError } from '@/new-app/shared/providers'
+import { AppError } from '@/new-app/shared/errors'
+
+export function useCreateLocation() {
+  const queryClient = useQueryClient()
+  const { showError } = useError()
+
+  return useMutation({
+    mutationFn: locationApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: locationKeys.lists() })
+    },
+    onError: (error) => {
+      if (AppError.isAppError(error)) {
+        showError(error.message)
+        return
+      }
+      showError('Something went wrong')
+    },
+  })
+}
+```
+
+## Invalidation Rules
+
+| Action | Invalidate |
+|--------|-----------|
+| Create | `{feature}Keys.lists()` |
+| Update | `{feature}Keys.detail(id)` + `{feature}Keys.lists()` |
+| Delete | `{feature}Keys.lists()` |
+
+```typescript
+// Invalidate all queries for a feature
+queryClient.invalidateQueries({ queryKey: locationKeys.all })
+
+// Invalidate a specific detail
+queryClient.invalidateQueries({ queryKey: locationKeys.detail(id) })
+```
+
+## Provider Configuration
+
+The `QueryProvider` at [new-app/shared/providers/query-provider.tsx](mdc:new-app/shared/providers/query-provider.tsx) sets:
+- `staleTime`: 5 minutes
+- `gcTime`: 10 minutes
+- `retry`: Skip 4xx errors, max 3 retries for server/network errors
+- Mutations: `retry: false`
+
+## Component Consumption
+
+```tsx
+// ✅ Use hook return values directly
+function LocationList() {
+  const { data, isPending, error } = useLocationList()
+
+  if (isPending) return <Skeleton />
+  if (error) return <ErrorMessage error={error} />
+
+  return <ul>{data.map(loc => <li key={loc.id}>{loc.name}</li>)}</ul>
+}
+```
+
+## Anti-Patterns
+
+```typescript
+// ❌ Inline query keys
+useQuery({ queryKey: ['locations', 'list'], ... })
+
+// ❌ Query logic in component
+function MyComponent() {
+  const { data } = useQuery({ queryKey: ..., queryFn: locationApi.list })
+}
+
+// ❌ Deprecated isLoading
+if (mutation.isLoading) ...
+
+// ❌ Direct toast in onError
+onError: (error) => { toast.error(error.message) }
+
+// ❌ Direct QueryClient import in features
+import { QueryClient } from '@tanstack/react-query'
+```
+
+## Related
+
+- [Query provider](mdc:new-app/shared/providers/query-provider.tsx)
+- [Auth mutation example](mdc:new-app/features/auth/hooks/use-sign-in.ts)
+- Query keys template in `create-feature` skill
+- Error handling in `error-handling` rule

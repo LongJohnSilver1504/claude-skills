@@ -320,6 +320,26 @@ For every component mapped above, answer these explicitly:
 | Flex + scroll child | Flex children with scroll need `min-h-0` to prevent `min-height: auto` from breaking containment. | |
 
 If a render prop component (Stepper, Carousel) is used inside a constrained container (Dialog, Sheet, Popover), explicitly specify the render prop configuration — never rely on defaults matching the UX spec.
+
+### Figma Cross-Check (when Figma node is referenced in PRD)
+
+If the PRD includes a Figma node reference (e.g., `22206:68777`), fetch the design context using the Figma MCP tool **before finalizing Pass 7**. Compare the Figma output against your component mapping for:
+
+| Check | What to verify |
+|-------|----------------|
+| **Card/container structure** | Single border vs nested card-in-card? Border radius values? |
+| **Typography** | Font size, weight, line-height for titles, labels, and values |
+| **Section layout** | Left border accents vs horizontal dividers? Padding values? |
+| **Spacing** | Inner padding, gaps between sections, content margins |
+| **Icon sizes** | Icon dimensions in the Figma vs what you assumed |
+
+If Figma diverges from your UX spec draft, **update the spec to match Figma** for visual details (structure, typography, spacing). The UX spec owns behavior/states; Figma owns visual treatment.
+
+Flag any divergences in the Visual Specifications section:
+```markdown
+**Figma cross-check notes:**
+- {What differed and how it was resolved}
+```
 ```
 
 ---

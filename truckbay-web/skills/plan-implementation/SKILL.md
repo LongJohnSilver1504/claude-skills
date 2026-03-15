@@ -238,6 +238,30 @@ graph TD
 ```
 ````
 
+### Step 4.5: Detect Shared Patterns
+
+Scan the implementation order for deliverables that will independently call the same hooks, functions, or data-fetching logic. When 2+ deliverables repeat the same multi-line pattern, extract a shared hook or utility as an additional deliverable.
+
+**Detection checklist:**
+- Do 2+ hooks independently fetch the same data via the same query hook?
+- Do 2+ hooks independently transform data through the same pipeline?
+- Do 2+ hooks independently extract the same value from router/context/store?
+
+**If a pattern is found:**
+1. Add a new deliverable (e.g., `useResolvedReservations`) that encapsulates the shared pattern
+2. Insert it in the implementation order before the deliverables that use it
+3. Update the consuming deliverables to import the shared hook instead of duplicating the logic
+
+```markdown
+## Shared Pattern Detection
+
+| Pattern | Repeated In | Extracted As |
+|---------|------------|-------------|
+| warehouseId + fetch + resolve pipeline | useNavigationBadgeSection, useBayStatusCards | useResolvedReservations() |
+```
+
+**Why this matters:** Self-contained components often need the same data. Without this step, each component independently implements the same 3-5 line boilerplate, violating DRY and making future changes fragile.
+
 ### Step 5: Write the Plan Document
 
 Combine all sections into a single markdown file:

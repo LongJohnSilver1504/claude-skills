@@ -212,6 +212,22 @@ i18n/
 
 **Key naming convention:** `{feature}.{section}.{element}`
 
+**Important:** next-i18next uses nested JSON objects, not flat dot-notation keys. Keys like `expiredDialog.title` must be structured as nested objects:
+
+```json
+// ✅ Correct — nested objects
+{
+  "expiredDialog": {
+    "title": "Session Expired"
+  }
+}
+
+// ❌ Wrong — flat dot-notation keys (next-i18next won't resolve these)
+{
+  "expiredDialog.title": "Session Expired"
+}
+```
+
 ```json
 // i18n/en.json
 {

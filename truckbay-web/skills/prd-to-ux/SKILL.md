@@ -312,6 +312,7 @@ For every component mapped above, answer these explicitly:
 | Dialog/Sheet | Close button visible or hidden (`showCloseButton`)? | |
 | Dialog/Sheet | Who owns the trigger — parent or dialog itself (`DialogTrigger`)? | |
 | Dialog/Sheet | Fixed height or content-driven? | |
+| Dialog/Sheet | Action buttons use `size="hero"` (44px+ touch targets, matches existing dialog conventions)? | |
 | Carousel/Stepper | Custom `renderIndicator` needed or default OK? | |
 | Carousel/Stepper | Constrained inside a modal? If yes: needs `overflow-hidden` + `min-w-0` | |
 | Any scrollable | Container has `overflow-hidden`? Flex children have `min-w-0`? | |

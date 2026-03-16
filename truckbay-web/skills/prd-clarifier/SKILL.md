@@ -47,15 +47,21 @@ Initialize the tracking document with this structure:
 
 Use the AskQuestion tool to get the user's preferred depth:
 
+Before presenting options, analyze the PRD to estimate complexity (number of features, integrations, edge cases, state management). Recommend the depth that best matches the PRD scope by appending "(Recommended)" to that option's label.
+
 - Quick (5 questions): Rapid surface-level review of critical ambiguities only
 - Medium (10 questions): Balanced analysis covering key requirement areas
+- Standard (15 questions): Thorough review with good coverage of edge cases
 - Long (20 questions): Comprehensive review with detailed exploration
+- Extended (25 questions): Deep analysis covering integrations and state management
 - Ultralong (35 questions): Exhaustive deep-dive leaving no stone unturned
 
 Map the response to question counts:
 - Quick = 5 questions
 - Medium = 10 questions
+- Standard = 15 questions
 - Long = 20 questions
+- Extended = 25 questions
 - Ultralong = 35 questions
 
 ### Step 4: Update the Tracking Document

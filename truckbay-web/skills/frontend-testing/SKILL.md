@@ -301,6 +301,81 @@ await waitFor(() => {
 - [Test utilities and wrapper patterns](references/test-utilities.md)
 - [MSW v2 setup and handler patterns](references/msw-setup.md)
 
+## Shared Test Factories
+
+When a domain type (e.g., `Reservation`) is used across many test files, create a **shared test factory** instead of duplicating `makeReservation` in every test file. This avoids a cascade of updates when adding a new required field to the type.
+
+### Where to put it
+
+```
+features/{feature}/
+  testing/
+    factories.ts          # Shared test factories for this feature
+```
+
+### Factory pattern
+
+```typescript
+// features/reservation-details/testing/factories.ts
+import type { Reservation, ReservationInvoice } from '../domain/reservation.types'
+
+export const createReservation = (overrides: Partial<Reservation> = {}): Reservation => ({
+  id: 1,
+  status: 'checked in',
+  type: 'daily',
+  // ... all required fields with sensible defaults ...
+  ...overrides,
+})
+
+export const createInvoice = (overrides: Partial<ReservationInvoice> = {}): ReservationInvoice => ({
+  id: 1,
+  status: 'paid',
+  total: 5000,
+  createdAt: '2026-01-01T00:00:00Z',
+  collectionMethod: 'charge_automatically',
+  ...overrides,
+})
+```
+
+### Usage in tests
+
+```typescript
+// domain/reservation-state.test.ts
+import { createReservation, createInvoice } from '../testing/factories'
+
+it('returns CHARGED_FAILED when own payment failed', () => {
+  const r = createReservation({ payment: { status: 'payment failed' } })
+  expect(resolveState(r)).toBe('CHARGED_FAILED')
+})
+
+it('detects unpaid invoice', () => {
+  const r = createReservation({
+    invoice: createInvoice({ status: 'open' }),
+  })
+  expect(resolveState(r)).toBe('CHARGED_FAILED')
+})
+```
+
+### When to create a factory
+
+- The domain type has **5+ required fields** AND
+- It appears in **3+ test files**
+
+If a type is only tested in 1-2 files, a local `makeX` helper is fine.
+
+### API response factories
+
+For API layer tests, create a separate factory for the raw API response shape:
+
+```typescript
+export const createApiResponse = (overrides: Record<string, unknown> = {}) => ({
+  id: 1,
+  status: 'checked in',
+  // ... raw API shape ...
+  ...overrides,
+})
+```
+
 ## Checklist
 
 ```

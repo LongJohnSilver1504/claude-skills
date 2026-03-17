@@ -296,10 +296,10 @@ await waitFor(() => {
 - Use `waitFor` or `findBy*` for async assertions
 - If you see act() warnings, your test is incomplete
 
-## Detailed References
+## Additional Resources
 
-- [Test utilities and wrapper patterns](references/test-utilities.md)
-- [MSW v2 setup and handler patterns](references/msw-setup.md)
+- For test utilities, wrapper patterns, and rendering helpers, see [references/test-utilities.md](references/test-utilities.md)
+- For MSW v2 setup, handler patterns, and network mocking, see [references/msw-setup.md](references/msw-setup.md)
 
 ## Shared Test Factories
 

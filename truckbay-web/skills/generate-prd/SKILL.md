@@ -1,187 +1,113 @@
 ---
 name: generate-prd
-description: Convert a feature idea into a structured PRD (Steps 1-7). Use when planning a feature, creating specs, writing requirements, or when user mentions PRD, feature spec, or requirements.
+description: Convert a feature idea into a structured, builder-ready PRD. Use when planning a feature, creating specs, writing requirements, or when user mentions PRD, feature spec, requirements document, product spec, or "what should I build". Also use when the user has a vague idea and needs it sharpened into something buildable.
 ---
 
 # Feature PRD Generator
 
-## Role
-
-You are a senior product thinker helping a builder turn a feature idea into a clear, structured Product Requirements Document (PRD).
-
-Your goal is decision clarity, not enterprise ceremony.
+Turn a feature idea into a document clear enough that a builder (human or AI) can start coding without guessing.
 
 ## Input
 
-The user will provide:
+The user provides a feature description — possibly vague or incomplete. Infer missing details, label assumptions explicitly, and optimize for production scale without overengineering.
 
-- A feature description or requirement
-- Possibly vague, incomplete, or "vibe-level" ideas
-
-You must infer missing details, but:
-
-- Clearly label assumptions
-- Avoid overengineering
-- Optimize for production scale
+If the input is extremely vague, ask **one** clarifying question max, then proceed with assumptions.
 
 ## Output
 
-Generate a Project PRD with ONLY sections 1-7 below.
-Use concise, builder-friendly language.
+Generate a PRD with sections 1–7 below. Write in concise, builder-friendly language. No enterprise ceremony.
 
-## Output Structure (Strict)
+---
 
-### 1. One-Sentence Problem
-
-Write a sharp problem statement in this format:
+### 1. Problem Statement
 
 > [User] struggles to [do X] because [reason], resulting in [impact].
 
-If multiple problems exist, pick the single most demo-worthy one.
+Pick the single most important problem. If multiple exist, note the others as "Related problems" in one line.
 
-### 2. Demo Goal (What Success Looks Like)
+### 2. Success Criteria
 
-Describe:
+What must work for this to be considered done:
 
-- What must work for this demo to be considered successful
-- What outcome the demo should clearly communicate
+- **Demo goal**: what outcome the demo clearly communicates
+- **Acceptance criteria**: 2–4 testable statements (use "Given/When/Then" or plain assertions)
+- **Non-goals**: what is intentionally out of scope
 
-Optionally include:
+### 3. Target User
 
-- Non-Goals (what is intentionally out of scope)
+One primary user role. Include:
 
-### 3. Target User (Role-Based)
-
-Define one primary user role.
-
-Include:
-
-- Role / context
+- Role and context
 - Skill level
-- Key constraint (time, knowledge, access, etc.)
+- Key constraint (time, knowledge, access)
 
-Avoid personas or demographics.
+No personas or demographics.
 
 ### 4. Core Use Case (Happy Path)
 
-Describe the single most important end-to-end flow.
+The single most important end-to-end flow:
 
-Include:
+- **Start condition**: what's true before the flow begins
+- **Steps**: numbered sequence of user actions and system responses
+- **End condition**: what's true when it succeeds
 
-- Start condition
-- Step-by-step flow (numbered)
-- End condition
+If this flow works, the feature works.
 
-If this flow works, the demo works.
+### 5. Functional Requirements
 
-### 5. Functional Decisions (What It Must Do)
+Only what the system must do. Use this table:
 
-List only required functional capabilities.
-
-Use this table:
-
-| ID | Function | Notes |
-|----|----------|-------|
+| ID | Requirement | Priority | Notes |
+|----|-------------|----------|-------|
 
 Rules:
 
-- Phrase as capabilities, not implementation
-- No "nice-to-haves"
-- Keep the list tight
+- Phrase as capabilities, not implementation ("supports X", not "use library Y")
+- Priority: P0 (must-have) or P1 (important). No P2s — those belong in a backlog, not a PRD
+- Keep the list tight — if it's longer than 10 rows, you're over-scoping
 
-### 6. UX Decisions (What the Experience Is Like)
+### 6. UX Decisions
 
-Explicitly define UX assumptions so nothing is left implicit.
+Make implicit assumptions explicit so nothing is left to interpretation.
 
-#### 6.1 Entry Point
+**Entry point**: How the user starts and what they see first.
 
-- How the user starts
-- What they see first
+**Inputs**: What the user provides (if anything).
 
-#### 6.2 Inputs
+**Outputs**: What the user receives and in what form.
 
-What the user provides (if anything).
+**States**: How the system communicates loading, success, failure, partial results, and empty states.
 
-#### 6.3 Outputs
+**Error handling**: What happens when input is invalid, the system fails, or the user does nothing. Keep it minimal — just enough to not break.
 
-What the user receives and in what form.
+### 7. Data Flow
 
-#### 6.4 Feedback & States
+**Sources**: Where data comes from (user input, API, static/mocked, generated).
 
-How the system communicates:
+**Processing**: High-level logic only. Use the format: Input → transform → output.
 
-- Loading
-- Success
-- Failure
-- Partial results
+**Destination**: Where results go (UI only, temporarily stored, logged).
 
-#### 6.5 Errors (Minimum Viable Handling)
+---
 
-What happens when:
+## Output Location
 
-- Input is invalid
-- The system fails
-- The user does nothing
-
-### 7. Data & Logic (At a Glance)
-
-#### 7.1 Inputs
-
-Where data comes from:
-
-- User
-- API
-- Static / mocked
-- Generated
-
-#### 7.2 Processing
-
-High-level logic only (no architecture diagrams).
-
-Example formats:
-
-- Input → transform → output
-- Fetch → analyze → summarize
-
-#### 7.3 Outputs
-
-Where results go:
-
-- UI only
-- Temporarily stored
-- Logged
-
-## Guidelines
-
-- Optimize for speed + clarity
-- Make reasonable assumptions explicit
-- Do NOT include:
-  - Architecture diagrams
-  - Tech stack decisions
-  - Pricing, monetization, or GTM
-  - Long explanations
-
-If the user input is extremely vague, ask one clarifying question max, then proceed with assumptions.
-
-## Output Location (Co-located)
-
-PRDs live **next to the code they describe**, not in a separate `docs/` folder:
+Co-locate PRDs next to the code they describe:
 
 | Scope | Location |
 |-------|----------|
-| **Feature PRD** | `src/new-app/features/{feature}/PRD.md` |
-| **Shared infrastructure PRD** | `src/new-app/shared/{module}/PRD.md` |
-| **Project-wide PRD** (rare) | `PRD.md` at repo root |
+| Feature | `src/new-app/features/{feature}/PRD.md` |
+| Shared module | `src/new-app/shared/{module}/PRD.md` |
+| Project-wide (rare) | `PRD.md` at repo root |
 
-Co-location ensures documentation stays discoverable and up-to-date with the code.
+## Quality Check
 
-## Done When
+Before delivering, verify the PRD passes this test:
 
-A builder could:
-
-- Read this PRD
-- Build a demo without guessing
-- Explain the product clearly to someone else
+- A builder could read it and start coding without asking questions
+- Every requirement is testable (you could write an assertion for it)
+- No section says "TBD" or "to be determined"
+- Assumptions are labeled, not hidden
 
 ## After PRD Generation
 

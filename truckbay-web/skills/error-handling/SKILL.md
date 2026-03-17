@@ -1,5 +1,5 @@
 ---
-name: Error Handling
+name: error-handling
 description: Patterns for error creation, propagation, transformation, and display in TruckBays
 tags: [errors, AppError, tryCatch, toast, domain-errors]
 ---

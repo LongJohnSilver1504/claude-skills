@@ -1,66 +1,34 @@
 ---
 name: prd-to-ux
-description: Translate PRDs, feature specs, or product requirements into UX specifications. Use before creating visual designs, wireframes, or component specs. Must complete 8 passes before any visual work.
+description: Translate PRDs or feature specs into UX specifications through 8 structured passes. Use when user says "design the UX", "UX for this feature", "how should this look", before creating wireframes or component specs, or when translating requirements into design handoff documents.
 ---
 
 # PRD to UX Translation
 
-## Overview
-
 Translate product requirements into UX foundations through **8 structured passes**. Each pass asks different questions that visual-first approaches skip.
 
-**Core principle:** UX foundations come BEFORE visual specifications. Mental models, information architecture, and cognitive load analysis prevent "pretty but unusable" designs.
-
-## When to Use
-
-- Translating PRD/spec to design tool input
-- Creating UX specifications from feature requirements
-- Preparing design handoff documents
-- Before any visual design work
+**Core principle:** UX foundations come BEFORE visual specifications. Mental models, information architecture, and cognitive load analysis prevent "pretty but unusable" designs. Do all 8 passes in order — skipping passes to "save time" produces specs that need redesign. The passes ARE the shortcut.
 
 ## Output Location
 
-**Write the UX specification to a file in the same directory as the source PRD.**
+Write the UX specification to a file in the same directory as the source PRD.
 
-Naming convention:
 - If PRD is `feature-x.md` → output `feature-x-ux-spec.md`
 - If PRD is `PRD.md` → output `UX-spec.md`
-- If PRD is `requirements.md` → output `requirements-ux-spec.md`
 
-Pattern: `{prd-basename}-ux-spec.md` (or just `UX-spec.md` if PRD has generic name)
+Always write to file, not to conversation.
 
-**Do not output to conversation.** Always write to file so the spec is persistent.
+## The 8 Passes
 
-## The Iron Law
-
-```
-NO VISUAL SPECS UNTIL ALL 8 PASSES COMPLETE
-```
-
-**Not negotiable:**
-- Don't mention colors, typography, or spacing until Pass 6 is done
-- Don't describe screen layouts until information architecture is explicit
-- Don't design components until affordances are mapped
-
-**No exceptions for urgency:**
-- "I'm in a hurry" → Passes take 5 minutes; fixing bad UX takes days
-- "Just give me screens" → Screens without foundations need rework
-- "Skip the analysis" → Analysis IS the value; screens are just output
-- "I know what I want" → Then passes will be fast; still do them
-
-Skipping passes to "save time" produces specs that need redesign. The 6 passes ARE the shortcut.
-
-## The 6 Passes
-
-Execute these IN ORDER. Each pass produces required outputs before the next begins.
+Execute IN ORDER. No visual specs (colors, typography, layouts) until all 8 are complete.
 
 ---
 
 ### Pass 1: User Intent & Mental Model Alignment
 
-**Designer mindset:** "What does the user think is happening?"
+**"What does the user think is happening?"**
 
-**Force these questions:**
+Force these questions:
 - What does the user believe this system does?
 - What are they trying to accomplish in one sentence?
 - What wrong mental models are likely?
@@ -82,9 +50,8 @@ Execute these IN ORDER. Each pass produces required outputs before the next begi
 
 ### Pass 2: Information Architecture
 
-**Designer mindset:** "What exists, and how is it organized?"
+**"What exists, and how is it organized?"**
 
-**Force these actions:**
 1. Enumerate ALL concepts the user will encounter
 2. Group into logical buckets
 3. Classify each as: Primary / Secondary / Hidden (progressive)
@@ -96,16 +63,12 @@ Execute these IN ORDER. Each pass produces required outputs before the next begi
 **All user-visible concepts:**
 - [Concept 1]
 - [Concept 2]
-- ...
 
 **Grouped structure:**
 
 ### [Group Name]
 - [Concept]: [Primary/Secondary/Hidden]
 - Rationale: [One sentence why this grouping]
-
-### [Group Name]
-...
 ```
 
 **This is where most AI UX attempts fail.** If you skip explicit IA, your visual specs will be disorganized.
@@ -114,9 +77,9 @@ Execute these IN ORDER. Each pass produces required outputs before the next begi
 
 ### Pass 3: Affordances & Action Clarity
 
-**Designer mindset:** "What actions are obvious without explanation?"
+**"What actions are obvious without explanation?"**
 
-**Force explicit decisions:**
+Force explicit decisions:
 - What is clickable?
 - What looks editable?
 - What looks like output (read-only)?
@@ -132,26 +95,20 @@ Execute these IN ORDER. Each pass produces required outputs before the next begi
 
 **Affordance rules:**
 - If user sees X, they should assume Y
-- ...
 ```
-
-No visuals required—just clarity on what signals what.
 
 ---
 
 ### Pass 4: Cognitive Load & Decision Minimization
 
-**Designer mindset:** "Where will the user hesitate?"
+**"Where will the user hesitate?"**
 
-**Force identification of:**
+Identify:
 - Moments of choice (decisions required)
 - Moments of uncertainty (unclear what to do)
 - Moments of waiting (system processing)
 
-**Then apply:**
-- Collapse decisions (fewer choices)
-- Delay complexity (progressive disclosure)
-- Introduce defaults (reduce decision burden)
+Then apply: collapse decisions, delay complexity (progressive disclosure), introduce defaults.
 
 **Required output:**
 ```markdown
@@ -170,19 +127,11 @@ No visuals required—just clarity on what signals what.
 
 ### Pass 5: State Design & Feedback
 
-**Designer mindset:** "How does the system talk back?"
+**"How does the system talk back?"**
 
-**Force enumeration of states for EACH major element:**
-- Empty
-- Loading
-- Success
-- Partial (incomplete data)
-- Error
+Enumerate states for EACH major element: Empty, Loading, Success, Partial, Error.
 
-**For each state, answer:**
-- What does the user see?
-- What do they understand?
-- What can they do next?
+For each state: What does the user see? What do they understand? What can they do next?
 
 **Required output:**
 ```markdown
@@ -197,38 +146,29 @@ No visuals required—just clarity on what signals what.
 | Success | | | |
 | Partial | | | |
 | Error | | | |
+```
 
-**Mandatory: Interactive Element States Matrix**
-
-For EVERY interactive element (buttons, links, inputs, toggles, cards with actions), enumerate all visual states in a table:
+**Interactive Element States Matrix** — for EVERY interactive element:
 
 ```markdown
-### Interactive Element States
-
 | Element | Default | Hover | Focus | Disabled | Loading | Error |
-|---------|---------|-------|-------|----------|---------|-------|
-| [Button name] | [Visual description] | [Change] | [Ring style] | [When disabled + tooltip text] | [Spinner? Label change?] | [Recovery action] |
-| [Input name] | [Visual description] | [Change] | [Ring style] | [When disabled] | N/A | [Error message style] |
+|---------|---------|-------|-------|----------|---------|-----|
+| [Button] | [Visual] | [Change] | [Ring] | [When + tooltip] | [Spinner/label?] | [Recovery] |
 ```
 
-**Rules for the states matrix:**
-- Every interactive element gets a row — no exceptions
-- "Default" must describe the visual appearance (variant, color, size)
-- "Disabled" must include WHEN it's disabled and what tooltip/message explains why
-- "Loading" must specify what replaces the element (spinner? skeleton? label change?)
+Rules:
+- Every interactive element gets a row
+- "Disabled" must include WHEN and what tooltip explains why
+- "Loading" must specify what replaces the element
 - "Error" must specify how the user recovers
-- If a state doesn't apply, write "N/A" with a reason
-```
-
-This prevents "dead UX"—screens with no feedback.
+- N/A with a reason if state doesn't apply
 
 ---
 
 ### Pass 6: Flow Integrity Check
 
-**Designer mindset:** "Does this feel inevitable?"
+**"Does this feel inevitable?"**
 
-**Final sanity check:**
 - Where could users get lost?
 - Where would a first-time user fail?
 - What must be visible vs can be implied?
@@ -246,27 +186,20 @@ This prevents "dead UX"—screens with no feedback.
 - Must be visible: [List]
 - Can be implied: [List]
 
-**UX constraints:** [Any hard rules for the visual phase]
-
 **Testability check:**
-For each interaction defined in Passes 3-5, verify it's testable:
-- Can it be expressed as "Given [state], when [action], then [result]"?
-- If not, the interaction is too vague — rewrite it before proceeding
+For each interaction in Passes 3-5, verify it's expressible as "Given [state], when [action], then [result]". Flag any that aren't:
 
-Flag any requirement from the PRD that cannot be verified:
-```markdown
 **Non-testable requirements (must be rewritten):**
-- [Requirement]: [Why it's not testable] → [Suggested rewrite]
-```
+- [Requirement]: [Why] → [Suggested rewrite]
 ```
 
 ---
 
-## Pass 7: shadcn/ui Component Mapping
+### Pass 7: shadcn/ui Component Mapping
 
-**After all 6 UX passes are complete**, map UX decisions to shadcn/ui components.
+**After Passes 1-6 are complete**, map UX decisions to shadcn/ui components.
 
-**Reference:** Before mapping, read `.claude/rules/design-system-map.md` for the complete inventory of installed components. Use exact component names and import paths from the map. If a needed component is not in the map, flag it as "needs installation" in the mapping table.
+**Reference:** Before mapping, read `.claude/rules/design-system-map.md` for the complete inventory of installed components.
 
 **Required output:**
 ```markdown
@@ -276,13 +209,11 @@ Flag any requirement from the PRD that cannot be verified:
 | UX Element | shadcn Component | Notes |
 |------------|------------------|-------|
 | [List view] | DataTable | With @tanstack/react-table |
-| [Card grid] | Card + ScrollArea | |
 
 ### Forms & Inputs
 | UX Element | shadcn Component | Notes |
 |------------|------------------|-------|
 | [Form] | Form | With react-hook-form + zod |
-| [Select] | Select / Combobox | |
 
 ### Feedback & States
 | State | shadcn Component | Pattern |
@@ -297,146 +228,83 @@ Flag any requirement from the PRD that cannot be verified:
 |------------|------------------|
 | [Tabs] | Tabs |
 | [Modal] | Dialog / Sheet |
-| [Menu] | DropdownMenu |
 
 ### State Management Notes
 - Server state: TanStack Query
-- UI state (filters, selection, modals): Zustand store
+- UI state: Zustand store
 - Form state: react-hook-form
+```
 
-### Visual Integration Checklist
-For every component mapped above, answer these explicitly:
+**Visual Integration Checklist** — for every component mapped above:
 
 | Component | Question | Answer |
 |-----------|----------|--------|
-| Dialog/Sheet | Close button visible or hidden (`showCloseButton`)? | |
-| Dialog/Sheet | Who owns the trigger — parent or dialog itself (`DialogTrigger`)? | |
+| Dialog/Sheet | Close button visible or hidden? | |
+| Dialog/Sheet | Who owns the trigger — parent or dialog? | |
 | Dialog/Sheet | Fixed height or content-driven? | |
-| Dialog/Sheet | Action buttons use `size="hero"` (44px+ touch targets, matches existing dialog conventions)? | |
-| Carousel/Stepper | Custom `renderIndicator` needed or default OK? | |
-| Carousel/Stepper | Constrained inside a modal? If yes: needs `overflow-hidden` + `min-w-0` | |
-| Any scrollable | Container has `overflow-hidden`? Flex children have `min-w-0`? | |
-| ScrollArea (horizontal) | Content has unpredictable width (`<pre>`, wide tables)? If yes: use plain `div` with `overflow-auto`, NOT Radix ScrollArea. ScrollArea is for vertical scroll in fixed-height containers only. | |
-| Side-sheet with `<pre>` | Overflow containment chain: every flex/grid ancestor up to scroll container needs `min-w-0 overflow-hidden`. | |
-| Flex + scroll child | Flex children with scroll need `min-h-0` to prevent `min-height: auto` from breaking containment. | |
+| Dialog/Sheet | Action buttons use `size="hero"` (44px+ touch targets)? | |
+| Carousel/Stepper | Custom `renderIndicator` needed? | |
+| Carousel/Stepper | Constrained inside a modal? If yes: `overflow-hidden` + `min-w-0` | |
+| ScrollArea (horizontal) | Content has unpredictable width? If yes: use plain `div` with `overflow-auto`, NOT Radix ScrollArea. | |
+| Side-sheet with `<pre>` | Overflow containment: every flex/grid ancestor needs `min-w-0 overflow-hidden`. | |
+| Flex + scroll child | Needs `min-h-0` to prevent `min-height: auto` from breaking containment. | |
 
-If a render prop component (Stepper, Carousel) is used inside a constrained container (Dialog, Sheet, Popover), explicitly specify the render prop configuration — never rely on defaults matching the UX spec.
+If a render prop component is used inside a constrained container, explicitly specify the render prop configuration — never rely on defaults.
 
-### Figma Cross-Check (when Figma node is referenced in PRD)
+**Figma Cross-Check** (when Figma node is referenced in PRD):
 
-If the PRD includes a Figma node reference (e.g., `22206:68777`), fetch the design context using the Figma MCP tool **before finalizing Pass 7**. Compare the Figma output against your component mapping for:
-
-| Check | What to verify |
-|-------|----------------|
-| **Card/container structure** | Single border vs nested card-in-card? Border radius values? |
-| **Typography** | Font size, weight, line-height for titles, labels, and values |
-| **Section layout** | Left border accents vs horizontal dividers? Padding values? |
-| **Spacing** | Inner padding, gaps between sections, content margins |
-| **Icon sizes** | Icon dimensions in the Figma vs what you assumed |
-
-If Figma diverges from your UX spec draft, **update the spec to match Figma** for visual details (structure, typography, spacing). The UX spec owns behavior/states; Figma owns visual treatment.
-
-Flag any divergences in the Visual Specifications section:
-```markdown
-**Figma cross-check notes:**
-- {What differed and how it was resolved}
-```
-```
+Fetch the design context using Figma MCP tool before finalizing. Compare against your mapping for: card/container structure, typography, section layout, spacing, icon sizes. If Figma diverges, update the spec to match Figma for visual details. The UX spec owns behavior/states; Figma owns visual treatment.
 
 ---
 
-## Pass 8: Design Language
+### Pass 8: Design Language
 
-**Designer mindset:** "What makes this look *intentional*, not *generated*?"
-
-This pass happens AFTER component mapping (Pass 7). You now know what components exist — decide how they should look and feel.
-
-**Force these decisions:**
-1. What is the one-sentence aesthetic vision?
-2. What typographic hierarchy makes Inter feel intentional?
-3. How does the color palette reinforce the tone?
-4. Where does motion create delight or communicate meaning?
-5. What spatial choice makes this interface memorable?
+**"What makes this look intentional, not generated?"**
 
 **Required output:**
 ```markdown
 ## Pass 8: Design Language
 
-**Aesthetic vision:** [One sentence, e.g., "Industrial precision with warm accents" or "Soft editorial with generous whitespace"]
+**Aesthetic vision:** [One sentence]
 
 **Typography (Inter):**
-- Weights: [Which weights per level — e.g., 700 headings, 400 body, 300 captions]
-- Size scale: [How sizes create hierarchy — e.g., 3xl display, xl headings, base body, sm captions]
-- Tracking: [Letter-spacing adjustments — e.g., tight for large headings, normal for body]
-- Personality lever: [What makes Inter feel crafted — weight contrast, size jumps, spacing rhythm]
+- Weights: [Per level — e.g., 700 headings, 400 body, 300 captions]
+- Size scale: [How sizes create hierarchy]
+- Tracking: [Letter-spacing adjustments]
+- Personality lever: [What makes Inter feel crafted]
 
 **Color direction:**
-- Dominant: [Existing token or new OKLCH value] — [Its role in the design]
-- Accent: [Existing token or new OKLCH value] — [Where and why it appears]
-- Strategy: [Monochromatic / complementary / triadic / etc.]
-- New tokens: [Additions to globals.css @theme block, or "none — existing palette is sufficient"]
+- Dominant: [Token or OKLCH value] — [Role]
+- Accent: [Token or OKLCH value] — [Where and why]
+- Strategy: [Monochromatic / complementary / etc.]
+- New tokens: [Additions to globals.css or "none — existing palette sufficient"]
 
 **Motion:**
-- High-impact moment: [What animates on page load or key interaction]
-- Micro-interactions: [Hover, focus, feedback animations]
-- Easing: [e.g., ease-out for entrances, ease-in-out for transforms]
-- Duration: [e.g., 150–300ms for UI feedback, 400–600ms for reveals]
-- Library: Motion (motion.dev) for orchestrated animations — CSS transitions for simple hover/focus
+- High-impact moment: [Key animation]
+- Micro-interactions: [Hover, focus, feedback]
+- Easing + Duration: [e.g., ease-out 150-300ms for feedback, 400-600ms for reveals]
+- Library: Motion (motion.dev) for orchestrated — CSS transitions for simple
 
 **Spatial personality:**
 - Density: [Airy / Balanced / Dense]
-- Layout approach: [Asymmetric / Grid-breaking / Overlapping / Strict grid]
-- Signature detail: [One distinctive visual element someone would remember]
+- Layout approach: [Asymmetric / Grid-breaking / Strict grid]
+- Signature detail: [One distinctive visual element]
 ```
 
-**Anti-generic checkpoint — revise if ANY box is checked:**
-- [ ] A user would guess this was AI-generated at first glance
-- [ ] It looks like every other shadcn/ui site
-- [ ] Inter is used with default weights and sizes — no typographic hierarchy documented
-- [ ] Color is evenly distributed — no clear dominant
-- [ ] No animation beyond browser defaults
+**Anti-generic checkpoint — revise if ANY is true:**
+- A user would guess this was AI-generated at first glance
+- It looks like every other shadcn/ui site
+- Inter is used with default weights — no typographic hierarchy documented
+- Color is evenly distributed — no clear dominant
+- No animation beyond browser defaults
 
-**Motion setup:** See [references/output-template.md](references/output-template.md) for motion code examples (`motion.dev` for orchestrated reveals, `tw-animate-css` for simple utilities).
+**Motion setup:** See [references/output-template.md](references/output-template.md) for motion code examples.
 
 ---
 
 ## THEN: Visual Specifications
 
-Only after all 8 passes are complete, create:
-- Screen layouts
-- Component specifications
-- Interaction specifications
-- Responsive breakpoints
-
-The 8 passes inform every visual decision.
-
-## Red Flags - STOP and Restart
-
-If you catch yourself doing any of these, STOP and return to the passes:
-
-| Violation | What You're Skipping |
-|-----------|---------------------|
-| Describing colors/fonts during Passes 1-7 | Pass 8 — aesthetic decisions have a designated pass |
-| "The main screen shows..." | Pass 1-2 (mental model, IA) |
-| Designing components before actions mapped | Pass 3 (affordances) |
-| No friction point analysis | Pass 4 (cognitive load) |
-| States only in component specs | Pass 5 (holistic state design) |
-| No "where could they fail?" | Pass 6 (flow integrity) |
-| "User is in a hurry" | ALL passes — urgency is a trap |
-| "Just this once, skip to visuals" | ALL passes — exceptions become habits |
-| "The PRD is simple enough" | ALL passes — simple PRDs still need mental model analysis |
-| Default fonts/colors with no documented rationale | Pass 8 — design language requires intentional choices |
-| No signature detail or spatial personality | Pass 8 — distinctiveness requires deliberate decisions |
-
-## Common Mistakes
-
-**Merging passes:** "I'll cover mental model while doing IA" → You won't. Separate passes force separate thinking.
-
-**Skipping to visuals:** "The PRD is clear, I can design screens" → Baseline testing shows agents skip 4+ passes when allowed.
-
-**Implicit affordances:** "Buttons are obviously clickable" → Map EVERY action explicitly. What's obvious to you isn't obvious to users.
-
-**Scattered state design:** "I'll add states to each component" → Holistic state table in Pass 5 catches gaps.
+Only after all 8 passes, create: screen layouts, component specifications, interaction specifications, responsive breakpoints. The 8 passes inform every visual decision.
 
 ## Output Template
 
@@ -444,39 +312,7 @@ See [references/output-template.md](references/output-template.md) for the compl
 
 ## Related Skills
 
-This skill works best when combined with:
-
-- **shadcn-ui**: Use for component mapping in Pass 7. Reference `.cursor/skills/shadcn-ui/SKILL.md` for detailed component patterns, form validation with React Hook Form + Zod, and accessibility patterns.
-- **tailwindcss-fundamentals-v4**: Use for styling specifications. Reference `.cursor/skills/tailwindcss-fundamentals-v4/SKILL.md` for OKLCH colors, fluid typography, custom utilities, and CSS-first configuration.
-- **react-clean-architecture**: Use for understanding layer separation and component responsibilities. Reference `.cursor/skills/react-clean-architecture/SKILL.md` for when to extract hooks, validation boundaries, and architectural decisions.
-- **create-feature**: Use for scaffolding features after UX spec is complete. Reference `.cursor/skills/create-feature/SKILL.md` for the implementation structure.
-
-## Resume After Context Cleanup
-
-If context was cleaned mid-pipeline, restore state before proceeding:
-
-1. **Check for in-progress pipeline:** Look for `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
-2. **Read DECISIONS.md** in the feature folder for accumulated context
-3. **Read the relevant artifact** for this skill's input:
-   - The PRD file and any existing UX spec draft (`*-ux-spec.md` or `UX-spec.md`)
-4. **Resume the observer** if an OBSERVATION-LOG.md exists and is in progress
-5. **Continue from where you left off** — don't restart the skill from scratch
-
-## Next Step
-
-After completing this skill, use the `AskUserQuestion` tool to present the next step options. Include a summary of what was completed in the question text.
-
-Options to present:
-
-- **ux-to-prompt** — generate build-order prompts for implementation
-- **Something else** — do something different
-
-Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
-
-## Context Management
-
-After completing this skill's work, report the **context usage percentage** so the user can decide whether to clean context:
-
-> "{Skill output summary}. Context usage: **{X}%**"
-
-Do NOT recommend cleaning context — just show the percentage. The user will decide.
+- **shadcn-ui**: Component patterns, form validation, accessibility
+- **tailwindcss-fundamentals-v4**: OKLCH colors, fluid typography, custom utilities
+- **react-clean-architecture**: Layer separation, component responsibilities
+- **create-feature**: Scaffolding features after UX spec is complete

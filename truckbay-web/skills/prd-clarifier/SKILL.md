@@ -1,192 +1,116 @@
 ---
 name: prd-clarifier
-description: Refine and clarify PRD documentation through structured questioning. Use after generating a PRD, when PRD has ambiguities, or when user wants to improve requirements clarity.
+description: Refine a PRD through structured questions that uncover ambiguities, missing edge cases, and hidden assumptions. Use after generating a PRD, when requirements feel vague, when user says "review my PRD", "clarify requirements", "what am I missing", or wants to improve spec quality before building.
+
 ---
 
 # PRD Clarifier
 
-You are an expert Product Requirements Analyst specializing in requirements elicitation, gap analysis, and stakeholder communication. You have deep experience across software development lifecycles and understand how ambiguous requirements lead to costly rework, scope creep, and failed projects. Your expertise lies in asking precisely-targeted questions that uncover hidden assumptions, edge cases, and conflicting requirements.
+Systematically improve a PRD by asking targeted questions that uncover ambiguities, gaps, and hidden assumptions. Each question should make the document more buildable.
 
-## Your Core Mission
+## How It Works
 
-You systematically analyze PRD documentation to identify ambiguities, gaps, and areas requiring clarification. You ask focused questions using the AskQuestion tool, adapting your inquiry strategy based on each answer to maximize value within the user's chosen depth level.
+1. Read the PRD
+2. Ask user for session depth
+3. Ask questions one at a time, adapting based on answers
+4. Save all Q&A to a tracking file next to the PRD
+5. Summarize clarifications and offer to update the PRD
 
-## Initialization Protocol
+## Step 1: Setup
 
-**CRITICAL**: When you begin, you MUST complete these steps IN ORDER:
+Find the PRD file. Create a tracking document in the **same directory**:
 
-### Step 1: Identify the PRD Location
+- PRD is `auth-feature.md` → create `auth-feature-clarification.md`
 
-First, determine the directory where the user's PRD file is located. This is where you will create the tracking document.
-
-### Step 2: Create the Tracking Document
-
-IMMEDIATELY create a tracking document file in the SAME directory as the PRD being processed. Name it based on the PRD filename:
-- If PRD is `feature-auth.md` → create `feature-auth-clarification-session.md`
-- If PRD is `mobile-redesign-prd.md` → create `mobile-redesign-prd-clarification-session.md`
-
-Initialize the tracking document with this structure:
+Initialize it:
 
 ```markdown
 # PRD Clarification Session
-
-**Source PRD**: [filename]
-**Session Started**: [date/time]
-**Depth Selected**: [TBD - pending user selection]
-**Total Questions**: [TBD]
-**Progress**: 0/[TBD]
-
+**Source**: [filename]
+**Depth**: [pending]
+**Progress**: 0/[pending]
 ---
-
-## Session Log
-
-[Questions and answers will be appended here]
 ```
 
-### Step 3: Ask Depth Preference
+## Step 2: Ask Depth
 
-Use the AskQuestion tool to get the user's preferred depth:
+Analyze the PRD complexity (features, integrations, edge cases) and recommend a depth. Mark your recommendation with "(Recommended)".
 
-Before presenting options, analyze the PRD to estimate complexity (number of features, integrations, edge cases, state management). Recommend the depth that best matches the PRD scope by appending "(Recommended)" to that option's label.
+| Depth    | Questions | When to use                            |
+| -------- | --------- | -------------------------------------- |
+| Quick    | 5         | Small feature, mostly clear PRD        |
+| Standard | 10        | Typical feature with some gaps         |
+| Thorough | 15        | Complex feature, multiple integrations |
+| Deep     | 25        | Large scope, many unknowns             |
 
-- Quick (5 questions): Rapid surface-level review of critical ambiguities only
-- Medium (10 questions): Balanced analysis covering key requirement areas
-- Standard (15 questions): Thorough review with good coverage of edge cases
-- Long (20 questions): Comprehensive review with detailed exploration
-- Extended (25 questions): Deep analysis covering integrations and state management
-- Ultralong (35 questions): Exhaustive deep-dive leaving no stone unturned
+## Step 3: Ask Questions
 
-Map the response to question counts:
-- Quick = 5 questions
-- Medium = 10 questions
-- Standard = 15 questions
-- Long = 20 questions
-- Extended = 25 questions
-- Ultralong = 35 questions
+### Prioritize by impact
 
-### Step 4: Update the Tracking Document
+1. **Blockers**: requirements that block other work or have safety/security implications
+2. **Vague language**: missing acceptance criteria, undefined terms, "should be fast"
+3. **Integration points**: APIs, third-party services, data dependencies
+4. **Edge cases**: error handling, boundary conditions, empty states
+5. **Missing non-functionals**: performance targets, accessibility, scalability
 
-After receiving the depth selection, immediately update the tracking document header with the selected depth and total question count.
+### Adapt after each answer
 
-## Question Tracking Document
+- Answer revealed a new ambiguity → prioritize it next
+- Answer clarified related areas → skip redundant questions
+- Answer contradicts an earlier one → address the conflict
+- Answer introduced new scope → flag it, don't expand scope silently
 
-Maintain a running tracker throughout the session. After EACH question-answer pair, append to the tracking document in this format:
+### Question rules
+
+- Reference specific sections or statements from the PRD
+- One question per turn
+- Don't suggest the "right" answer
+- Provide selectable options when the answer space is bounded
+- Acknowledge previous answers when building on them
+
+### After each answer
+
+Append to the tracking document:
 
 ```markdown
-# PRD Clarification Session
-**Depth Selected**: [quick/medium/long/ultralong]
-**Total Questions**: [X]
-**Progress**: [current]/[total]
-
+## Q[N] — [Category]
+**Gap**: [what's ambiguous]
+**Question**: [what you asked]
+**Answer**: [what they said]
+**Clarified**: [how this resolves the gap]
 ---
-
-## Question 1
-**Category**: [e.g., User Requirements, Technical Constraints, Edge Cases]
-**Ambiguity Identified**: [Brief description of the gap/ambiguity]
-**Question Asked**: [Your question]
-**User Response**: [Their answer]
-**Requirement Clarified**: [How this resolves the ambiguity]
-
----
-
-## Question 2
-[Continue pattern...]
 ```
 
-## Questioning Strategy
+## Step 4: Wrap Up
 
-### Prioritization Framework
+After all questions:
 
-Analyze the PRD and prioritize questions by impact:
-
-1. **Critical Path Items**: Requirements that block other features or have safety/security implications
-2. **High-Ambiguity Areas**: Vague language, missing acceptance criteria, undefined terms
-3. **Integration Points**: Interfaces with external systems, APIs, third-party services
-4. **Edge Cases**: Error handling, boundary conditions, exceptional scenarios
-5. **Non-Functional Requirements**: Performance, scalability, accessibility gaps
-6. **User Journey Gaps**: Missing steps, undefined user states, incomplete flows
-
-### Adaptive Questioning
-
-After each answer, reassess:
-- Did the answer reveal NEW ambiguities? Prioritize those.
-- Did it clarify related areas? Skip now-redundant questions.
-- Did it contradict earlier answers? Address the conflict.
-- Did it introduce new scope? Flag for inclusion.
-
-### Question Quality Standards
-
-Each question MUST be:
-- **Specific**: Reference exact sections, features, or statements from the PRD
-- **Actionable**: The answer should directly inform a requirement update
-- **Non-leading**: Avoid suggesting the "right" answer
-- **Singular**: One clear question per turn (no compound questions)
-- **Contextual**: Acknowledge relevant previous answers when building on them
-
-## Question Categories to Cover
-
-Distribute questions across these areas (adjust based on PRD content and previous answers):
-
-1. **User/Stakeholder Clarity**: Who exactly are the users? What are their goals?
-2. **Functional Requirements**: What should the system DO? What are success criteria?
-3. **Non-Functional Requirements**: Performance, security, scalability, accessibility
-4. **Technical Constraints**: Platform limitations, integration requirements, dependencies
-5. **Edge Cases & Error Handling**: What happens when things go wrong?
-6. **Data Requirements**: What data is needed? Where does it come from? Privacy?
-7. **Business Rules**: What logic governs system behavior?
-8. **Acceptance Criteria**: How do we know a requirement is met?
-9. **Scope Boundaries**: What is explicitly OUT of scope?
-10. **Dependencies & Risks**: What could block or derail this?
-
-## Execution Rules
-
-1. **CREATE TRACKING DOC FIRST** - Before asking ANY questions, create the tracking document file in the same directory as the source PRD
-2. **Use AskQuestion tool** - Provide options when possible to enable visual selection UI
-3. **Complete ALL questions** - You MUST ask the full number based on selected depth
-4. **Track progress visibly** - Update the tracking document file after EVERY answer
-5. **Adapt continuously** - Each question should reflect learnings from previous answers
-6. **Stay focused** - Questions must relate to the PRD content and clarification goals
-7. **Be efficient** - Don't ask about clearly-defined areas; focus on genuine ambiguities
-
-## Session Completion
-
-After all questions are complete:
-
-1. Provide a summary of key clarifications made
-2. List any remaining ambiguities that surfaced but weren't fully resolved
-3. Suggest priority order for addressing unresolved items
-4. Offer to help update the PRD with the clarified requirements
-5. Use the `AskUserQuestion` tool to present the next step options. Include a summary of what was completed in the question text.
-
-Options to present:
+1. Summarize key clarifications (what changed)
+2. List remaining ambiguities that surfaced but weren't resolved
+3. Suggest priority order for unresolved items
+4. Offer to update the PRD with clarified requirements
+5. Use the `AskUserQuestion` tool to present next step options:
 
 - **feature-retrospective** — start pipeline observer to track requirements
 - **prd-to-ux** — translate requirements into UX specification
 - **Something else** — do something different
 
-Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
+Do NOT present numbered text options. Always use the `AskUserQuestion` tool for skill transitions.
 
 ## Resume After Context Cleanup
 
-If context was cleaned mid-pipeline, restore state before proceeding:
+If context was cleaned mid-pipeline:
 
-1. **Check for in-progress pipeline:** Look for `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
-2. **Read DECISIONS.md** in the feature folder for accumulated context
-3. **Read the relevant artifact** for this skill's input:
-   - The PRD file and any existing `*-clarification-session.md` tracking document
-4. **Resume the observer** if an OBSERVATION-LOG.md exists and is in progress
-5. **Continue from where you left off** — don't restart the skill from scratch
+1. Check for in-progress pipeline: `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
+2. Read DECISIONS.md in the feature folder
+3. Read the PRD and any existing `*-clarification.md` tracking document
+4. Resume the observer if an OBSERVATION-LOG.md exists and is in progress
+5. Continue from where you left off — don't restart
 
 ## Context Management
 
-After completing this skill's work, report the **context usage percentage** so the user can decide whether to clean context:
+After completing, report context usage:
 
-> "{Skill output summary}. Context usage: **{X}%**"
+> "{Summary}. Context usage: **{X}%**"
 
-Do NOT recommend cleaning context — just show the percentage. The user will decide.
-
-## Output Format for Tracking Document
-
-The running tracker should be maintained in a code block or separate document section that grows with each Q&A pair. Always show current progress (e.g., "Question 7/20") so the user knows where they are in the process.
-
-Remember: Your goal is not just to ask questions, but to systematically transform an ambiguous PRD into a clear, actionable specification through structured dialogue. Each question should demonstrably improve the document's clarity and completeness.
+Don't recommend cleaning — just show the percentage.

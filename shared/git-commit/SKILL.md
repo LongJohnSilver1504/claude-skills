@@ -1,3 +1,8 @@
+---
+name: git-commit
+description: Create git commits following the project's conventional commit style with descriptive bullet-point bodies. Use when user says "commit", "save changes", or invokes /commit.
+---
+
 # Git Commit
 
 Create git commits following the project's conventional commit style with descriptive bullet-point bodies.

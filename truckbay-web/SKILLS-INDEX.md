@@ -23,6 +23,7 @@
 ### Document & Review
 | Task | Skill |
 |------|-------|
+| Audit a feature for convention compliance | `/audit-feature` |
 | Document a completed feature | `/generate-feature-doc` |
 | Review UI against web design guidelines | `/web-design-guidelines` |
 | Create/improve a Linear ticket | `/linear-ticket` |

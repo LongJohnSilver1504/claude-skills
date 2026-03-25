@@ -139,6 +139,7 @@ After generating the README, delete intermediate pipeline `.md` files that serve
 | `DECISIONS.md` | Intermediate — decisions absorbed into README |
 | `*-test-plan.md` | Intermediate — test plan consumed by frontend-testing |
 | `PRD-*.md` (iteration variants) | Intermediate — sub-PRDs for phases/iterations are absorbed into the main PRD and README |
+| `DESIGN.md` (in `.claude/pipeline/{feature}/`) | Intermediate — brainstorm output absorbed into PRD and README |
 
 After writing the README, delete **all** intermediate files. Only `PRD.md`, `UX-spec.md`, and `README.md` survive:
 
@@ -148,6 +149,8 @@ rm -f {feature-dir}/PRD-*.md
 rm -f {feature-dir}/build-prompts*.md
 rm -f {feature-dir}/DECISIONS.md
 rm -f {feature-dir}/*-test-plan.md
+# Also clean brainstorm artifact from pipeline directory
+rm -f .claude/pipeline/{feature-name}/DESIGN.md
 ```
 
 > **Important:** `PRD-*.md` files (e.g., `PRD-v2.md`, `PRD-enrichment.md`, `PRD-bay-status-card.md`) are iteration artifacts from the pipeline. The original `PRD.md` is the authoritative requirements reference. Sub-PRDs served their purpose during implementation and are now captured in the README.

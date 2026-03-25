@@ -9,31 +9,14 @@ Replace `{feature}` with the feature name (lowercase) and `{Feature}` with Pasca
 
 ### 1.1 Domain Types (`domain/{feature}.types.ts`)
 
-Pure TypeScript types with NO external dependencies.
+Re-export types inferred from Zod response schemas. Domain types ARE the schema output types.
 
 ```tsx
-/**
- * {Feature} domain types
- * Pure TypeScript types with no external dependencies
- */
-
-export type {Feature}Status = 'active' | 'inactive' | 'pending'
-
-export type {Feature} = {
-  id: number
-  // Add fields based on user requirements
-  status: {Feature}Status
-  createdAt: Date
-  updatedAt: Date
-}
-
-export type Paginated{Feature}s = {
-  results: {Feature}[]
-  count: number
-  page: number
-  limit: number
-  hasMore: boolean
-}
+export type {
+  {Feature},
+  {Feature}Status,
+  // ... other types
+} from '../api/{feature}.schemas'
 ```
 
 ### 1.2 Domain Service (`domain/{feature}.service.ts`)
@@ -86,128 +69,76 @@ export class {Feature}ValidationError extends AppError {
 
 ### 2.1 Schemas (`api/{feature}.schemas.ts`)
 
-Zod schemas for trust boundary validation. Request and response schemas live here.
+Zod response schemas with `.transform()` for field renaming, type coercion, and defaults. Types are inferred and exported from this file.
 
 ```tsx
 import { z } from 'zod'
 
-/**
- * {Feature} API validation schemas
- * Trust boundary validation for external data
- */
-
-// Enums
+// Enums (validated at parse time)
 export const {feature}StatusSchema = z.enum(['active', 'inactive', 'pending'])
 
-// Response schemas
-export const {feature}Schema = z.object({
-  id: z.number(),
-  // Add fields matching API response
-  status: {feature}StatusSchema,
-  created_at: z.coerce.date(),
-  updated_at: z.coerce.date(),
-})
+// Response schema with transforms
+export const {feature}ResponseSchema = z
+  .object({
+    id: z.number(),
+    status: {feature}StatusSchema,
+    // Use .optional().default() for fields that may be missing
+    name: z.string().optional().default(''),
+    // Use .nullable() for fields that can be null
+    description: z.string().nullable(),
+    // Use .transform() for field renaming or type coercion
+    user_id: z.number().nullable().optional().default(null),
+    created_at: z.string(),
+    updated_at: z.string(),
+  })
+  .transform(({ user_id, ...rest }) => ({
+    ...rest,
+    ownerId: user_id, // rename field
+  }))
 
-export const paginated{Feature}sSchema = z.object({
-  results: z.array({feature}Schema),
-  count: z.number(),
-  page: z.number(),
-  limit: z.number(),
-  has_more: z.boolean(),
-})
-
-// Request schemas (for form validation)
+// Request schemas (for form validation — no transforms needed)
 export const create{Feature}Schema = z.object({
-  // Define create request fields
   status: {feature}StatusSchema.optional().default('pending'),
 })
 
 export const update{Feature}Schema = create{Feature}Schema.partial()
 
-// Inferred types for requests (used by hooks)
+// Export inferred types — these ARE the domain types
+export type {Feature} = z.infer<typeof {feature}ResponseSchema>
+export type {Feature}Status = z.infer<typeof {feature}StatusSchema>
 export type Create{Feature}Request = z.infer<typeof create{Feature}Schema>
 export type Update{Feature}Request = z.infer<typeof update{Feature}Schema>
 ```
 
-### 2.2 Raw Types (`api/{feature}.types.ts`)
-
-Types matching the exact API response structure (may use snake_case).
+Use `paginatedResponseSchema()` from `@/new-app/shared/api` for paginated responses:
 
 ```tsx
-/**
- * Raw API response types
- * Match the backend response structure exactly
- */
-
-export type Raw{Feature}Response = {
-  id: number
-  // Match API response structure exactly
-  created_at: string
-  updated_at: string
-}
-
-export type RawPaginated{Feature}sResponse = {
-  results: Raw{Feature}Response[]
-  count: number
-  page: number
-  limit: number
-  has_more: boolean
-}
+import { paginatedResponseSchema } from '@/new-app/shared/api'
+const paginated{Feature}Schema = paginatedResponseSchema({feature}ResponseSchema)
 ```
 
-### 2.3 Mapper (`api/{feature}.mapper.ts`)
+### 2.2 Raw Types — NOT NEEDED
 
-Transform raw API responses to domain types with Zod validation.
+Raw API response types and separate mapper files are no longer needed. Zod response schemas with `.transform()` handle both validation and mapping in a single step via `parseResponse()`.
 
-```tsx
-import { {feature}Schema, paginated{Feature}sSchema } from './{feature}.schemas'
-import type { Raw{Feature}Response, RawPaginated{Feature}sResponse } from './{feature}.types'
-import type { {Feature}, Paginated{Feature}s } from '../domain/{feature}.types'
-import { AppError } from '@/shared/errors'
+Previously: `api/{feature}.types.ts` + `api/{feature}.mapper.ts`
+Now: `api/{feature}.schemas.ts` defines the schema, transforms, AND exports inferred types.
 
-export const mapTo{Feature} = (raw: Raw{Feature}Response): {Feature} => {
-  const result = {feature}Schema.safeParse(raw)
-
-  if (!result.success) {
-    console.error('{Feature} mapping failed:', result.error.format())
-    throw new AppError('Invalid {feature} data from API', 'INVALID_DATA', 500)
-  }
-
-  return {
-    id: result.data.id,
-    status: result.data.status,
-    createdAt: result.data.created_at,
-    updatedAt: result.data.updated_at,
-  }
-}
-
-export const mapToPaginated{Feature}s = (raw: RawPaginated{Feature}sResponse): Paginated{Feature}s => {
-  return {
-    results: raw.results.map(mapTo{Feature}),
-    count: raw.count,
-    page: raw.page,
-    limit: raw.limit,
-    hasMore: raw.has_more,
-  }
-}
-```
-
-### 2.4 API Adapter (`api/{feature}.api.ts`)
+### 2.3 API Adapter (`api/{feature}.api.ts`)
 
 > **Rule:** All endpoint paths in a centralized constant object. See [centralized-links.mdc](mdc:.cursor/rules/centralized-links.mdc).
 
 ```tsx
-import { client, isAxiosError } from '@/shared/api'
-import { mapToPaginated{Feature}s, mapTo{Feature} } from './{feature}.mapper'
-import type { {Feature}, Paginated{Feature}s } from '../domain/{feature}.types'
-import type { Create{Feature}Request, Update{Feature}Request } from './{feature}.schemas'
-import { {Feature}NotFoundError } from '../domain/{feature}.errors'
-import { AppError } from '@/shared/errors'
+import { client, handleApiError, parseResponse, paginatedResponseSchema } from '@/new-app/shared/api'
+import { AppError } from '@/new-app/shared/errors'
+import { {feature}ResponseSchema, type {Feature}, type Create{Feature}Request, type Update{Feature}Request } from './{feature}.schemas'
 
 const {feature}Endpoints = {
   list: '/{feature}s',
   detail: (id: number) => `/{feature}s/${id}`,
 } as const
+
+const paginated{Feature}Schema = paginatedResponseSchema({feature}ResponseSchema)
 
 type GetAllParams = {
   page?: number
@@ -217,35 +148,55 @@ type GetAllParams = {
 }
 
 export const {feature}Api = {
-  getAll: async (params: GetAllParams): Promise<Paginated{Feature}s> => {
-    const response = await client.get({feature}Endpoints.list, { params })
-    return mapToPaginated{Feature}s(response.data)
+  getAll: async (params: GetAllParams) => {
+    try {
+      const response = await client.get({feature}Endpoints.list, { params })
+      return parseResponse(paginated{Feature}Schema, response.data)
+    } catch (error) {
+      if (AppError.isAppError(error)) throw error
+      handleApiError(error)
+    }
   },
 
   getById: async (id: number): Promise<{Feature}> => {
     try {
       const response = await client.get({feature}Endpoints.detail(id))
-      return mapTo{Feature}(response.data)
+      return parseResponse({feature}ResponseSchema, response.data)
     } catch (error) {
-      if (isAxiosError(error) && error.response?.status === 404) {
-        throw new {Feature}NotFoundError(id)
-      }
-      throw error
+      if (AppError.isAppError(error)) throw error
+      handleApiError(error, [
+        { status: 404, code: '{FEATURE}_NOT_FOUND', message: '{Feature} not found' },
+      ])
     }
   },
 
   create: async (data: Create{Feature}Request): Promise<{Feature}> => {
-    const response = await client.post({feature}Endpoints.list, data)
-    return mapTo{Feature}(response.data)
+    try {
+      const response = await client.post({feature}Endpoints.list, data)
+      return parseResponse({feature}ResponseSchema, response.data)
+    } catch (error) {
+      if (AppError.isAppError(error)) throw error
+      handleApiError(error)
+    }
   },
 
   update: async (id: number, data: Update{Feature}Request): Promise<{Feature}> => {
-    const response = await client.patch({feature}Endpoints.detail(id), data)
-    return mapTo{Feature}(response.data)
+    try {
+      const response = await client.patch({feature}Endpoints.detail(id), data)
+      return parseResponse({feature}ResponseSchema, response.data)
+    } catch (error) {
+      if (AppError.isAppError(error)) throw error
+      handleApiError(error)
+    }
   },
 
   delete: async (id: number): Promise<void> => {
-    await client.delete({feature}Endpoints.detail(id))
+    try {
+      await client.delete({feature}Endpoints.detail(id))
+    } catch (error) {
+      if (AppError.isAppError(error)) throw error
+      handleApiError(error)
+    }
   },
 }
 ```
@@ -779,7 +730,62 @@ export { getStatusLabel, getStatusColor, canEdit, canDelete } from './domain/{fe
 
 ---
 
-## Step 8: MSW Handlers (for tests)
+## Step 8: i18n Translation Files
+
+### File format (`i18n/en.json`, `i18n/es.json`)
+
+**Important:** next-i18next uses nested JSON objects, not flat dot-notation keys.
+
+```json
+// ✅ Correct — nested objects
+{
+  "{feature}": {
+    "title": "Feature Title",
+    "list": {
+      "empty": "No items found",
+      "loading": "Loading..."
+    },
+    "form": {
+      "submit": "Create",
+      "cancel": "Cancel",
+      "fields": {
+        "name": "Name",
+        "namePlaceholder": "Enter name"
+      }
+    },
+    "errors": {
+      "notFound": "Item not found",
+      "createFailed": "Failed to create item"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "view": "View details"
+    }
+  }
+}
+
+// ❌ Wrong — flat dot-notation keys (next-i18next won't resolve these)
+{
+  "expiredDialog.title": "Session Expired"
+}
+```
+
+The hook uses these keys via `useTranslation`:
+
+```tsx
+const { t } = useTranslation('{feature-namespace}')
+const translations = {
+  title: t('{feature}.title'),
+  emptyMessage: t('{feature}.list.empty'),
+}
+```
+
+Generate only keys that the feature's components actually use — don't create keys speculatively.
+
+---
+
+## Step 9: MSW Handlers (for tests)
 
 Add handlers for testing. Place in your test setup directory.
 

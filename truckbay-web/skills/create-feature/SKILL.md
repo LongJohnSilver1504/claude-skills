@@ -7,18 +7,11 @@ description: Scaffold a new domain feature module following vertical slicing and
 
 Scaffold a complete domain feature module following vertical slicing with hexagonal architecture. This skill handles features with **entities, API endpoints, and CRUD operations** that live in `src/new-app/features/`.
 
-For shared infrastructure (providers, hooks, layouts, i18n, config), use the **create-infrastructure** skill instead.
+For shared infrastructure (providers, hooks, layouts, i18n, config), use **create-infrastructure** instead.
 
-## Related Skills
+**Related:** create-infrastructure (shared infra), plan-implementation (upstream planning), react-clean-architecture (architecture rationale), frontend-testing (post-scaffold tests), error-handling (AppError patterns), generate-feature-doc (post-implementation docs).
 
-| Skill | When to Use |
-|-------|-------------|
-| **create-infrastructure** | Scaffold shared infrastructure (providers, hooks, layouts, i18n) instead of domain features |
-| **plan-implementation** | Bridge from PRD/UX design artifacts to feature inputs — routes to this skill or create-infrastructure |
-| **react-clean-architecture** | Understand the WHY behind this structure |
-| **frontend-testing** | After scaffolding, write tests for each layer |
-| **error-handling** | AppError, tryCatch, domain error patterns |
-| **generate-feature-doc** | After implementation, document the feature |
+For shared architecture conventions (hook/component separation, imports, translations, anti-patterns), see [references/shared-conventions.md](references/shared-conventions.md).
 
 ## Before You Begin
 
@@ -31,17 +24,17 @@ Gather from the user:
 
 ## Feature Directory Structure
 
+### Simple Feature (single page/concern)
+
 Create in `features/{feature-name}/`:
 
 ```
 {feature-name}/
 ├── api/
-│   ├── {feature}.api.ts          # HTTP adapter (centralized endpoints)
-│   ├── {feature}.schemas.ts      # Zod schemas (trust boundary validation)
-│   ├── {feature}.mapper.ts       # Raw → Domain transformation
-│   └── {feature}.types.ts        # Raw API response types (snake_case etc.)
+│   ├── {feature}.api.ts          # HTTP adapter (handleApiError + parseResponse)
+│   └── {feature}.schemas.ts      # Zod response schemas with .transform() + inferred types
 ├── domain/
-│   ├── {feature}.types.ts        # Pure TS types (no Zod, no deps)
+│   ├── {feature}.types.ts        # Re-exports types from ../api/{feature}.schemas
 │   ├── {feature}.service.ts      # Pure business logic functions
 │   └── {feature}.errors.ts       # Domain error classes (optional)
 ├── queries/
@@ -69,12 +62,64 @@ Create in `features/{feature-name}/`:
 └── index.ts                       # Public exports
 ```
 
+### Feature with Sub-Features (multiple sub-pages sharing same data model)
+
+When a feature serves multiple routes that share the same types, API, and query keys, use nested sub-features. Each sub-feature is self-contained with its own components and hooks.
+
+```
+{feature-name}/
+├── api/                          # Shared across all sub-features
+│   ├── {feature}.api.ts
+│   └── {feature}.schemas.ts
+├── domain/                       # Shared types + business logic
+│   ├── {feature}.types.ts
+│   ├── {feature}.service.ts
+│   └── index.ts                  # Barrel re-exports
+├── queries/                      # Shared query key factories
+│   └── {feature}.keys.ts
+├── hooks/                        # Shared hooks (data fetching, common logic)
+│   ├── use-{feature}s.ts
+│   └── use-{feature}.ts
+├── testing/                      # Shared test factories
+│   └── factories.ts
+├── pages/                        # Page compositors (one per route)
+│   ├── {feature}-details-page.tsx    # /feature/:id — thin layout shell
+│   └── {sub-page}-page.tsx           # /feature/:id/sub — thin layout shell
+│
+├── {sub-feature-a}/              # Self-contained sub-feature
+│   ├── components/
+│   ├── hooks/
+│   └── domain/                   # Only if sub-feature has local-only logic
+│
+├── {sub-feature-b}/              # Another sub-feature
+│   ├── components/
+│   └── hooks/
+│
+└── index.ts                      # Public barrel exports
+```
+
+#### Sub-Feature Rules
+
+1. **Shared things stay shared.** Types, API adapters, and query keys used by multiple sub-features live at the parent feature root (`api/`, `domain/`, `queries/`, `hooks/`).
+2. **Local logic stays local.** Logic used only by one sub-feature goes in `{sub-feature}/domain/`.
+3. **Pages are thin compositors.** Each page in `pages/` imports and assembles components from sub-features. Pages never own business logic.
+4. **Sub-features never import from each other.** If A needs something from B, it belongs in the shared parent level.
+5. **Pages can import from any sibling sub-feature.** They are the only cross-cutting layer.
+
+#### When to Use Sub-Features
+
+Ask: "Does this feature serve **multiple routes/pages** that share the same data model and API?" If yes, use sub-features. If no, use the simple structure.
+
+#### When a Sub-Feature Graduates to Top-Level
+
+Only when **all three** are met: (1) it has its own API endpoints and response types, (2) its own query keys and data lifecycle, (3) it can be deleted without touching shared domain code.
+
 ## Implementation Checklist
 
 ```
 Feature: {name}
-[ ] 1. Domain Layer      — types, service, errors
-[ ] 2. API Layer          — schemas, raw types, mapper, adapter
+[ ] 1. Domain Layer      — types (re-exports from schemas), service, errors
+[ ] 2. API Layer          — Zod response schemas, adapter (handleApiError + parseResponse)
 [ ] 3. Queries Layer      — key factory, queryOptions
 [ ] 4. Store Layer        — Zustand (skip if no UI state needed)
 [ ] 5. Hooks Layer        — list, detail, mutations, form, translations
@@ -84,196 +129,37 @@ Feature: {name}
 [ ] 9. Tests              — MSW handlers + per-layer tests
 ```
 
-## Key Conventions
+## Feature-Specific Conventions
 
-### Hooks/Components Separation (Clean Architecture)
+### Schemas in `api/`, Types re-exported from `domain/`
 
-Components and hooks have strict, separate responsibilities:
-
-**`hooks/` contains ALL logic:**
-- State management (`useState`, `useReducer`)
-- Data fetching (TanStack Query wrappers)
-- Mutations and form handling
-- Side effects (`useEffect`, `useCallback`, `useMemo`)
-- Event handlers
-- Router logic (`useRouter`)
-- Business logic orchestration
-- **Translations** (`useTranslation` wrapped in a feature-specific hook)
-
-**`components/` contains UI rendering ONLY:**
-- JSX markup
-- Styling via className
-- Calling hooks and passing data to child components
-- Conditional rendering based on hook return values
-
-Components should act as "pure functions" — they receive data from hooks and return markup. This separation allows logic to be tested independently and keeps components focused on presentation.
-
-```tsx
-// hooks/use-{feature}-form.ts — ALL logic here
-export const use{Feature}Form = () => {
-  const form = useForm(...)
-  const mutation = useMutation(...)
-  const onSubmit = form.handleSubmit(...)
-  return { form, isSubmitting: mutation.isPending, onSubmit }
-}
-
-// components/{feature}-form.tsx — UI rendering ONLY
-export const {Feature}Form = () => {
-  const { form, isSubmitting, onSubmit } = use{Feature}Form()
-  return <form onSubmit={onSubmit}>...</form>
-}
-```
-
-### Feature Layout Shell
-
-If a feature page needs a custom page wrapper (header variant, footer tabs, etc.), create `{feature}-layout.tsx` inside the feature's `components/` folder. It imports shared building blocks from `@/new-app/shared/layouts`.
-
-Never put a feature-specific layout shell in `shared/layouts/` — that directory holds only reusable building blocks.
-
-### Imports
-
-| Import | From |
-|--------|------|
-| `client`, `isAxiosError` | `@/new-app/shared/api` |
-| `AppError` | `@/new-app/shared/errors` |
-| `tryCatch` | `@/new-app/shared/utils` |
-| `useError` | `@/new-app/shared/providers` |
-| `links` | `@/new-app/shared/links` |
-| shadcn components | `@/new-app/ui/{component}` |
-| Icons | `lucide-react` |
-| `useTranslation` | `next-i18next` (only in hooks, never in components) |
-
-### Schemas in `api/`, Types in `domain/`
-
-- `api/{feature}.schemas.ts` — Zod schemas for request/response validation (trust boundary)
-- `domain/{feature}.types.ts` — Pure TS types with no external dependencies
-- Types can be standalone or inferred from schemas via `z.infer` re-exports
+- `api/{feature}.schemas.ts` — Zod response schemas with `.transform()` for field renaming, type coercion, and defaults. Inferred types are exported from the schema file.
+- `domain/{feature}.types.ts` — Re-exports types from `../api/{feature}.schemas.ts`. Domain types are the schema output types.
+- Use `parseResponse(schema, data)` from `@/new-app/shared/api` in adapters to validate and transform API responses.
+- Use `handleApiError(error, contextMappings?)` from `@/new-app/shared/api` to replace manual axios catch blocks.
 
 ### Centralized Endpoints
 
-All endpoint paths must be in a `const` object at the top of the API adapter file.
-See [centralized-links.mdc](mdc:.cursor/rules/centralized-links.mdc) and [references/templates.md](references/templates.md) for the template.
+All endpoint paths must be in a `const` object at the top of the API adapter file. See [centralized-links rule](../../.claude/rules/centralized-links.md) and [references/templates.md](references/templates.md) Step 2.4.
 
 ### Error Handling in Mutations
 
 - Use `useError().showError()` from the error provider, NOT `toast.error()` directly
 - Use `tryCatch` for sequential async steps in mutation functions
 - Check `AppError.isAppError(error)` before displaying error messages
-- See [references/templates.md](references/templates.md) for complete mutation hook template
 
 ### Form Pattern
 
 Hooks: `useForm` + `zodResolver` + `useMutation` + `tryCatch`
 Components: `Controller` + `Field` / `FieldLabel` / `FieldError` from `@/new-app/ui/field`
 
-### Translation Pattern
+### Feature Layout Shell
 
-Never use `useTranslation` directly in components. Include translations inside the main feature hook alongside other logic:
-
-```tsx
-// hooks/use-{feature}-view.ts — translations live inside the feature hook
-import { useTranslation } from 'next-i18next'
-import { useQuery } from '@tanstack/react-query'
-
-export const use{Feature}View = () => {
-  const { t } = useTranslation('{namespace}')
-  const query = useQuery(...)
-
-  const translations = {
-    headerTitle: t('feature.headerTitle'),
-    buttons: {
-      submit: t('feature.submit'),
-      cancel: t('feature.cancel'),
-    },
-  }
-
-  return {
-    translations,
-    data: query.data,
-    isLoading: query.isPending,
-  }
-}
-
-// components/{feature}-view.tsx — uses hook, no direct useTranslation
-const { translations, data, isLoading } = use{Feature}View()
-```
-
-This keeps all logic (data fetching, translations, handlers) in a single hook per component, and components remain pure UI renderers.
-
-### i18n File Scaffolding
-
-When creating a feature, generate translation files with keys for all user-facing strings:
-
-```
-i18n/
-  en.json    # All user-facing strings in English
-  es.json    # All user-facing strings in Spanish (placeholder translations OK)
-```
-
-**Key naming convention:** `{feature}.{section}.{element}`
-
-**Important:** next-i18next uses nested JSON objects, not flat dot-notation keys. Keys like `expiredDialog.title` must be structured as nested objects:
-
-```json
-// ✅ Correct — nested objects
-{
-  "expiredDialog": {
-    "title": "Session Expired"
-  }
-}
-
-// ❌ Wrong — flat dot-notation keys (next-i18next won't resolve these)
-{
-  "expiredDialog.title": "Session Expired"
-}
-```
-
-```json
-// i18n/en.json
-{
-  "{feature}": {
-    "title": "Feature Title",
-    "list": {
-      "empty": "No items found",
-      "loading": "Loading..."
-    },
-    "form": {
-      "submit": "Create",
-      "cancel": "Cancel",
-      "fields": {
-        "name": "Name",
-        "namePlaceholder": "Enter name"
-      }
-    },
-    "errors": {
-      "notFound": "Item not found",
-      "createFailed": "Failed to create item"
-    },
-    "actions": {
-      "edit": "Edit",
-      "delete": "Delete",
-      "view": "View details"
-    }
-  }
-}
-```
-
-The hook then uses these keys via `useTranslation`:
-```tsx
-const { t } = useTranslation('{feature-namespace}')
-const translations = {
-  title: t('{feature}.title'),
-  emptyMessage: t('{feature}.list.empty'),
-}
-```
-
-Generate only keys that the feature's components actually use — don't create keys speculatively.
+If a feature page needs a custom page wrapper, create `{feature}-layout.tsx` inside the feature's `components/` folder. It imports shared building blocks from `@/new-app/shared/layouts`. Never put feature-specific layouts in `shared/layouts/`.
 
 ### Store (Zustand) — Optional
 
-Include only when the feature needs client-side UI state:
-filters, search, selection, modal open/close.
-NOT for server data (that lives in TanStack Query).
+Include only when the feature needs client-side UI state: filters, search, selection, modal open/close. NOT for server data (that lives in TanStack Query).
 
 ## Layer Dependencies
 
@@ -286,50 +172,17 @@ NOT for server data (that lives in TanStack Query).
 | `hooks/` | `queries/`, `api/`, `domain/`, `store/` | Components |
 | `components/` | `hooks/`, `domain/`, `store/`, `@/shared/` | `api/` directly |
 
-## Anti-Patterns
+## Feature-Specific Anti-Patterns
 
-- **Don't put logic in component files** — ALL logic (`useState`, `useEffect`, handlers, mutations) goes in hooks
 - **Don't make API calls in components** — go through hooks which wrap queries/mutations
 - **Don't put business logic in components** — use `domain/{feature}.service.ts` for pure functions, hooks for React logic
 - **Don't import other features' internals** — use their `index.ts` exports
 - **Don't skip validation in mappers** — always `safeParse` through Zod
 - **Don't put UI state in TanStack Query** — use Zustand
 - **Don't hardcode endpoint paths** — centralize in endpoints object
-- **Don't use `toast.error()` directly** — use `useError().showError()`
-- **Don't use function declarations** — use arrow function components with named exports
-- **Don't use `useTranslation` in components** — include translations inside the feature hook
+
+For general anti-patterns (logic in components, hardcoded routes, legacy imports, etc.), see [references/shared-conventions.md](references/shared-conventions.md).
 
 ## Code Templates
 
 For complete code templates of each file, read [references/templates.md](references/templates.md).
-
-## Resume After Context Cleanup
-
-If context was cleaned mid-pipeline, restore state before proceeding:
-
-1. **Check for in-progress pipeline:** Look for `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
-2. **Read DECISIONS.md** in the feature folder for accumulated context
-3. **Read the relevant artifact** for this skill's input:
-   - The implementation plan and any scaffolded files in `src/new-app/features/{feature}/`
-4. **Resume the observer** if an OBSERVATION-LOG.md exists and is in progress
-5. **Continue from where you left off** — don't restart the skill from scratch
-
-## Next Step
-
-After completing this skill, use the `AskUserQuestion` tool to present the next step options. Include a summary of what was completed in the question text.
-
-Options to present:
-
-- **frontend-testing** — write tests for the feature
-- **generate-feature-doc** — document the implementation
-- **Something else** — do something different
-
-Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
-
-## Context Management
-
-After completing this skill's work, report the **context usage percentage** so the user can decide whether to clean context:
-
-> "{Skill output summary}. Context usage: **{X}%**"
-
-Do NOT recommend cleaning context — just show the percentage. The user will decide.

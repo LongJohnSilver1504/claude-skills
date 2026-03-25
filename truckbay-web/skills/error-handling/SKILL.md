@@ -78,17 +78,46 @@ import { tryCatch } from '@/shared/utils'
 const { data, error } = await tryCatch(authApi.signIn(credentials))
 
 if (error) {
-  // error is typed as Error (or custom via generic)
+  // error defaults to AppError via discriminated union Result<T, E = AppError>
   showError(error.message)
   return
 }
 
-// data is guaranteed non-null here
+// data is guaranteed non-null here (discriminated union narrows)
 console.log(data.accessToken)
 ```
 
 **Location:** `shared/utils/try-catch.ts`
-**Returns:** `{ data: T, error: null } | { data: null, error: E }`
+**Returns:** `Result<T, E = AppError>` — discriminated union: `{ data: T, error: null } | { data: null, error: E }`
+
+### handleApiError Helper
+
+Converts axios errors to `AppError` with optional context-specific mappings. Replaces the hand-written catch blocks in API adapters.
+
+```typescript
+import { handleApiError } from '@/shared/api'
+
+// In catch block — handles all axios status codes + network errors
+handleApiError(error, [
+  { status: 404, code: 'LOCATION_NOT_FOUND', message: 'Location not found' },
+])
+```
+
+**Location:** `shared/api/handle-api-error.ts`
+**Built-in defaults:** 401 → `UNAUTHORIZED`, 404 → `NOT_FOUND`, else → `SERVER_ERROR`, non-axios → `NETWORK_ERROR`
+
+### parseResponse Utility
+
+Validates raw API response data against a Zod schema. Throws `AppError` with code `VALIDATION_ERROR` on mismatch.
+
+```typescript
+import { parseResponse } from '@/shared/api'
+import { myResponseSchema } from './my-feature.schemas'
+
+const parsed = parseResponse(myResponseSchema, response.data)
+```
+
+**Location:** `shared/api/parse-response.ts`
 
 ### useError Hook (toast display)
 
@@ -106,13 +135,13 @@ showWarning('Session expiring soon')  // Yellow toast via Sonner
 
 ## Error Flow Patterns
 
-### Pattern 1: API Adapter (transform Axios → AppError)
+### Pattern 1: API Adapter (handleApiError + parseResponse)
 
 ```typescript
 // features/auth/api/auth.api.ts
-import { isAxiosError } from 'axios'
+import { client, handleApiError, parseResponse } from '@/shared/api'
 import { AppError } from '@/shared/errors'
-import { client } from '@/shared/api'
+import { sessionResponseSchema } from './auth.schemas'
 
 const authEndpoints = {
   signIn: '/user/warehouse-owner/login',
@@ -122,27 +151,20 @@ export const authApi = {
   signIn: async (credentials: SignInCredentials): Promise<Session> => {
     try {
       const response = await client.post(authEndpoints.signIn, credentials)
-      return mapSession(response.data)
+      return parseResponse(sessionResponseSchema, response.data)
     } catch (error) {
-      if (isAxiosError(error)) {
-        const status = error.response?.status
-        const message = error.response?.data?.message
-
-        if (status === 401) {
-          throw new AppError(message || 'Invalid email or password', 'INVALID_CREDENTIALS', 401)
-        }
-        if (status === 422) {
-          throw new AppError(message || 'Validation failed', 'VALIDATION_ERROR', 422)
-        }
-        throw new AppError(message || 'Server error', 'SERVER_ERROR', status ?? 500)
-      }
-      throw new AppError('Unable to connect. Please check your connection.', 'NETWORK_ERROR', 0)
+      if (AppError.isAppError(error)) throw error // re-throw Zod validation errors
+      handleApiError(error, [
+        { status: 401, code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' },
+      ])
     }
   },
 }
 ```
 
-**Schema validation failures:** If using Zod `safeParse` on the response, throw `RESPONSE_PARSE_ERROR` (422) — not 500 — when validation fails. The server responded successfully; the contract mismatch is a client-side concern.
+- `parseResponse` validates raw API data against a Zod schema, throwing `VALIDATION_ERROR` (422) on mismatch
+- `handleApiError` converts axios errors to `AppError` — context mappings checked first, then built-in defaults
+- The `AppError.isAppError` guard before `handleApiError` ensures Zod validation errors pass through
 
 ### Pattern 2: Hook with tryCatch
 
@@ -219,10 +241,9 @@ const handleSignIn = async (credentials: SignInCredentials) => {
 | `UNAUTHORIZED` | 401 | Missing or expired token |
 | `FORBIDDEN` | 403 | Insufficient permissions |
 | `{ENTITY}_NOT_FOUND` | 404 | Resource doesn't exist |
-| `VALIDATION_ERROR` | 422 | Request validation failed |
+| `VALIDATION_ERROR` | 422 | Request validation failed or API response shape mismatch (Zod) |
 | `CONFLICT` | 409 | Duplicate or state conflict |
 | `SERVER_ERROR` | 500 | Unhandled backend error |
-| `RESPONSE_PARSE_ERROR` | 422 | Server response doesn't match expected schema |
 | `NETWORK_ERROR` | 0 | Connection failure |
 
 ## Rules
@@ -241,6 +262,8 @@ const handleSignIn = async (credentials: SignInCredentials) => {
 - `create-feature` skill for scaffolding errors alongside a new feature
 - `react-clean-architecture` skill for where errors fit in the layer model
 - `shared/errors/` for base classes and types
-- `shared/utils/try-catch.ts` for the Result pattern utility
+- `shared/utils/try-catch.ts` for the Result<T, E> discriminated union utility
+- `shared/api/handle-api-error.ts` for the shared axios→AppError converter
+- `shared/api/parse-response.ts` for Zod response validation
 - `shared/providers/error-provider.tsx` for the toast display hook
 - See [references/advanced-patterns.md](references/advanced-patterns.md) for error boundaries, form-level errors, and server action patterns

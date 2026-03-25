@@ -131,23 +131,26 @@ After generating the README, delete intermediate pipeline `.md` files that serve
 
 ### What gets deleted
 
-| File | Why |
-|------|-----|
-| `PRD-clarification-session.md` | Intermediate — clarifications are already merged into the PRD |
-| `build-prompts.md` | Intermediate — prompts were consumed during implementation |
-| `PRD-implementation-plan.md` | Intermediate — plan was executed, no longer needed |
+| Pattern | Why |
+|---------|-----|
+| `PRD-*-clarification-session.md` | Intermediate — clarifications are already merged into the PRD |
+| `PRD-*-implementation-plan.md` | Intermediate — plan was executed, no longer needed |
+| `build-prompts*.md` | Intermediate — prompts were consumed during implementation |
 | `DECISIONS.md` | Intermediate — decisions absorbed into README |
 | `*-test-plan.md` | Intermediate — test plan consumed by frontend-testing |
+| `PRD-*.md` (iteration variants) | Intermediate — sub-PRDs for phases/iterations are absorbed into the main PRD and README |
 
-After writing the README, delete the intermediate files:
+After writing the README, delete **all** intermediate files. Only `PRD.md`, `UX-spec.md`, and `README.md` survive:
 
+```bash
+# Delete all PRD variants and intermediate artifacts
+rm -f {feature-dir}/PRD-*.md
+rm -f {feature-dir}/build-prompts*.md
+rm -f {feature-dir}/DECISIONS.md
+rm -f {feature-dir}/*-test-plan.md
 ```
-rm {feature-dir}/PRD-clarification-session.md
-rm {feature-dir}/build-prompts.md
-rm {feature-dir}/PRD-implementation-plan.md
-rm {feature-dir}/DECISIONS.md
-rm {feature-dir}/*-test-plan.md
-```
+
+> **Important:** `PRD-*.md` files (e.g., `PRD-v2.md`, `PRD-enrichment.md`, `PRD-bay-status-card.md`) are iteration artifacts from the pipeline. The original `PRD.md` is the authoritative requirements reference. Sub-PRDs served their purpose during implementation and are now captured in the README.
 
 > **Note:** RETRO.md and OBSERVATION-LOG.md are managed by the `feature-retrospective` skill and stored separately in `.claude/pipeline/{feature}/`.
 

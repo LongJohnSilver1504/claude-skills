@@ -29,16 +29,37 @@ Replace `{feature}` with the feature name (lowercase) and `{Feature}` with Pasca
 
 This feature follows **hexagonal architecture** with vertical slicing.
 
-### Directory Structure
+### Directory Structure (Simple Feature)
 
 features/{feature}/
-├── api/           # HTTP adapters + schemas + mapper
+├── api/           # HTTP adapters + schemas
 ├── domain/        # Pure TS types + business logic
 ├── queries/       # TanStack Query config
 ├── store/         # Zustand UI state (optional)
 ├── hooks/         # React hooks
 ├── components/    # UI layer
 └── index.ts       # Public exports
+
+### Directory Structure (Feature with Sub-Features)
+
+features/{feature}/
+├── api/                    # Shared API adapters + schemas
+├── domain/                 # Shared types + business logic
+├── queries/                # Shared query key factories
+├── hooks/                  # Shared hooks (data fetching, common logic)
+├── testing/                # Shared test factories
+├── pages/                  # Page compositors (one per route)
+│
+├── {sub-feature-a}/        # Self-contained sub-feature
+│   ├── components/
+│   ├── hooks/
+│   └── domain/             # Sub-feature-only logic (optional)
+│
+├── {sub-feature-b}/        # Another sub-feature
+│   ├── components/
+│   └── hooks/
+│
+└── index.ts                # Public barrel exports
 
 ### Layer Responsibilities
 
@@ -50,6 +71,14 @@ features/{feature}/
 | store/ | UI state management | domain/ |
 | hooks/ | React data access | queries/, store/ |
 | components/ | UI rendering | hooks/, store/ |
+| pages/ | Page compositors (thin shells) | All sub-features |
+
+### Sub-Feature Import Rules
+
+| From | Can Import | Cannot Import |
+|------|-----------|---------------|
+| pages/ | Any sibling sub-feature, shared layers | — |
+| {sub-feature}/ | Shared layers (api/, domain/, hooks/, queries/) | Other sub-features |
 ```
 
 ## 3. Data Flow

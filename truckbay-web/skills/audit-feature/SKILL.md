@@ -5,7 +5,9 @@ description: Audit a feature folder for compliance with project rules — color 
 
 # Audit Feature
 
-Scan a feature folder (or any `src/new-app/` directory) and report violations of project conventions. Produces a checklist report with file-level findings and auto-fixes what it can.
+Scan a feature folder inside `src/new-app/` and report violations of project conventions. Produces a checklist report with file-level findings and auto-fixes what it can.
+
+**Scope:** Only scan files inside `src/new-app/`. Files outside `new-app/` (legacy `src/components/`, `src/pages/`, `src/api/`, `src/hooks/`, etc.) are out of scope and must never be flagged.
 
 **When to use:** After implementing a feature, when resuming work after context loss, during code review, or when the user says "audit", "check", "review conventions", "lint rules".
 
@@ -93,7 +95,7 @@ These hooks must NOT appear directly in component bodies (they belong in the cus
    from '@/api/'
    from '@/hooks/'
    ```
-   **Exception:** None. `new-app/` must not import from legacy.
+   **Exception:** Wrapping legacy components is allowed. If a `new-app/` file imports a legacy component/hook to wrap it with new-app conventions (e.g., adding a new-app hook layer, adapting props, re-exporting from `shared/`), that import is acceptable. Flag but mark as "wrapper — OK".
 
 3. **DevTool imports** — Imports from `@/new-app/ui/custom/dev-tool-panel` are always OK (exception to cross-feature rules).
 

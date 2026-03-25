@@ -1,352 +1,105 @@
 ---
 name: plan-implementation
-description: Bridge design artifacts (PRD, UX spec, build-order prompts) into a structured implementation plan with feature extraction compatible with the create-feature skill. Handles both domain features and shared infrastructure projects. Use after ux-to-prompt or when you have a PRD/spec and need to plan feature scaffolding.
-tags: [planning, feature-extraction, architecture, pipeline]
+description: Bridge design artifacts (PRD, UX spec, build-order prompts) into a structured implementation plan. Classifies deliverables as domain features or shared infrastructure, extracts specs, orders by dependencies, and detects shared patterns. Use after ux-to-prompt, when planning feature scaffolding, or when user says "implementation plan", "what to build first", "plan the features".
 ---
 
 # Plan Implementation
 
-Bridge between design artifacts and code scaffolding. Reads PRD, UX spec, and build-order prompts, then produces a structured implementation plan. Each deliverable maps to one of two downstream skills:
+Bridge between design artifacts and code scaffolding. Read PRD, UX spec, and build-order prompts. Produce a structured plan where each deliverable maps to either:
 
 - **create-feature** — domain features with entities, API endpoints, CRUD (lives in `features/`)
 - **create-infrastructure** — shared infrastructure: providers, hooks, layouts, i18n, config (lives in `shared/`)
 
-## When to Use
-
-- After `ux-to-prompt` generates build-order prompts
-- When you have a PRD and want to plan which features to scaffold
-- When starting implementation of a multi-feature project
-- When you need to map UX components to the `features/` or `shared/` directory structure
-- When building shared infrastructure (layouts, providers, i18n) before domain features
-
 ## Required Inputs
 
-Locate these documents (ask the user if paths are unclear):
+At minimum: the PRD. More artifacts = more precise extraction.
 
-1. **PRD** — the original product requirements document
-2. **Clarified PRD** — if `prd-clarifier` was used (optional)
-3. **UX Specification** — the output from `prd-to-ux` (optional but recommended)
-4. **Build-Order Prompts** — the output from `ux-to-prompt` (optional but recommended)
-
-At minimum you need the PRD. The more artifacts available, the more precise the extraction.
+1. **PRD** — the product requirements document
+2. **Clarified PRD** — if prd-clarifier was used (optional)
+3. **UX Specification** — from prd-to-ux (optional but recommended)
+4. **Build-Order Prompts** — from ux-to-prompt (optional but recommended)
 
 ## Process
 
-### Step 1: Identify and Classify Candidates
+### Step 1: Classify Candidates
 
-Scan the design artifacts and extract every distinct deliverable. **Classify each** as either a domain feature or an infrastructure deliverable.
+Scan design artifacts and extract every distinct deliverable. Classify each using these signals:
 
-**Classification criteria:**
-
-| Signal | Domain Feature | Infrastructure Deliverable |
-|--------|---------------|---------------------------|
+| Signal | Domain Feature | Infrastructure |
+|--------|---------------|----------------|
 | Has a primary entity with fields | Yes | No |
 | Consumes external API endpoints | Yes | Rarely |
 | Has CRUD operations | Yes | No |
-| Lives in | `features/{name}/` | `shared/`, `public/`, project root |
-| Examples | `payment`, `reservation` | `auth-provider`, `app-layout`, `i18n-setup` |
+| Lives in | `features/{name}/` | `shared/`, `public/`, root |
+| Examples | `payment`, `reservation` | `auth-provider`, `app-layout`, `i18n` |
 
-**From the PRD:**
-- Section 4 "Core Use Case" — each major step often maps to a feature
-- Section 5 "Functional Decisions" — capabilities group into features OR infrastructure
-- Section 7 "Data & Logic" — data sources reveal entities (domain) vs config (infra)
+**Where to find candidates:**
 
-**From the UX Spec (if available):**
-- Pass 2 "Information Architecture" — concept groups map to features
-- Pass 3/7 "Layout & Sizing" — layout components are infrastructure
-- Pass 5 "State Design" — each element with its own state table is likely a feature
+From PRD: Section 4 (core use case steps → features), Section 5 (capabilities → features or infra), Section 7 (data sources → entities vs config).
 
-**From Build-Order Prompts (if available):**
-- Core Components phase — layout components are infrastructure, data-driven components are features
-- Forms — each form is part of a domain feature
+From UX Spec: Pass 2 (concept groups → features), Pass 5 (elements with state tables → features), layout components → infrastructure.
 
-**Output a candidate list with classification:**
+From Build Prompts: data-driven comps, layout components → infrastructure.
 
-```markdown
-## Candidate Features
+Output a classification table with: name, source reference, type (Domain Feature / Infrastructure), primary concept.
 
-| # | Name | Source | Type | Primary Concept |
-|---|------|--------|------|-----------------|
-| 1 | auth | PRD §4 step 1, UX Pass 5 | Domain Feature | AuthSession entity |
-| 2 | app-layout | PRD §5 F6, Build Prompt #8 | Infrastructure | Layout shell |
-| 3 | auth-provider | PRD §5 F8, Clarification Q3 | Infrastructure | Auth context |
-| 4 | reservation | PRD §5 F-03, Build Prompt #4 | Domain Feature | Reservation entity |
-```
-
-**If ALL candidates are infrastructure** (no domain entities, no API CRUD), state this explicitly:
-
-```markdown
-## Feature Summary
-
-This project is **shared infrastructure**, not domain features with CRUD operations.
-The `create-feature` skill does NOT apply. Use the `create-infrastructure` skill
-to scaffold each deliverable following the `new-app/shared/` conventions.
-```
+**If ALL candidates are infrastructure** (no entities, no CRUD), state explicitly that create-feature does not apply and all deliverables use create-infrastructure.
 
 ### Step 2: Extract Specs
 
-Produce a spec block for each candidate. The format depends on the classification.
+For each candidate, produce a spec block.
 
-#### 2A: Domain Feature Spec
+**Domain Feature spec** — include: feature name (singular, lowercase), entity fields with types, API endpoints with HTTP methods, which CRUD operations are needed, UX components mapped to build prompts, whether a Zustand store is needed and why, domain-specific errors.
 
-For candidates classified as **Domain Feature**, produce a block matching `create-feature` skill inputs:
-
-```markdown
-### Feature: {name}
-
-**Feature name:** {singular, lowercase}
-
-**Main entity fields:**
-- id: number
-- name: string
-- status: 'active' | 'inactive'
-- createdAt: string (ISO date)
-- ...
-
-**API endpoints:**
-- `GET /api/{feature}s` — list (paginated)
-- `GET /api/{feature}s/:id` — detail
-- `POST /api/{feature}s` — create
-- `PATCH /api/{feature}s/:id` — update
-- `DELETE /api/{feature}s/:id` — delete
-
-**Operations needed:**
-- [x] List (paginated)
-- [x] Detail
-- [x] Create
-- [x] Update
-- [ ] Delete
-
-**UX components mapped:**
-- {feature}-list.tsx — from Build Prompt #3
-- {feature}-form.tsx — from Build Prompt #5
-- {feature}-card.tsx — from Build Prompt #3
-
-**Needs Zustand store:** Yes/No
-- Reason: [e.g., "filters, search state, selected items"]
-
-**Domain errors (if any):**
-- {Feature}NotFoundError (404)
-- {Feature}ValidationError (422)
-```
-
-#### 2B: Infrastructure Deliverable Spec
-
-For candidates classified as **Infrastructure Deliverable**, produce a block matching `create-infrastructure` skill inputs:
-
-```markdown
-### Deliverable N: {Name}
-
-**Type:** {Provider | Hook | Layout component | Layout shell | i18n namespace | Shared utility | Config/Foundation | Test page}
-**File:** `{target path relative to src/new-app/ or project root}`
-**Depends on:** {list of other deliverables or "Nothing"}
-**Acceptance:** {how to verify it works}
-
-**Props / API surface:**
-- propName: type — description
-- optionalProp?: type — description
-
-**Exports:**
-- `{ExportedName}` — component/hook/type
-```
-
-**Infrastructure type reference** (see `create-infrastructure` skill for full catalog):
-
-| Type | Location | Example |
-|------|----------|---------|
-| Provider | `shared/providers/{name}.tsx` | `auth-provider.tsx` |
-| Hook | `shared/hooks/{name}.ts` | `use-navbar-items.ts` |
-| Layout component | `shared/layouts/components/{name}.tsx` | `navbar.tsx` |
-| Layout shell | `shared/layouts/{name}.tsx` | `app-layout.tsx` |
-| i18n namespace | `public/locales/{locale}/{namespace}.json` | `app-layout.json` |
-| Shared utility | `shared/{module}/index.ts` | `shared/links/index.ts` |
-| Config/Foundation | project root or `src/styles/` | `globals.css`, `components.json` |
-| Test page | `pages/{page-name}.tsx` | `reservation-details-v2/[id].tsx` |
+**Infrastructure spec** — include: name, type (see [references/infrastructure-types.md](references/infrastructure-types.md)), target file path, dependencies on other deliverables, acceptance criteria, props/API surface, exports.
 
 ### Step 3: Identify Shared Infrastructure
 
-List everything that spans multiple features or must exist before scaffolding begins. This section is always present, but its scope varies:
+List everything that spans multiple features or must exist before scaffolding. Always include:
+- Routes to add (centralized links)
+- shadcn components to install
+- Dependencies to install
+- API client changes needed
 
-- **For domain-feature projects:** shared infrastructure is supporting plumbing (routes, interceptors, shared components).
-- **For infrastructure-only projects:** this section IS the main content. Expand it with the full deliverable table.
+For infrastructure-only projects, this section IS the main content.
 
-```markdown
-## Shared Infrastructure (do first)
+### Step 4: Order by Dependencies
 
-| # | Deliverable | Type | Location | Complexity |
-|---|------------|------|----------|------------|
-| 1 | Foundation | Config/Foundation | `globals.css`, `components.json` | Low |
-| 2 | Centralized links | Shared utility | `shared/links/index.ts` | Low |
-| 3 | AuthProvider | Provider | `shared/providers/auth-provider.tsx` | Low |
-| 4 | i18n translations | i18n namespace | `public/locales/{en,es}/app-layout.json` | Low |
-| 5 | Navbar + Sheet | Layout component | `shared/layouts/components/navbar.tsx` | Medium |
+Order all deliverables so dependencies come first.
 
-### Routes to add (`shared/links/index.ts`)
-- `links.public.signIn: '/login'`
-- `links.private.dashboard: '/dashboard'`
+**Infrastructure-first rule:** shared infrastructure always before domain features that depend on it.
 
-### shadcn components to install
-- `pnpm dlx shadcn@latest add sheet button separator`
+Include: order number, deliverable name, type, depends on, complexity estimate, what can be parallelized.
 
-### Dependencies to install
-- `pnpm add tw-animate-css` (if not present)
-
-### API client changes
-- None / [e.g., "add auth header interceptor"]
-```
-
-### Step 4: Determine Implementation Order
-
-Order all deliverables (both domain features and infrastructure) by dependencies.
-
-**Infrastructure-first rule:** shared infrastructure always comes before domain features that depend on it.
-
-```markdown
-## Implementation Order
-
-| Order | Deliverable | Type | Depends On | Complexity | Parallelizable With |
-|-------|------------|------|-----------|------------|---------------------|
-| 1 | Foundation | Infra | — | Low | i18n (#4) |
-| 2 | Centralized links | Infra | Foundation | Low | — |
-| 3 | AuthProvider | Infra | Foundation | Low | i18n (#4) |
-| 4 | i18n translations | Infra | — | Low | Foundation (#1) |
-| 5 | Navbar + Sheet | Infra | useNavbarItems, shadcn | Medium | BackHeader (#7) |
-| 6 | auth | Feature | AuthProvider | Medium | — |
-| 7 | reservation | Feature | auth, location | High | — |
-
-**Rationale:** Foundation must come first. i18n can be created in parallel (just JSON files). Infrastructure deliverables that depend only on Foundation can be parallelized. Domain features come after the shared infrastructure they depend on.
-```
-
-Include a **dependency graph** when there are 5+ deliverables:
-
-````markdown
-```mermaid
-graph TD
-    Foundation["1. Foundation"]
-    Links["2. Links"]
-    Auth["3. AuthProvider"]
-    i18n["4. i18n"]
-    Navbar["5. Navbar"]
-    Feature1["6. auth feature"]
-
-    Foundation --> Links
-    Foundation --> Auth
-    i18n --> Navbar
-    Links --> Navbar
-    Auth --> Navbar
-    Auth --> Feature1
-```
-````
+When 5+ deliverables exist, include a mermaid dependency graph.
 
 ### Step 4.5: Detect Shared Patterns
 
-Scan the implementation order for deliverables that will independently call the same hooks, functions, or data-fetching logic. When 2+ deliverables repeat the same multi-line pattern, extract a shared hook or utility as an additional deliverable.
+Before finalizing, scan for deliverables that will independently use the same logic:
 
-**Detection checklist:**
-- Do 2+ hooks independently fetch the same data via the same query hook?
+- Do 2+ hooks independently fetch the same data?
 - Do 2+ hooks independently transform data through the same pipeline?
 - Do 2+ hooks independently extract the same value from router/context/store?
 
-**If a pattern is found:**
-1. Add a new deliverable (e.g., `useResolvedReservations`) that encapsulates the shared pattern
-2. Insert it in the implementation order before the deliverables that use it
-3. Update the consuming deliverables to import the shared hook instead of duplicating the logic
+If found: extract a shared hook/utility as a new deliverable, insert it before the consumers in the implementation order, update consumers to import it instead of duplicating.
 
-```markdown
-## Shared Pattern Detection
+This prevents DRY violations that are expensive to fix later.
 
-| Pattern | Repeated In | Extracted As |
-|---------|------------|-------------|
-| warehouseId + fetch + resolve pipeline | useNavigationBadgeSection, useBayStatusCards | useResolvedReservations() |
-```
+### Step 5: Write the Plan
 
-**Why this matters:** Self-contained components often need the same data. Without this step, each component independently implements the same 3-5 line boilerplate, violating DRY and making future changes fragile.
-
-### Step 5: Write the Plan Document
-
-Combine all sections into a single markdown file:
-
-```
-{prd-basename}-implementation-plan.md
-```
-
-Save it in the **same directory** as the source PRD.
-
-**Document structure:**
-
-```markdown
-# Implementation Plan: {Project Name}
-
-## Source Documents
-- **PRD**: [path]
-- **Clarified PRD**: [path or "N/A"]
-- **UX Specification**: [path or "N/A"]
-- **Build-Order Prompts**: [path or "N/A"]
-
----
-
-## Feature Summary
-
-[One of two formats:]
-
-### Format A: Mixed (domain features + infrastructure)
-
-| # | Name | Type | Entity/Concept | Operations/Purpose | Complexity |
-|---|------|------|---------------|-------------------|------------|
-| 1 | auth-provider | Infra | Auth context | Provider + useAuth hook | Low |
-| 2 | auth | Feature | AuthSession | signIn, refresh | Medium |
-| 3 | reservation | Feature | Reservation | list, detail, create, update | High |
-
-### Format B: Infrastructure-only
-
-This project is **shared infrastructure**, not domain features with CRUD operations.
-The deliverables are reusable layout components, providers, hooks, and config.
-None of these map to the `create-feature` skill. Use `create-infrastructure` instead.
-
-| # | Deliverable | Type | Location | Complexity |
-|---|------------|------|----------|------------|
-| 1 | Foundation | Config/Foundation | `globals.css`, `components.json` | Low |
-| 2 | AuthProvider | Provider | `shared/providers/auth-provider.tsx` | Low |
-
----
-
-## Candidate Features
-[from Step 1 — classification table]
-
-## Shared Infrastructure
-[from Step 3 — deliverable table, routes, dependencies]
-
-## Implementation Order
-[from Step 4 — ordered table with dependency graph]
-
-## Feature Specifications
-[from Step 2A — one block per domain feature, if any]
-
-## Deliverable Specifications
-[from Step 2B — one block per infrastructure deliverable, if any]
-
----
-
-## Validation Checklist
-[filled-in checklist]
-```
+Save as `{prd-basename}-implementation-plan.md` in the same directory as the source PRD. Include: source document paths, feature summary table, classification table, shared infrastructure, implementation order, and all spec blocks.
 
 ## Validation Checklist
 
-Before finalizing the plan:
-
-- [ ] Every PRD functional requirement maps to at least one candidate (feature or deliverable)
-- [ ] Every candidate is classified as "Domain Feature" or "Infrastructure Deliverable"
-- [ ] Every domain feature has: name, entity fields, endpoints, operations
-- [ ] Every infrastructure deliverable has: name, type, location, dependencies, acceptance criteria
-- [ ] API endpoints use the project's endpoint naming conventions
-- [ ] Entity fields include types (not just names)
+- [ ] Every PRD functional requirement maps to at least one deliverable
+- [ ] Every deliverable is classified as Domain Feature or Infrastructure
+- [ ] Domain features have: entity fields with types, endpoints, operations
+- [ ] Infrastructure deliverables have: type, location, dependencies, acceptance criteria
 - [ ] Implementation order respects dependencies
-- [ ] Shared infrastructure is identified and listed first
-- [ ] UX components are mapped to deliverables (if build-order prompts exist)
-- [ ] No candidate is missing from the list
-- [ ] If project is infrastructure-only, plan explicitly states `create-feature` does not apply and `create-infrastructure` is used
+- [ ] Shared infrastructure listed first
+- [ ] If infrastructure-only, plan states create-feature does not apply
 - [ ] Routes use centralized links (not hardcoded)
+- [ ] Shared patterns detected and extracted
 
 ## Resume After Context Cleanup
 

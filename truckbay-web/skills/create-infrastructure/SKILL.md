@@ -1,52 +1,38 @@
 ---
 name: create-infrastructure
-description: Scaffold shared infrastructure projects — providers, hooks, layout components, i18n, config/theme. Use when the project builds reusable plumbing in new-app/shared/ rather than domain features with entities and CRUD.
+description: Scaffold shared infrastructure projects — providers, hooks, layout components, i18n, config/theme. Use when the project builds reusable plumbing in new-app/shared/, or when user says "scaffold shared", "create provider", "setup layout".
 ---
 
 # Create Infrastructure
 
-Scaffold shared infrastructure that lives in `src/new-app/shared/`, `public/`, or the project root. This skill covers providers, hooks, layout components, layout shells, i18n translations, config/theme setup, and shared utilities.
+Scaffold shared infrastructure that lives in `src/new-app/shared/`, `public/`, or the project root. Covers providers, hooks, layout components, i18n translations, config/theme setup, and shared utilities.
 
-For domain features with entities, API endpoints, and CRUD operations, use the **create-feature** skill instead.
+For domain features with entities, API endpoints, and CRUD operations, use **create-feature** instead.
 
-## Related Skills
+**Related:** create-feature (domain features), plan-implementation (upstream planning), react-clean-architecture (architecture rationale), frontend-testing (post-scaffold tests), error-handling (AppError patterns), generate-feature-doc (post-implementation docs), shadcn-ui (component patterns), tailwindcss-fundamentals-v4 (theme/config).
 
-| Skill                           | When to Use                                                                  |
-| ------------------------------- | ---------------------------------------------------------------------------- |
-| **create-feature**              | Scaffold domain features (entity + API + CRUD) in `features/`                |
-| **plan-implementation**         | Bridge from PRD/UX design artifacts — routes to this skill or create-feature |
-| **react-clean-architecture**    | Understand the WHY behind layer separation                                   |
-| **frontend-testing**            | After scaffolding, write tests for each deliverable                          |
-| **error-handling**              | AppError, tryCatch patterns (if providers need error boundaries)             |
-| **generate-feature-doc**        | After implementation, document the infrastructure                            |
-| **shadcn-ui**                   | Component patterns for shadcn/ui primitives used in layouts                  |
-| **tailwindcss-fundamentals-v4** | Tailwind v4 syntax for theme/config foundation work                          |
+For shared architecture conventions (hook/component separation, imports, translations, anti-patterns), see [references/shared-conventions.md](references/shared-conventions.md).
 
 ## Before You Begin
 
 Gather from the user (or extract from the implementation plan):
 
 1. **Project name** (descriptive): e.g., `app-layout`, `theme-setup`, `auth-infrastructure`
-2. **Deliverables list** — each deliverable needs:
-   - Name (e.g., "AuthProvider", "Navbar", "useNavbarItems")
-   - Type (from the catalog below)
-   - Target file path
-   - Dependencies (other deliverables that must exist first)
-   - Acceptance criteria
+2. **Deliverables list** — each deliverable needs: name, type (from catalog below), target file path, dependencies, acceptance criteria
 
 ## Deliverable Type Catalog
 
-| Type                             | Location                                             | Example                            |
-| -------------------------------- | ---------------------------------------------------- | ---------------------------------- |
-| Provider                         | `shared/providers/{name}-provider.tsx`               | `auth-provider.tsx`                |
-| Hook (truly shared)              | `shared/hooks/use-{name}.ts`                         | `use-debounce.ts`                  |
-| Layout component                 | `shared/layouts/{module}/components/{component}.tsx` | `navbar/components/navbar.tsx`     |
-| Layout hook (component-specific) | `shared/layouts/{module}/hooks/use-{name}.ts`        | `navbar/hooks/use-navbar-items.ts` |
-| Layout barrel                    | `shared/layouts/{module}/index.ts`                   | `navbar/index.ts`                  |
-| i18n namespace                   | `public/locales/{locale}/{namespace}.json`           | `en/app-layout.json`               |
-| Shared utility                   | `shared/{module}/index.ts`                           | `shared/links/index.ts`            |
-| Config/Foundation                | project root or `src/styles/`                        | `globals.css`, `components.json`   |
-| Test page                        | `pages/{page-name}.tsx`                              | `reservation-details-v2/[id].tsx`  |
+| Type | Location | Example |
+|------|----------|---------|
+| Provider | `shared/providers/{name}-provider.tsx` | `auth-provider.tsx` |
+| Hook (truly shared) | `shared/hooks/use-{name}.ts` | `use-debounce.ts` |
+| Layout component | `shared/layouts/{module}/components/{component}.tsx` | `navbar/components/navbar.tsx` |
+| Layout hook | `shared/layouts/{module}/hooks/use-{name}.ts` | `navbar/hooks/use-navbar-items.ts` |
+| Layout barrel | `shared/layouts/{module}/index.ts` | `navbar/index.ts` |
+| i18n namespace | `public/locales/{locale}/{namespace}.json` | `en/app-layout.json` |
+| Shared utility | `shared/{module}/index.ts` | `shared/links/index.ts` |
+| Config/Foundation | project root or `src/styles/` | `globals.css`, `components.json` |
+| Test page | `pages/{page-name}.tsx` | `reservation-details-v2/[id].tsx` |
 
 All paths relative to `src/new-app/` unless noted otherwise.
 
@@ -107,28 +93,6 @@ Infrastructure: {project-name}
 [ ] 10. Barrel exports     — index.ts for each shared module
 ```
 
-## Deliverable Specification Format
-
-For each deliverable, document:
-
-```markdown
-### Deliverable N: {Name}
-
-**Type:** {type from catalog}
-**File:** `{target path}`
-**Depends on:** {list of other deliverables or "Nothing"}
-**Acceptance:** {how to verify it works}
-
-**Props / API surface:**
-
-- prop1: type — description
-- prop2?: type — description
-
-**Exports:**
-
-- `{ExportedName}` — component/hook/type
-```
-
 ## Key Conventions
 
 ### Provider Pattern
@@ -140,9 +104,9 @@ Every provider follows: context + provider component + consumer hook + guard.
 - Export `use{Name}` hook that throws if used outside provider
 - Never put provider logic in components — provider is pure context, logic lives in hooks
 
-### Layout Component Pattern
+### Layout Module Pattern
 
-Each layout building block lives in its own module folder with **mandatory separation** into `components/` and `hooks/` subdirectories:
+Each layout building block lives in its own module folder with **mandatory** `components/` and `hooks/` subdirectories:
 
 ```
 shared/layouts/{module}/
@@ -155,36 +119,9 @@ shared/layouts/{module}/
 
 A module can contain multiple related components (e.g., `navbar/components/navbar.tsx` and `navbar/components/language-selector.tsx`), each with a corresponding hook in `hooks/`.
 
-**Component file contains ONLY:**
+### Layout Shell Pattern
 
-- JSX rendering
-- Styling via className
-- Calling the hook(s)
-
-**Hook file contains ALL:**
-
-- State management (`useState`, `useReducer`)
-- Side effects (`useEffect`, `useCallback`, `useMemo`)
-- Event handlers
-- Router logic (`useRouter`)
-- Translations (`useTranslation`)
-- Business logic and computed values
-
-**Component conventions:**
-
-- Accept `className?` prop, merge with `clsxm()` from `@/utils/clsxm`
-- Use `forwardRef` when the component wraps a DOM element (React 18 requirement)
-- Import shadcn components from `@/new-app/ui/{component}`
-- Import icons from `lucide-react`
-- Use arrow function components with named exports
-
-### Layout Shell Pattern (lives in the feature, not in shared/layouts)
-
-A layout shell composes shared building blocks for a specific feature page. It belongs in `features/{feature}/components/{feature}-layout.tsx`, not in `shared/layouts/`.
-
-- Import shared building blocks from `@/new-app/shared/layouts`
-- Compose them for the specific feature's needs
-- Can have its own hook if the shell has complex logic
+A layout shell composes shared building blocks for a specific feature page. It belongs in `features/{feature}/components/{feature}-layout.tsx`, **not** in `shared/layouts/`.
 
 ### i18n Pattern
 
@@ -195,66 +132,19 @@ A layout shell composes shared building blocks for a specific feature page. It b
 
 ### Centralized Links
 
-All routes from `shared/links/index.ts`, never hardcoded.
-See [centralized-links.mdc](mdc:.cursor/rules/centralized-links.mdc).
+All routes from `shared/links/index.ts`, never hardcoded. See [centralized-links rule](../../.claude/rules/centralized-links.md).
 
-### Imports
+## Infrastructure-Specific Anti-Patterns
 
-| Import             | From                                    |
-| ------------------ | --------------------------------------- |
-| `clsxm`            | `@/utils/clsxm`                         |
-| shadcn components  | `@/new-app/ui/{component}`              |
-| Icons              | `lucide-react`                          |
-| i18n               | `next-i18next`                          |
-| Centralized routes | `@/new-app/shared/links`                |
-| Providers          | `@/new-app/shared/providers/{provider}` |
-
-## Anti-Patterns
-
-- **Don't put logic in component files** — ALL logic (useState, useEffect, handlers, router, translations) goes in the hook file
 - **Don't skip the hook** — every layout component MUST have a corresponding `use-{component}.ts` hook
-- **Don't hardcode routes** — use `links` from `shared/links`
 - **Don't skip the provider guard** — `useX` must throw outside `<XProvider>`
-- **Don't put provider logic in components** — provider is pure context, logic lives in hooks
-- **Don't import from legacy** — `new-app/` must not import from `src/components/`, `src/api/`, `src/hooks/`
-- **Don't dump all layout components flat in `shared/layouts/`** — each building block gets its own named subfolder with `components/` and `hooks/` directories
+- **Don't dump layout components flat in `shared/layouts/`** — each building block gets its own named subfolder with `components/` and `hooks/` directories
 - **Don't put component files at the module root** — component `.tsx` files go in `{module}/components/`, never directly in `{module}/`
 - **Don't build feature-specific layout shells in `shared/layouts/`** — compose shared building blocks inside the feature's `components/` folder
 - **Don't put component-specific hooks in `shared/hooks/`** — if a hook is only used by one layout component, it lives in `shared/layouts/{component-name}/hooks/`
-- **Don't inline i18n strings** — all user-facing text comes from translation files
-- **Don't use function declarations** — use arrow function components with named exports
+
+For general anti-patterns (logic in components, hardcoded routes, legacy imports, etc.), see [references/shared-conventions.md](references/shared-conventions.md).
 
 ## Code Templates
 
 For complete code templates of each infrastructure deliverable type, read [references/templates.md](references/templates.md).
-
-## Resume After Context Cleanup
-
-If context was cleaned mid-pipeline, restore state before proceeding:
-
-1. **Check for in-progress pipeline:** Look for `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
-2. **Read DECISIONS.md** in the feature folder for accumulated context
-3. **Read the relevant artifact** for this skill's input:
-   - The implementation plan and any scaffolded files in `src/new-app/shared/`
-4. **Resume the observer** if an OBSERVATION-LOG.md exists and is in progress
-5. **Continue from where you left off** — don't restart the skill from scratch
-
-## Next Step
-
-After completing this skill, use the `AskUserQuestion` tool to present the next step options. Include a summary of what was completed in the question text.
-
-Options to present:
-
-- **frontend-testing** — write tests for the infrastructure
-- **generate-feature-doc** — document the implementation
-- **Something else** — do something different
-
-Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
-
-## Context Management
-
-After completing this skill's work, report the **context usage percentage** so the user can decide whether to clean context:
-
-> "{Skill output summary}. Context usage: **{X}%**"
-
-Do NOT recommend cleaning context — just show the percentage. The user will decide.

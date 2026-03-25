@@ -1,0 +1,237 @@
+---
+name: execute-tasks
+description: Execute an implementation plan using autonomous subagents. Reads the plan from plan-implementation, dispatches implementer + reviewer agents per deliverable, handles smart triage. Use when user says "execute the plan", "build it", "start implementing", or after plan-implementation completes.
+---
+
+# Execute Tasks
+
+Execute an implementation plan by dispatching fresh subagents per deliverable with two-stage review (spec compliance, then code quality).
+
+**Why subagents:** Each agent gets a fresh context with only the task spec and relevant conventions. No context pollution, no convention drift. The orchestrator (you) coordinates — agents implement and review.
+
+## Input
+
+The implementation plan markdown file produced by `plan-implementation`. Read it to extract:
+- Ordered list of deliverables with specs
+- Dependency order
+- File paths per deliverable
+- Shared infrastructure items
+
+## Agents
+
+Agents are defined in `.claude/agents/`. Each is dispatched via the Agent tool with task-specific context in the prompt:
+
+| Agent | Purpose | Dispatched when |
+|-------|---------|-----------------|
+| `implementer` | Implements one deliverable | Every deliverable |
+| `spec-reviewer` | Verifies code matches spec | After implementer reports DONE |
+| `quality-reviewer` | Checks conventions from `.claude/rules/` | After spec passes |
+| `test-reviewer` | Checks test quality | After quality passes, if tests exist |
+
+## Rule File Mapping
+
+Determine which `.claude/rules/` files are relevant for each deliverable based on what it touches:
+
+| Deliverable touches | Rules to inject |
+|---------------------|----------------|
+| Components (.tsx) | component-hook-separation, react-components, layout-ownership, accessibility, color-usage, design-system-map |
+| Hooks (use-*.ts) | component-hook-separation, tanstack-query, error-handling |
+| API adapters (*.api.ts) | error-handling, centralized-links |
+| Forms | form-patterns |
+| Domain / pure logic | project-structure |
+| Routes / links | centralized-links |
+| Any new files | project-structure, package-manager |
+
+Build the full paths: `{project-root}/.claude/rules/{rule-name}.md`
+
+If a deliverable touches multiple types (e.g., a hook + component), combine the rule sets and deduplicate.
+
+## Execution Loop
+
+For each deliverable in implementation order:
+
+### Step 1: Prepare
+
+1. Parse the deliverable spec from the plan (full text block)
+2. Identify file paths the deliverable will create or modify
+3. Map deliverable type → relevant rule files (see table above)
+
+### Step 2: Implement
+
+Dispatch the `implementer` agent with the deliverable context:
+
+```
+Agent tool:
+  description: "Implement D{N}: {deliverable name}"
+  prompt: |
+    ## Deliverable Spec
+    {full deliverable spec from plan}
+
+    ## Convention Files to Read
+    {absolute paths to relevant .claude/rules/ files, one per line}
+
+    ## Files to Work With
+    {target file paths}
+```
+
+### Step 3: Handle Implementer Status
+
+Read the agent's response. Handle based on status:
+
+**DONE** → Proceed to Step 4 (spec review).
+
+**DONE_WITH_CONCERNS** → Log the concerns in PROGRESS.md. Proceed to Step 4. The concerns will be evaluated alongside review results.
+
+**NEEDS_CONTEXT** → Stop execution. Report to user what context is missing. Ask how to proceed. Do NOT re-dispatch without new information.
+
+**BLOCKED** → Stop execution. Report to user what's blocking. Present options:
+- Provide more context and retry
+- Skip this deliverable and continue
+- Modify the plan
+- Stop execution
+
+### Step 4: Spec Review
+
+Dispatch the `spec-reviewer` agent:
+
+```
+Agent tool:
+  description: "Review spec compliance for D{N}"
+  prompt: |
+    ## Deliverable Spec
+    {full deliverable spec from plan}
+
+    ## Implementer's Report
+    {the implementer agent's full response}
+
+    ## Files to Review
+    {files the implementer reported as changed}
+```
+
+Handle result:
+- **PASS** → Proceed to Step 5 (quality review)
+- **CONCERNS** → Report concerns to user. Ask: fix and re-review, or accept and continue?
+- **FAIL** → Stop. Report the compliance matrix to user. Ask how to proceed.
+
+### Step 5: Quality Review
+
+Dispatch the `quality-reviewer` agent:
+
+```
+Agent tool:
+  description: "Review code quality for D{N}"
+  prompt: |
+    ## Convention Files to Read
+    {absolute paths to relevant .claude/rules/ files, one per line}
+
+    ## Files to Review
+    {files the implementer changed}
+```
+
+Handle result using **smart triage**:
+- **PASS** → Proceed to Step 6 (test review) or mark complete
+- **CONCERNS** (only TRIVIAL findings) → Auto-fix: dispatch the `implementer` agent with the list of trivial fixes as the task spec. Then mark complete.
+- **FAIL** (ARCHITECTURAL findings) → Report each architectural finding to user. Ask per finding: fix it, or accept it. If user wants fixes, dispatch `implementer` again with the specific fixes as the task spec.
+
+### Step 6: Test Review (optional)
+
+Only run if the deliverable includes test files (check implementer's report for `.test.ts` or `.test.tsx` files).
+
+Dispatch the `test-reviewer` agent:
+
+```
+Agent tool:
+  description: "Review test quality for D{N}"
+  prompt: |
+    ## Convention Files to Read
+    - {path to .claude/rules/component-hook-separation.md}
+
+    ## Test Files to Review
+    {test file paths from implementer's report}
+
+    ## Source Files (for reference)
+    {corresponding source files}
+```
+
+Handle result:
+- **PASS** → Mark deliverable complete
+- **CONCERNS** → Log for user awareness, mark complete
+- **FAIL** → Report to user. Ask: fix tests, or accept?
+
+### Step 7: Mark Complete
+
+Update PROGRESS.md. Move to next deliverable.
+
+## Progress Tracking
+
+Maintain `PROGRESS.md` in the same directory as the implementation plan:
+
+```markdown
+# Execution Progress: {Feature Name}
+**Started**: {date}
+**Plan**: {path to implementation plan}
+**Status**: In Progress | Complete | Blocked
+
+## Deliverables
+
+| # | Deliverable | Status | Impl | Spec | Quality | Tests |
+|---|-------------|--------|------|------|---------|-------|
+| D1 | {name} | DONE | DONE | PASS | PASS | N/A |
+| D2 | {name} | DONE | DONE_WITH_CONCERNS | PASS | CONCERNS (1 trivial, auto-fixed) | PASS |
+| D3 | {name} | IN_PROGRESS | - | - | - | - |
+| D4+ | {name} | PENDING | - | - | - | - |
+
+## Concerns Log
+### D2 — Implementer Concern
+{concern text}
+
+### D2 — Quality: TRIVIAL (auto-fixed)
+{what was fixed}
+
+## Blocked Items
+{empty or description}
+```
+
+Update this file after EVERY deliverable — it's the resume state if context is cleaned.
+
+## Context Management
+
+After every 3 deliverables, check context usage. If above 70%:
+
+> "Completed D1-D3. Context at **X%**. Recommend compacting before continuing — PROGRESS.md has the full state to resume from."
+
+## Continuous Execution
+
+Do NOT ask user permission between deliverables. Run continuously. Only stop for:
+- BLOCKED or NEEDS_CONTEXT from implementer
+- FAIL from spec reviewer
+- ARCHITECTURAL findings from quality reviewer
+- FAIL from test reviewer (if user hasn't said to accept)
+- User interruption
+- Context above 80% (mandatory pause)
+
+## Resuming After Context Clean
+
+If the user says "resume" or "continue executing":
+1. Find the most recent `PROGRESS.md` in `src/new-app/features/*/`
+2. Read the implementation plan it references
+3. Find the first deliverable with status != DONE
+4. Continue the loop from that deliverable
+
+## Edge Cases
+
+**Deliverable depends on a previous one that failed:** Skip it, mark as BLOCKED with reason "depends on D{N} which failed". Continue to the next independent deliverable if one exists.
+
+**All remaining deliverables are blocked:** Stop execution. Report the full status to user.
+
+**Implementer modifies files outside scope:** The spec reviewer should catch this as "extras found". Report to user.
+
+## Rules
+
+- Never modify the implementation plan — it's the source of truth
+- Never skip the spec review — every deliverable gets reviewed
+- Quality review only runs after spec passes
+- Test review only runs when test files exist
+- Always update PROGRESS.md before moving to the next deliverable
+- Always ask user before committing (respect existing user feedback)
+- Run `pnpm build` before any commit (respect existing user feedback)

@@ -1,15 +1,15 @@
 ---
 name: brainstorm
-description: Explore a feature idea before writing a PRD. Adaptive depth — quick for clear features, deep for complex/ambiguous ones. Use when the user has a vague idea, wants to compare approaches, or says "brainstorm", "explore", "think through", "what are my options".
+description: Explore a feature idea before writing a PRD. Adaptive depth — quick for clear features, deep for complex/ambiguous ones, grill for stress-testing formed plans. Use when the user has a vague idea, wants to compare approaches, says "brainstorm", "explore", "think through", "what are my options", "grill me", "stress-test", or "challenge this".
 ---
 
 # Brainstorm
 
-Explore a feature idea through structured questions before committing to a PRD. Adaptive depth based on complexity signals.
+Explore a feature idea through structured questions before committing to a PRD. Three modes based on context: Quick (clear ideas), Deep (complex/ambiguous), Grill (stress-test a formed plan).
 
-**When to use:** Before `generate-prd`. When the idea is vague, has multiple valid approaches, or the user wants to think through options before writing requirements.
+**When to use:** Before `generate-prd`. When the idea is vague, has multiple valid approaches, the user wants to think through options, or the user has a formed plan they want challenged.
 
-**Not the same as `prd-clarifier`:** Brainstorm operates on a raw idea with no document yet. `prd-clarifier` refines an existing PRD.
+**Not the same as `prd-clarifier`:** Brainstorm operates on a raw idea or pre-PRD plan with no document yet. `prd-clarifier` refines an existing PRD.
 
 ## Complexity Signals
 
@@ -24,6 +24,8 @@ Count how many of these apply to the user's idea:
 7. Feature has significant cross-feature impact (touches shared infrastructure)
 
 **0-1 signals → Quick mode. 2+ signals → Deep mode.**
+
+**Grill mode** is triggered independently of complexity signals (see below).
 
 ## Quick Mode (5-10 min)
 
@@ -48,6 +50,31 @@ Count how many of these apply to the user's idea:
 6. Save `DESIGN.md`
 7. Hand off to `generate-prd`
 
+## Grill Mode (stress-test a formed plan)
+
+**Triggered when:**
+- User says "grill me", "stress-test", "challenge this", "poke holes"
+- User arrives with a fully formed plan or design (not a vague idea)
+- An existing `DESIGN.md` is present and user wants it validated
+
+**Claude's role:** Devil's advocate. You are not exploring — you are **challenging**. Walk down each branch of the decision tree, resolving dependencies between decisions one by one.
+
+1. Identify all decisions in the user's plan (architecture, UX, data flow, edge cases, trade-offs)
+2. For each decision, **ask one challenging question at a time**:
+   - "You chose X — why not Y?" or "What happens when Z?"
+   - **Provide your recommended answer** with each question — the user can agree, disagree, or refine
+   - **If a question can be answered by reading the codebase**, read the code instead of asking — then present what you found and whether it supports or contradicts the plan
+3. Adapt based on answers — if the user's reasoning is solid, move on; if it's weak, dig deeper into that branch
+4. After all branches are resolved, summarize what held up and what changed
+5. Save `DESIGN.md` (stress-tested version)
+6. Hand off to `generate-prd`
+
+**Question style for Grill mode:**
+- Adversarial, not exploratory: "What breaks if...?" not "What about...?"
+- Always include your recommendation: "I'd suggest X because... — do you agree?"
+- Reference existing code when relevant: "I see the codebase does Y in `file.ts` — your plan assumes Z, which contradicts this"
+- Resolve dependencies: if decision A affects decision B, grill A first before moving to B
+
 ## Mode Escalation
 
 Start in Quick mode by default. After the first 2 answers, re-evaluate complexity signals. If the answers reveal 2+ signals that weren't apparent from the initial idea, escalate to Deep mode and tell the user:
@@ -69,7 +96,7 @@ Save to `.claude/pipeline/{feature}/DESIGN.md`:
 ```markdown
 # Design Decisions: {Feature Name}
 **Date**: {date}
-**Mode**: Quick / Deep
+**Mode**: Quick / Deep / Grill
 **Complexity signals**: {list of signals that applied}
 
 ## Problem
@@ -81,6 +108,7 @@ Save to `.claude/pipeline/{feature}/DESIGN.md`:
 ## Alternatives Considered
 {For Deep mode: 2-3 alternatives with why they were rejected}
 {For Quick mode: "Quick mode — single approach recommended"}
+{For Grill mode: decisions that were challenged and either held up or changed}
 
 ## Key Decisions
 1. {Decision that should carry into the PRD}

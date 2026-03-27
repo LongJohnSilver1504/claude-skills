@@ -26,11 +26,15 @@ For component catalog, props, variants, and installation examples, **use the sha
 pnpm dlx shadcn@latest add <component-name>
 ```
 
-**Post-install fix (REQUIRED):** The shadcn CLI generates imports with `from "src/lib/utils"` instead of the configured alias. Always run after every `shadcn add`:
+**Post-install fixes (REQUIRED after every `shadcn add`):**
+
+1. **Fix `cn` import path** — the CLI generates `from "src/lib/utils"` instead of the configured alias:
 
 ```bash
 grep -rl 'from "src/lib/utils"' src/new-app/ui/ | xargs sed -i '' 's|from "src/lib/utils"|from "@/utils/clsxm"|g'
 ```
+
+2. **Add `forwardRef` to components** — shadcn/ui targets React 19 where `forwardRef` is no longer needed, but this project uses React 18. After installing, check the generated file and wrap any component that forwards a ref to a native element or Radix primitive with `React.forwardRef`. Add `displayName` and spread `...rest` props on every converted component.
 
 ## Import Path Rules
 

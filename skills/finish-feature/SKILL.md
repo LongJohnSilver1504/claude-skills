@@ -102,10 +102,6 @@ After committing or creating a PR:
 1. Clean up pipeline artifacts if they exist:
    - `.claude/pipeline/{feature}/DESIGN.md` (brainstorm output)
    - Any `*-implementation-plan.md` execution PROGRESS.md
-   - Keep: `OBSERVATION-LOG.md`, `RETRO.md` (retrospective artifacts)
-
-2. Update the feature-flow `PROGRESS.md` if one exists:
-   - Mark "finish-feature" as complete
 
 ## Rules
 

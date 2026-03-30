@@ -128,12 +128,10 @@ Save as `{prd-basename}-implementation-plan.md` in the same directory as the sou
 
 If context was cleaned mid-pipeline, restore state before proceeding:
 
-1. **Check for in-progress pipeline:** Look for `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
-2. **Read DECISIONS.md** in the feature folder for accumulated context
-3. **Read the relevant artifact** for this skill's input:
+1. **Read DECISIONS.md** in the feature folder for accumulated context
+2. **Read the relevant artifact** for this skill's input:
    - The PRD, UX spec, and build-order prompts files
-4. **Resume the observer** if an OBSERVATION-LOG.md exists and is in progress
-5. **Continue from where you left off** — don't restart the skill from scratch
+3. **Continue from where you left off** — don't restart the skill from scratch
 
 ## Next Step
 

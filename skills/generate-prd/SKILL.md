@@ -117,12 +117,10 @@ Once you have generated the complete PRD (sections 1-7), proceed to the Next Ste
 
 If context was cleaned mid-pipeline, restore state before proceeding:
 
-1. **Check for in-progress pipeline:** Look for `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
-2. **Read DECISIONS.md** in the feature folder for accumulated context
-3. **Read the relevant artifact** for this skill's input:
+1. **Read DECISIONS.md** in the feature folder for accumulated context
+2. **Read the relevant artifact** for this skill's input:
    - The feature folder in `src/new-app/features/{feature}/` for existing PRD drafts
-4. **Resume the observer** if an OBSERVATION-LOG.md exists and is in progress
-5. **Continue from where you left off** — don't restart the skill from scratch
+3. **Continue from where you left off** — don't restart the skill from scratch
 
 ## Next Step
 
@@ -130,7 +128,6 @@ After completing this skill, use the `AskUserQuestion` tool to present the next 
 
 Options to present:
 
-- **feature-retrospective** — start pipeline observer to track requirements
 - **prd-clarifier** — refine requirements through structured questions
 - **prd-to-ux** — skip clarification, go straight to UX spec
 - **Something else** — do something different

@@ -1,12 +1,12 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 29 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 26 skills that take you from a rough idea to a merged PR.
 
 ## What This Is
 
 Claude Skills is a composable skill library that turns Claude Code into a structured development partner. Instead of ad-hoc prompting, each skill enforces a specific workflow — brainstorming before coding, specs before implementation, tests before shipping.
 
-The skills connect into a **12-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX, planning implementation, autonomous execution with subagents, testing, documentation, retrospective, and finalization.
+The skills connect into an **11-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX, planning implementation, autonomous execution with subagents, testing, documentation, and finalization.
 
 **Core principles:**
 - **Design before code** — No implementation without approved specs
@@ -23,21 +23,69 @@ brainstorm(0) --> generate-prd(1) --> prd-clarifier(2) --> prd-to-ux(3) --> gene
      v                                                                            v
                     ux-to-prompt(5) --> plan-implementation(6) --> execute-tasks(7)
                                                                         |
-     feature-retrospective(10) <-- generate-feature-doc(9) <-- frontend-testing(8)
-                |
-                v
-         finish-feature(11)
+                                        generate-feature-doc(9) <-- frontend-testing(8)
+                                                    |
+                                                    v
+                                             finish-feature(10)
 ```
 
 | Phase | Steps | Mode |
 |-------|-------|------|
 | Explore & Design | 0-6 | Human-in-the-loop (you drive design decisions) |
 | Build | 7 | Autonomous (subagents execute, smart triage on findings) |
-| Validate & Ship | 8-11 | Human-in-the-loop (testing, docs, retro, merge) |
+| Validate & Ship | 8-10 | Human-in-the-loop (testing, docs, merge) |
 
-`/feature-retrospective` runs as an observer alongside the entire pipeline, tracking patterns and problems for the final retro.
+Invoke individual skills directly, or follow the pipeline order for a full feature build.
 
-Use `/feature-flow` to orchestrate the full pipeline, or invoke individual skills directly.
+### How Steps Connect
+
+Each skill produces an artifact that the next skill consumes:
+
+| Step | Skill | Produces | Consumed by |
+|------|-------|----------|-------------|
+| 0 | `/brainstorm` | Validated idea + approach | `/generate-prd` |
+| 1 | `/generate-prd` | `PRD.md` (requirements doc) | `/prd-clarifier` |
+| 2 | `/prd-clarifier` | Refined PRD (ambiguities resolved) | `/prd-to-ux` |
+| 3 | `/prd-to-ux` | `UX-spec.md` (screens, flows, states) | `/generate-test-plan`, `/ux-to-prompt` |
+| 4 | `/generate-test-plan` | Test matrix (interactions, states, edge cases) | `/frontend-testing` (later) |
+| 5 | `/ux-to-prompt` | `build-prompts.md` (ordered coding prompts) | `/plan-implementation` |
+| 6 | `/plan-implementation` | Implementation plan (ordered deliverables) | `/execute-tasks` |
+| 7 | `/execute-tasks` | Working code (built by agents) | `/frontend-testing` |
+| 8 | `/frontend-testing` | Test files | `/generate-feature-doc` |
+| 9 | `/generate-feature-doc` | `README.md` for the feature | `/finish-feature` |
+| 10 | `/finish-feature` | Commit / PR / merge | — |
+
+### How Execution Works (Step 7)
+
+`/execute-tasks` is the autonomous build phase. It reads the implementation plan from step 6 and dispatches **subagents** — each agent gets a fresh context with only its task spec and relevant convention files.
+
+```
+execute-tasks (orchestrator)
+  │
+  ├── For each deliverable in the plan:
+  │     │
+  │     ├── 1. Implementer agent ──── builds the code
+  │     │        uses /create-feature (domain modules)
+  │     │        uses /create-infrastructure (shared plumbing)
+  │     │
+  │     ├── 2. Spec reviewer agent ── verifies code matches the spec
+  │     │
+  │     ├── 3. Quality reviewer agent ── checks project conventions
+  │     │        reads .claude/rules/ files
+  │     │
+  │     └── 4. Test reviewer agent ── checks test quality (if tests exist)
+  │
+  └── Build verification ──── runs pnpm build to catch type errors
+```
+
+**How `/create-feature` and `/create-infrastructure` fit in:** The implementation plan (step 6) classifies each deliverable as either a **domain feature** (entities, API, CRUD) or **shared infrastructure** (providers, hooks, layouts). When the implementer agent builds a deliverable, it follows the scaffolding patterns from `/create-feature` or `/create-infrastructure` depending on the type.
+
+**Agent model selection:** Simple deliverables (1-2 files, clear spec) use a fast model. Complex ones (3+ files, integration concerns) use a more capable model. If an agent gets stuck, it's automatically re-dispatched with a stronger model before escalating to you.
+
+**Review triage:**
+- **PASS** — move to the next deliverable
+- **TRIVIAL findings** — auto-fixed by re-dispatching the implementer
+- **ARCHITECTURAL findings** — reported to you for a decision (fix or accept)
 
 ## Skill Catalog
 
@@ -79,14 +127,6 @@ Use `/feature-flow` to orchestrate the full pipeline, or invoke individual skill
 | `/linear-ticket` | Create or improve Linear tickets with proper documentation |
 | `/git-commit` | Create commits following conventional commit style with descriptive bodies |
 | `/finish-feature` | Finalize a feature — run tests, build, present commit/PR/discard options |
-
-### Observe & Learn
-
-| Skill | What it does |
-|-------|-------------|
-| `/feature-retrospective` | Track pipeline runs, detect patterns, facilitate retrospective discussion |
-| `/learn-from-session` | Capture reusable patterns and conventions into persistent memory |
-| `/feature-flow` | Orchestrate the full pipeline from idea to merge |
 
 ### Reference
 
@@ -158,13 +198,26 @@ cp ~/.claude/skills-repo/rules/component-hook-separation.md .claude/rules/
 cp ~/.claude/skills-repo/rules/error-handling.md .claude/rules/
 ```
 
+## Upstream Skills
+
+Some skills were adapted from external sources. To pull updates, check the original repos:
+
+| Skill | Source |
+|-------|--------|
+| `/vercel-react-best-practices` | [Vercel Engineering blog](https://vercel.com/blog) |
+| `/vercel-composition-patterns` | [Vercel Engineering blog](https://vercel.com/blog) |
+| `/web-design-guidelines` | [Vercel Web Interface Guidelines](https://interfaces.rauno.me) |
+| `/tailwindcss-fundamentals-v4` | [Tailwind CSS v4 docs](https://tailwindcss.com/docs) |
+
+These skills are snapshots — they don't auto-update. When a new version of Tailwind or React ships, review the source and update the skill content manually.
+
 ## Customization
 
 These skills were built for a production React/Next.js/TypeScript project. To adapt them to your stack:
 
 1. **Fork the repo** and modify skill instructions to match your conventions
 2. **Swap rule files** — replace the example rules with your project's patterns
-3. **Adjust the pipeline** — not every project needs all 12 steps; remove or reorder skills in `/feature-flow`
+3. **Adjust the pipeline** — not every project needs all steps; remove or reorder as needed
 4. **Add your own skills** — follow the pattern in any `skills/*/SKILL.md` file
 
 Each skill is self-contained in its directory with a `SKILL.md` file and optional `references/` for templates and examples.

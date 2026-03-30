@@ -155,7 +155,6 @@ rm -f .claude/pipeline/{feature-name}/DESIGN.md
 
 > **Important:** `PRD-*.md` files (e.g., `PRD-v2.md`, `PRD-enrichment.md`, `PRD-bay-status-card.md`) are iteration artifacts from the pipeline. The original `PRD.md` is the authoritative requirements reference. Sub-PRDs served their purpose during implementation and are now captured in the README.
 
-> **Note:** RETRO.md and OBSERVATION-LOG.md are managed by the `feature-retrospective` skill and stored separately in `.claude/pipeline/{feature}/`.
 
 ## Commit
 
@@ -165,12 +164,10 @@ After completing documentation generation and artifact cleanup, invoke the `git-
 
 If context was cleaned mid-pipeline, restore state before proceeding:
 
-1. **Check for in-progress pipeline:** Look for `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
-2. **Read DECISIONS.md** in the feature folder for accumulated context
-3. **Read the relevant artifact** for this skill's input:
+1. **Read DECISIONS.md** in the feature folder for accumulated context
+2. **Read the relevant artifact** for this skill's input:
    - The feature code in `src/new-app/features/{feature}/` and any existing README.md draft
-4. **Resume the observer** if an OBSERVATION-LOG.md exists and is in progress
-5. **Continue from where you left off** — don't restart the skill from scratch
+3. **Continue from where you left off** — don't restart the skill from scratch
 
 ## Next Step
 
@@ -178,7 +175,7 @@ After the commit, use the `AskUserQuestion` tool to present the next step option
 
 Options to present:
 
-- **feature-retrospective** — review what went well and what to improve
+- **finish-feature** — finalize, commit, or create PR
 - **Something else** — do something different
 
 Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.

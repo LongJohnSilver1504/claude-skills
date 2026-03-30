@@ -15,8 +15,6 @@ Interactive guide for the TruckBays feature development pipeline. Explains each 
 generate-prd → prd-clarifier → prd-to-ux → generate-test-plan → ux-to-prompt → plan-implementation → create-feature / create-infrastructure → frontend-testing → generate-feature-doc
 ```
 
-**Observer:** `/feature-retrospective` runs alongside the entire pipeline (optional but recommended).
-
 ## Pipeline Stages
 
 | # | Skill | Input | Output | Can Skip? |
@@ -63,11 +61,6 @@ Cleaned up by `/generate-feature-doc`:
 - `*-implementation-plan.md`
 - `*-test-plan.md`
 
-### Pipeline tracking
-- `.claude/pipeline/{feature}/OBSERVATION-LOG.md` — observation log
-- `.claude/pipeline/{feature}/RETRO.md` — retrospective
-- `src/new-app/RETRO.md` — global tracker
-
 ### Accumulated context
 - `DECISIONS.md` — in feature folder, appended by each skill, deleted after docs
 
@@ -78,7 +71,6 @@ When you clean context mid-pipeline:
 1. **Tell Claude which feature you're working on** — e.g., "I'm working on reservation-details"
 2. **Invoke the skill you need** — Claude will read the pipeline state automatically
 3. **Each skill checks for:**
-   - In-progress `OBSERVATION-LOG.md` → resumes observer
    - Existing `DECISIONS.md` → restores context
    - Previous artifacts → continues from where you left off
 
@@ -91,9 +83,6 @@ A: No. The pipeline is a guide, not a mandate. Invoke whichever skill fits your 
 
 **Q: What if I want to add requirements mid-pipeline?**
 A: Just tell Claude. The observer logs it. The retrospective will analyze whether it should have been caught earlier.
-
-**Q: How do I start the observer?**
-A: Say "observe" or "track this" at any point, or invoke `/feature-retrospective`.
 
 **Q: Where do I find the skills index?**
 A: `.claude/SKILLS-INDEX.md` has a use-case → skill mapping.

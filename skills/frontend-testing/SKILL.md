@@ -393,12 +393,10 @@ export const createApiResponse = (overrides: Record<string, unknown> = {}) => ({
 
 If context was cleaned mid-pipeline, restore state before proceeding:
 
-1. **Check for in-progress pipeline:** Look for `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
-2. **Read DECISIONS.md** in the feature folder for accumulated context
-3. **Read the relevant artifact** for this skill's input:
+1. **Read DECISIONS.md** in the feature folder for accumulated context
+2. **Read the relevant artifact** for this skill's input:
    - The feature code and any existing test files in the feature folder
-4. **Resume the observer** if an OBSERVATION-LOG.md exists and is in progress
-5. **Continue from where you left off** — don't restart the skill from scratch
+3. **Continue from where you left off** — don't restart the skill from scratch
 
 ## Next Step
 

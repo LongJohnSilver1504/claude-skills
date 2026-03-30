@@ -107,14 +107,14 @@ These skills provide domain knowledge and are typically invoked by other skills,
 ### As a Claude Code Plugin
 
 ```bash
-claude plugin add daher/claude-skills
+claude plugin add LongJohnSilver1504/claude-skills
 ```
 
 ### Manual (Clone + Symlink)
 
 ```bash
 # Clone the repo
-git clone git@github.com:daher/claude-skills.git ~/.claude/skills-repo
+git clone git@github.com:LongJohnSilver1504/claude-skills.git ~/.claude/skills-repo
 
 # Symlink all skills
 for skill in ~/.claude/skills-repo/skills/*/; do
@@ -127,7 +127,7 @@ done
 Only want specific skills? Symlink individual ones:
 
 ```bash
-git clone git@github.com:daher/claude-skills.git ~/.claude/skills-repo
+git clone git@github.com:LongJohnSilver1504/claude-skills.git ~/.claude/skills-repo
 
 # Pick the skills you want
 ln -sf ~/.claude/skills-repo/skills/brainstorm ~/.claude/skills/brainstorm

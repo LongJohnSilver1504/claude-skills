@@ -1,11 +1,11 @@
 ---
 name: feature-flow
-description: Orchestrate the full feature development pipeline from idea to merge. Guides the user through brainstorming, PRD, design, planning, autonomous execution, testing, documentation, retrospective, and finalization. Use when user says "start a feature", "new feature pipeline", "feature flow", "where was I", or wants to resume an interrupted feature workflow.
+description: Orchestrate the full feature development pipeline from idea to merge. Guides the user through brainstorming, PRD, design, planning, autonomous execution (with branch creation, code review, user flow verification), documentation, and finalization. Use when user says "start a feature", "new feature pipeline", "feature flow", "where was I", or wants to resume an interrupted feature workflow.
 ---
 
 # Feature Flow
 
-Orchestrate the full feature pipeline: idea → brainstorm → PRD → design → plan → build → test → document → retro → finish.
+Orchestrate the full feature pipeline: idea → brainstorm → PRD → clarify → UX → test-plan → prompts → plan → execute → doc → finish.
 
 You own the flow between skills. Individual skills do their job; you track progress, handle transitions, and manage state.
 
@@ -15,22 +15,24 @@ You own the flow between skills. Individual skills do their job; you track progr
 |------|-------|-------|--------|----------|
 | 0 | `brainstorm` | Feature idea | `DESIGN.md` | Human-in-the-loop |
 | 1 | `generate-prd` | Idea + DESIGN.md | `PRD.md` | Human-in-the-loop |
-| 2 | `prd-clarifier` | `PRD.md` | `*-clarification.md` | Human-in-the-loop |
-| 3 | `prd-to-ux` | PRD + clarifications | UX spec | Human-in-the-loop |
+| 2 | `prd-clarifier` | `PRD.md` | `PRD.md` (updated in-place) | Human-in-the-loop |
+| 3 | `prd-to-ux` | PRD | UX spec | Human-in-the-loop |
 | 4 | `generate-test-plan` | UX spec | Test plan | Human-in-the-loop |
 | 5 | `ux-to-prompt` | UX spec | Build prompts | Human-in-the-loop |
 | 6 | `plan-implementation` | All design artifacts | Implementation plan | Human-in-the-loop |
-| 7 | `execute-tasks` | Implementation plan | Working code | Autonomous (smart triage) |
-| 8 | `frontend-testing` | Working code | Test files | Human-in-the-loop |
-| 9 | `generate-feature-doc` | All artifacts + code | README.md | Human-in-the-loop |
-| 10 | `feature-retrospective` | All artifacts | RETRO.md | Human-in-the-loop |
-| 11 | `finish-feature` | Complete feature | Commit / PR | Human-in-the-loop |
+| 7 | `execute-tasks` | Implementation plan | Working code (branch, tests, code review, user flow verification) | Autonomous (smart triage) |
+| 8 | `generate-feature-doc` | All artifacts + code | README.md | Human-in-the-loop |
+| 9 | `finish-feature` | Complete feature | Commit / PR | Human-in-the-loop |
 
 All steps are optional. The user can skip, reorder, or stop at any point.
 
 **Step 0 recommendation:** If the user's idea is clear and specific, suggest skipping to Step 1. If it's vague or has multiple approaches, recommend starting with brainstorm.
 
-**Step 7 is autonomous:** `execute-tasks` dispatches subagents and runs continuously. It only stops for blockers, architectural concerns, or user interruption. After Step 7, context will likely be high — recommend compacting before Step 8.
+**Step 2 note:** The prd-clarifier updates PRD.md directly — no separate clarification file. All downstream steps read the single PRD.
+
+**Step 7 is autonomous:** `execute-tasks` creates a feature branch, dispatches subagents, runs build verification, holistic code review, and user flow verification. It only stops for blockers, architectural concerns, or user interruption. After Step 7, context will likely be high — recommend compacting before Step 8.
+
+**Testing happens inside Step 7:** The implementer writes tests per deliverable, the test-reviewer checks quality. No separate testing step needed.
 
 ## State Tracking
 
@@ -41,20 +43,20 @@ Maintain a `PROGRESS.md` file in the feature directory:
 **Started**: [date]
 **Current step**: [step number and name]
 **Directory**: src/new-app/features/[feature-name]/
+**Branch**: [created at Step 7, e.g., feat/feature-name]
+**Base Branch**: [branch before checkout, e.g., main]
 
 ## Completed Steps
 - [ ] Step 0: Brainstorm → DESIGN.md
 - [ ] Step 1: PRD → PRD.md
-- [ ] Step 2: Clarification
+- [ ] Step 2: Clarification → PRD.md updated
 - [ ] Step 3: UX spec
 - [ ] Step 4: Test plan
 - [ ] Step 5: Build prompts
 - [ ] Step 6: Implementation plan
-- [ ] Step 7: Execution (autonomous)
-- [ ] Step 8: Testing
-- [ ] Step 9: Documentation
-- [ ] Step 10: Retrospective
-- [ ] Step 11: Finish
+- [ ] Step 7: Execution (autonomous — branch creation, implementation, code review, user flow verification)
+- [ ] Step 8: Documentation
+- [ ] Step 9: Finish
 
 ## Decisions
 [Key decisions accumulated across steps — append after each step]
@@ -91,13 +93,13 @@ Always offer these options:
 
 **After Step 6 (plan-implementation):** This is the shift from human-driven design to autonomous execution. Inform the user:
 
-> "Implementation plan ready. Step 7 (`execute-tasks`) will dispatch autonomous agents to build each deliverable. You'll only be interrupted for blockers or architectural decisions. Ready to start?"
+> "Implementation plan ready. I'll create branch `feat/{feature-name}` from `{current-branch}` before starting autonomous execution. Step 7 (`execute-tasks`) will then dispatch agents on this branch. You'll only be interrupted for blockers or architectural decisions. Ready to start?"
 
 **After Step 7 (execute-tasks):** Context will likely be high. Recommend compacting:
 
 > "Execution complete. Context at **X%**. Recommend compacting before continuing — PROGRESS.md and the execution log have the full state."
 
-**After Step 10 (retrospective):** Suggest `finish-feature` to close out.
+**After Step 8 (generate-feature-doc):** Suggest `finish-feature` to close out.
 
 ## Resuming an Interrupted Flow
 
@@ -130,5 +132,5 @@ Guidelines:
 - Always update `PROGRESS.md` before presenting next steps
 - If the user asks "where was I" or "resume", check for `PROGRESS.md` files
 - Individual skills must NOT contain pipeline logic — that's your job
-- Always offer `feature-retrospective` when starting a new pipeline (per user feedback)
 - After Step 7, always mention context usage and recommend compacting if above 70%
+- `feature-retrospective` and `frontend-testing` are available as standalone skills but not in the default pipeline

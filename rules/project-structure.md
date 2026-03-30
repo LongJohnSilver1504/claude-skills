@@ -69,8 +69,8 @@ src/
 
 ## Related Rules
 
-- [form-patterns.mdc](mdc:.cursor/rules/form-patterns.mdc) — Form conventions
-- [error-handling.mdc](mdc:.cursor/rules/error-handling.mdc) — Error flow and AppError
-- [tanstack-query.mdc](mdc:.cursor/rules/tanstack-query.mdc) — Query/mutation patterns
-- [centralized-links.mdc](mdc:.cursor/rules/centralized-links.mdc) — Route and endpoint management
-- [package-manager.mdc](mdc:.cursor/rules/package-manager.mdc) — pnpm enforcement
+- [form-patterns.md](form-patterns.md) — Form conventions
+- [error-handling.md](error-handling.md) — Error flow and AppError
+- [tanstack-query.md](tanstack-query.md) — Query/mutation patterns
+- [centralized-links.md](centralized-links.md) — Route and endpoint management
+- [package-manager.md](package-manager.md) — pnpm enforcement

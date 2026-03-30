@@ -36,16 +36,16 @@ If tests or build fail, report the failures and ask the user:
 - **Continue anyway** — proceed to Step 2 despite failures
 - **Stop** — abort finalization
 
-### Step 2: Check Pipeline State
+### Step 2: Read Branch Context
 
-Look for active pipeline artifacts:
+Look for PROGRESS.md files to determine the base branch:
 
-1. Check `.claude/pipeline/{feature}/OBSERVATION-LOG.md` — if it exists and has entries, the feature-retrospective observer was active
-2. Check for `PROGRESS.md` in the feature directory
+1. Check for `PROGRESS.md` in the feature directory (`src/new-app/features/{feature}/`)
+2. Read the `**Base Branch**` field if it exists
+3. If found, use it as the target for PR creation and merge operations
+4. If not found, ask the user which branch to target
 
-If the observer was active, suggest running `feature-retrospective` before finalizing:
-
-> "The pipeline observer has entries for this feature. Run retrospective before finishing?"
+Also check `.claude/pipeline/{feature}/` for any pipeline artifacts.
 
 ### Step 3: Present Options
 
@@ -78,10 +78,11 @@ Use AskUserQuestion to present:
    ```bash
    git push -u origin {branch-name}
    ```
-3. Create PR:
+3. Create PR targeting the base branch (from Step 2):
    ```bash
-   gh pr create --title "{title}" --body "{body}"
+   gh pr create --base {base-branch} --title "{title}" --body "{body}"
    ```
+   - Base: from PROGRESS.md `Base Branch` field, or ask user if not found
    - Title: short, under 70 chars, describes the feature
    - Body: summary from the implementation plan + PROGRESS.md, test plan checklist
 4. Return the PR URL to the user

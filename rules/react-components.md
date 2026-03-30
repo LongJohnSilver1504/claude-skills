@@ -117,5 +117,5 @@ if (href) {
 
 ## Related Rules
 
-- [project-structure.mdc](mdc:.cursor/rules/project-structure.mdc) — Where components live
-- [form-patterns.mdc](mdc:.cursor/rules/form-patterns.mdc) — Form component patterns
+- [project-structure.md](project-structure.md) — Where components live
+- [form-patterns.md](form-patterns.md) — Form component patterns

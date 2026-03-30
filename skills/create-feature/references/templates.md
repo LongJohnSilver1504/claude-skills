@@ -126,7 +126,7 @@ Now: `api/{feature}.schemas.ts` defines the schema, transforms, AND exports infe
 
 ### 2.3 API Adapter (`api/{feature}.api.ts`)
 
-> **Rule:** All endpoint paths in a centralized constant object. See [centralized-links.mdc](mdc:.cursor/rules/centralized-links.mdc).
+> **Rule:** All endpoint paths in a centralized constant object. See `centralized-links.md` in your project's `.claude/rules/`.
 
 ```tsx
 import { client, handleApiError, parseResponse, paginatedResponseSchema } from '@/new-app/shared/api'

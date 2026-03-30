@@ -85,6 +85,29 @@ If found: extract a shared hook/utility as a new deliverable, insert it before t
 
 This prevents DRY violations that are expensive to fix later.
 
+### Step 4.7: Enforce Concrete Specs (No Placeholders)
+
+Before writing the plan, review every deliverable spec for vague instructions. Every spec must have concrete, specific instructions — never placeholders.
+
+**Placeholder** (reject these):
+- "Add appropriate error handling"
+- "Implement the remaining methods"
+- "Add validation as needed"
+- "Style the component appropriately"
+
+**Concrete** (require these):
+- "Add `handleApiError` with status 404 mapped to `RESERVATION_NOT_FOUND`"
+- "Create `useReservationList` hook that calls `reservationApi.list()`, returns `{ data, isPending, error }`"
+- "Add Zod schema: `z.object({ phone: z.string().min(10) })`"
+- "Use Card with `bg-card`, `text-card-foreground`, `rounded-lg border`"
+
+Every spec item must include:
+- **Exact file paths** to create or modify
+- **What it produces** (a function, a component, a hook, a type)
+- **How to verify** (test command, or "file compiles")
+
+If you cannot make a spec item concrete, it needs to be broken down further or clarified with the PRD/UX spec.
+
 ### Step 5: Write the Plan
 
 Save as `{prd-basename}-implementation-plan.md` in the same directory as the source PRD. Include: source document paths, feature summary table, classification table, shared infrastructure, implementation order, and all spec blocks.
@@ -133,8 +156,8 @@ Options to present:
 
 **Skill routing:**
 
-- For domain features: invoke `create-feature` (`.cursor/skills/create-feature/SKILL.md`) with the feature spec
-- For infrastructure deliverables: invoke `create-infrastructure` (`.cursor/skills/create-infrastructure/SKILL.md`) with the deliverable spec
+- For domain features: invoke `/create-feature` with the feature spec
+- For infrastructure deliverables: invoke `/create-infrastructure` with the deliverable spec
 
 Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
 

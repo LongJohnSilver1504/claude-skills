@@ -1,7 +1,7 @@
 
 ---
 
-## 2. `~/.cursor/skills/create-feature/examples/payments.md`
+## Example: payments.md
 
 # Example: Payments Feature
 

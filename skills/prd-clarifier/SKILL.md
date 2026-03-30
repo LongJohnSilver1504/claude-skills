@@ -13,24 +13,12 @@ Systematically improve a PRD by asking targeted questions that uncover ambiguiti
 1. Read the PRD
 2. Ask user for session depth
 3. Ask questions one at a time, adapting based on answers
-4. Save all Q&A to a tracking file next to the PRD
-5. Summarize clarifications and offer to update the PRD
+4. Track Q&A as you go
+5. **Update PRD.md directly** with all clarifications — no separate file
 
 ## Step 1: Setup
 
-Find the PRD file. Create a tracking document in the **same directory**:
-
-- PRD is `auth-feature.md` → create `auth-feature-clarification.md`
-
-Initialize it:
-
-```markdown
-# PRD Clarification Session
-**Source**: [filename]
-**Depth**: [pending]
-**Progress**: 0/[pending]
----
-```
+Find the PRD file. You will update it directly at the end — no separate clarification file.
 
 ## Step 2: Ask Depth
 
@@ -70,42 +58,35 @@ Analyze the PRD complexity (features, integrations, edge cases) and recommend a 
 
 ### After each answer
 
-Append to the tracking document:
+Keep a running list of clarifications to merge into the PRD at the end. No separate tracking file — you will edit PRD.md directly in Step 4.
 
-```markdown
-## Q[N] — [Category]
-**Gap**: [what's ambiguous]
-**Question**: [what you asked]
-**Answer**: [what they said]
-**Clarified**: [how this resolves the gap]
----
-```
-
-## Step 4: Wrap Up
+## Step 4: Merge Into PRD
 
 After all questions:
 
-1. Summarize key clarifications (what changed)
-2. List remaining ambiguities that surfaced but weren't resolved
-3. Suggest priority order for unresolved items
-4. Offer to update the PRD with clarified requirements
-5. Use the `AskUserQuestion` tool to present next step options:
+1. **Update PRD.md directly** — merge all clarifications into the relevant sections:
+   - Add missing edge cases to the requirements section
+   - Refine vague language with concrete acceptance criteria
+   - Add resolved ambiguities where they belong in the document
+   - Add a `## Clarifications` section at the end listing key decisions made during this session
+2. Summarize what changed for the user
+3. List remaining ambiguities that weren't resolved (if any)
+4. Use the `AskUserQuestion` tool to present next step options:
 
-- **feature-retrospective** — start pipeline observer to track requirements
 - **prd-to-ux** — translate requirements into UX specification
 - **Something else** — do something different
 
 Do NOT present numbered text options. Always use the `AskUserQuestion` tool for skill transitions.
 
+**Important:** PRD.md is now the single source of truth. Do not create a separate `*-clarification.md` file. All downstream steps (prd-to-ux, plan-implementation) read only the PRD.
+
 ## Resume After Context Cleanup
 
 If context was cleaned mid-pipeline:
 
-1. Check for in-progress pipeline: `.claude/pipeline/*/OBSERVATION-LOG.md` with `Status: In Progress`
-2. Read DECISIONS.md in the feature folder
-3. Read the PRD and any existing `*-clarification.md` tracking document
-4. Resume the observer if an OBSERVATION-LOG.md exists and is in progress
-5. Continue from where you left off — don't restart
+1. Read the PRD (it may already contain some clarifications from a partial session)
+2. Check the `## Clarifications` section at the end of the PRD for what's already been resolved
+3. Continue from where you left off — don't repeat questions already answered
 
 ## Context Management
 

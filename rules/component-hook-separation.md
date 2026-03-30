@@ -108,6 +108,6 @@ A **standalone dialog component** that owns its own trigger via `DialogTrigger` 
 
 ## Related Rules
 
-- [react-components.mdc](mdc:.cursor/rules/react-components.mdc) — Arrow functions, named exports, props naming
-- [project-structure.mdc](mdc:.cursor/rules/project-structure.mdc) — Where components and hooks live
-- [tanstack-query.mdc](mdc:.cursor/rules/tanstack-query.mdc) — Query/mutation hook patterns
+- [react-components.md](react-components.md) — Arrow functions, named exports, props naming
+- [project-structure.md](project-structure.md) — Where components and hooks live
+- [tanstack-query.md](tanstack-query.md) — Query/mutation hook patterns

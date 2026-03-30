@@ -125,4 +125,4 @@ useForm<MyFormValues>({ resolver: zodResolver(schema) })
 - [Field component source](mdc:new-app/ui/field.tsx)
 - [Auth form example](mdc:new-app/features/auth/components/sign-in-form.tsx)
 - [Auth hook example](mdc:new-app/features/auth/hooks/use-sign-in.ts)
-- Error handling: see `error-handling` skill in `.cursor/skills/error-handling/`
+- Error handling: see `/error-handling` skill

@@ -1,0 +1,19 @@
+{
+  "name": "claude-skills",
+  "description": "Feature development pipeline — 29 skills from idea to merged PR: brainstorming, PRD, UX spec, implementation planning, autonomous execution, testing, docs, and retrospective.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Daher"
+  },
+  "homepage": "https://github.com/daher/claude-skills",
+  "repository": "https://github.com/daher/claude-skills",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "pipeline",
+    "react",
+    "tdd",
+    "prd",
+    "feature-development"
+  ]
+}

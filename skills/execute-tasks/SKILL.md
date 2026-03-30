@@ -46,6 +46,37 @@ Build the full paths: `{project-root}/.claude/rules/{rule-name}.md`
 
 If a deliverable touches multiple types (e.g., a hook + component), combine the rule sets and deduplicate.
 
+## Step 0: Create Feature Branch
+
+Before starting execution, ensure work happens on an isolated branch:
+
+1. **Check current branch** with `git branch --show-current`
+2. **If on `main` or `develop`:** Create and checkout a feature branch:
+   ```bash
+   git checkout -b feat/{feature-name}
+   ```
+   Derive `{feature-name}` from the implementation plan title — sanitize to lowercase, hyphens, no special chars.
+3. **If already on `feat/*`:** Ask the user: "Already on `{branch}`. Use this branch or create a new one?"
+4. **Record in PROGRESS.md:**
+   - `**Branch**: feat/{feature-name}`
+   - `**Base Branch**: {branch you were on before checkout}`
+
+The base branch is needed later by `finish-feature` for PR creation and merge targets.
+
+## Model Selection
+
+Use the least powerful model that can handle each role to conserve cost and speed.
+
+| Role | Complexity Signal | Recommended Model |
+|------|------------------|-------------------|
+| implementer | 1-2 files, clear spec, no cross-feature imports | `sonnet` |
+| implementer | 3+ files, integration concerns, shared infrastructure | `opus` or inherit |
+| spec-reviewer | All tasks | `sonnet` or inherit |
+| quality-reviewer | All tasks | `sonnet` or inherit |
+| test-reviewer | All tasks | `sonnet` (checklist-based) |
+
+When dispatching via Agent tool, set the `model` parameter based on the above. If an implementer reports BLOCKED with a fast model, re-dispatch with a more capable model before escalating to the user.
+
 ## Execution Loop
 
 For each deliverable in implementation order:
@@ -170,6 +201,8 @@ Maintain `PROGRESS.md` in the same directory as the implementation plan:
 # Execution Progress: {Feature Name}
 **Started**: {date}
 **Plan**: {path to implementation plan}
+**Branch**: feat/{feature-name}
+**Base Branch**: {branch execution started from}
 **Status**: In Progress | Complete | Blocked
 
 ## Deliverables
@@ -193,6 +226,64 @@ Maintain `PROGRESS.md` in the same directory as the implementation plan:
 ```
 
 Update this file after EVERY deliverable — it's the resume state if context is cleaned.
+
+## Build Verification
+
+Run `pnpm build` at two checkpoints:
+
+1. **After the final deliverable** passes all reviews (mandatory)
+2. **After any shared infrastructure deliverable** (deliverables that modify `shared/`, install packages, or change type definitions)
+
+If the build fails, dispatch the `implementer` agent with the build errors as the task spec — fix type errors before marking complete. Re-run the build after fixes.
+
+Do NOT run build after every single deliverable — it's slow. The two checkpoints above catch issues early enough.
+
+## Post-Execution: Code Review + User Flow Verification
+
+After ALL deliverables are complete and the final build passes:
+
+### Code Review
+
+Dispatch the `code-reviewer` agent on the full feature diff:
+
+```
+Agent tool:
+  description: "Holistic code review for {feature-name}"
+  prompt: |
+    Review all files changed during this feature implementation.
+
+    ## Convention Files to Read
+    {absolute paths to ALL .claude/rules/ files}
+
+    ## Files to Review
+    {all files changed across all deliverables, from PROGRESS.md}
+```
+
+Handle findings using smart triage:
+- **TRIVIAL** → Auto-fix by dispatching implementer
+- **ARCHITECTURAL** → Report to user, ask: fix or accept?
+
+### User Flow Verification
+
+After code review, walk through each user flow from the UX spec:
+
+1. Read the UX spec to identify all user flows
+2. For each flow, trace through the code:
+   - Does the component exist?
+   - Is the hook wired and exporting the right data?
+   - Is the route registered in centralized links?
+   - Are loading, error, and empty states handled?
+   - Does the data flow from API → hook → component correctly?
+3. Present findings to user with concrete examples:
+
+> "Verified 3 user flows:
+> - Flow 1 (FM creates reservation): All components wired, route works
+> - Flow 2 (Driver views reservation): Missing empty state for no assignments
+> - Flow 3 (Error handling): Network error shows notification correctly
+>
+> Flow 2 has a gap. Fix or accept?"
+
+Only report issues — don't list every passing check.
 
 ## Context Management
 
@@ -228,10 +319,15 @@ If the user says "resume" or "continue executing":
 
 ## Rules
 
+- Create a feature branch before execution starts if not already on one
+- Record branch name and base branch in PROGRESS.md
 - Never modify the implementation plan — it's the source of truth
 - Never skip the spec review — every deliverable gets reviewed
 - Quality review only runs after spec passes
 - Test review only runs when test files exist
 - Always update PROGRESS.md before moving to the next deliverable
+- Run build verification after final deliverable and after shared infra changes
+- Run holistic code review + user flow verification after all deliverables complete
 - Always ask user before committing (respect existing user feedback)
 - Run `pnpm build` before any commit (respect existing user feedback)
+- Use model selection to optimize cost — sonnet for simple tasks, opus for complex

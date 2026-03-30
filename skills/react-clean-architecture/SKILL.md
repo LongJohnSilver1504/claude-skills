@@ -426,7 +426,7 @@ queryClient.invalidateQueries(queryKeys.prompt)
 | Status values | Domain enums |
 | Error messages | Error constants |
 
-> **Full rule:** See [centralized-links.mdc](mdc:.cursor/rules/centralized-links.mdc) for the complete centralized links & endpoints rule.
+> **Full rule:** See `centralized-links.md` in your project's `.claude/rules/` for the complete centralized links & endpoints rule.
 
 ```tsx
 // App routes — defined in shared/links/index.ts, used everywhere

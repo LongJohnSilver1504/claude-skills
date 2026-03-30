@@ -1,0 +1,8 @@
+{
+  "name": "claude-skills",
+  "version": "1.0.0",
+  "description": "Feature development pipeline for Claude Code — 29 skills from idea to merged PR",
+  "repository": "github:daher/claude-skills",
+  "license": "MIT",
+  "private": true
+}

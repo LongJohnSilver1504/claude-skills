@@ -77,6 +77,56 @@ export const UserCard = ({ user, onSelect }: UserCardProps) => {
 }
 ```
 
+## forwardRef for Radix/shadcn Compatibility (React 18)
+
+React 18 requires explicit `forwardRef` for ref forwarding. Any component that may be passed as a child to Radix's `asChild` pattern (e.g., `SheetTrigger`, `DialogTrigger`, `PopoverTrigger`, `TooltipTrigger`) **must** use `forwardRef` — otherwise Radix cannot attach its ref and you get the warning: *"Function components cannot be given refs"*.
+
+### When to Use forwardRef
+
+- Component is used inside `<SheetTrigger asChild>`, `<DialogTrigger asChild>`, or any Radix `asChild` slot
+- Component is passed as a `trigger` prop that ends up inside an `asChild` wrapper
+- Component wraps a native element (`button`, `a`, `div`) and may need external ref access
+
+### Pattern
+
+```tsx
+import { forwardRef } from 'react'
+
+type ActionRowProps = {
+  title: string
+  onClick?: () => void
+}
+
+export const ActionRow = forwardRef<HTMLButtonElement, ActionRowProps>(
+  ({ title, onClick, ...rest }, ref) => {
+    return (
+      <button ref={ref} type="button" onClick={onClick} {...rest}>
+        {title}
+      </button>
+    )
+  }
+)
+ActionRow.displayName = 'ActionRow'
+```
+
+### Key Points
+
+1. **Always spread `...rest`** — Radix injects event handlers and ARIA attributes via props.
+2. **Always set `displayName`** — React DevTools needs it for forwardRef components.
+3. **Type the ref** to the rendered element (`HTMLButtonElement`, `HTMLDivElement`, etc.). If the component conditionally renders different elements, use `HTMLElement` and cast at each branch.
+
+```tsx
+// Multi-element component
+export const ActionRow = forwardRef<HTMLElement, ActionRowProps>(
+  ({ href, ...rest }, ref) => {
+    if (href) {
+      return <a ref={ref as React.Ref<HTMLAnchorElement>} href={href} {...rest} />
+    }
+    return <button ref={ref as React.Ref<HTMLButtonElement>} {...rest} />
+  }
+)
+```
+
 ## Next.js 13 Link + shadcn Button
 
 Next.js 13 Pages Router `<Link>` only accepts a **single child**. The shadcn `asChild` pattern does not work when the button has multiple children (e.g., icon + text).
@@ -117,5 +167,5 @@ if (href) {
 
 ## Related Rules
 
-- [project-structure.md](project-structure.md) — Where components live
-- [form-patterns.md](form-patterns.md) — Form component patterns
+- [project-structure.mdc](mdc:.cursor/rules/project-structure.mdc) — Where components live
+- [form-patterns.mdc](mdc:.cursor/rules/form-patterns.mdc) — Form component patterns

@@ -168,20 +168,26 @@ ln -sf ~/.claude/skills-repo/skills/systematic-debugging ~/.claude/skills/system
 
 ## Rules (Example Project Conventions)
 
-The `rules/` directory contains 10 example `.claude/rules/` files from a production React/Next.js project. Several skills reference these patterns. Copy the ones relevant to your stack into your project's `.claude/rules/` directory.
+The `rules/` directory contains 16 example `.claude/rules/` files from a production React/Next.js project. Several skills reference these patterns. Copy the ones relevant to your stack into your project's `.claude/rules/` directory.
 
 | Rule | What it covers |
 |------|---------------|
+| `working-principles.md` | Behavioral guardrails — think before coding, surgical changes, goal-driven execution |
+| `verification-before-completion.md` | The Iron Law — no completion claims without fresh verification |
+| `project-structure.md` | Feature-based architecture, sub-feature pattern, tech stack reference |
 | `accessibility.md` | WCAG 2.1 AA compliance for mobile-first apps |
 | `centralized-links.md` | Never hardcode URLs — route builders and endpoint constants |
+| `color-usage.md` | Semantic theme tokens — no raw Tailwind colors |
 | `component-hook-separation.md` | Components as pure renderers, hooks own all logic |
 | `design-system-map.md` | Which UI component to use for each concept |
 | `error-handling.md` | AppError flow, API adapters, tryCatch pattern |
 | `form-patterns.md` | react-hook-form + Zod + Controller + Field components |
+| `layout-ownership.md` | Components render flush, parents own inter-component spacing |
 | `package-manager.md` | pnpm enforcement |
-| `project-structure.md` | Feature-based architecture with vertical slicing |
 | `react-components.md` | Arrow functions, named exports, forwardRef, props conventions |
 | `tanstack-query.md` | Query keys, useQuery/useMutation patterns, invalidation rules |
+| `testing.md` | Vitest config, polyfills, feature test helpers |
+| `zustand-patterns.md` | Avoid store-object in dependency arrays, use selectors |
 
 ```bash
 # Copy rules you want to your project

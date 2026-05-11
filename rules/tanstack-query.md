@@ -10,7 +10,16 @@ alwaysApply: false
 
 All server-state fetching/mutation uses `@tanstack/react-query`. Feature hooks wrap `useQuery`/`useMutation` — components never call the query client directly.
 
-> **Note:** The `QueryProvider` at `new-app/shared/providers/query-provider.tsx` needs to be created as part of the refactor setup.
+## Dual React Query Versions
+
+This project has **two React Query versions** running side by side:
+
+| Version | Package | Used By | Provider |
+|---------|---------|---------|----------|
+| v3 | `react-query` | Legacy code in `src/api/hooks/` | `QueryClientProvider` from `react-query` |
+| v5 | `@tanstack/react-query` | New code in `src/new-app/` | `QueryClientProvider` from `@tanstack/react-query` |
+
+Both providers are mounted in `_app.tsx`. **All new code must use v5** (`@tanstack/react-query`). Never import from `react-query` in `new-app/`.
 
 ## Hard Rules
 
@@ -117,6 +126,40 @@ function LocationList() {
 
   return <ul>{data.map(loc => <li key={loc.id}>{loc.name}</li>)}</ul>
 }
+```
+
+## Wizard Flow Invalidation
+
+**Never call `invalidateQueries` inside a mutation's `onSuccess` when the mutation runs inside a multi-step wizard.** Query refetches can change conditional flags (e.g., `needsSelection`, `needsTypeSelection`) that control the wizard's step array, shifting step indices mid-flow and landing the user on the wrong step.
+
+Instead, invalidate in the **success step's exit handler** (the "Back to reservation" / "Done" button). This ensures queries are refreshed only when leaving the wizard.
+
+```typescript
+// ❌ Invalidation in onSuccess — can shift wizard steps
+const mutation = useMutation({
+  mutationFn: myApi.submit,
+  onSuccess: async () => {
+    await queryClient.invalidateQueries({ queryKey: myKeys.lists() }) // Re-renders wizard!
+  },
+})
+
+// ✅ Invalidation in success step exit — safe
+const onBack = useCallback(async () => {
+  await queryClient.invalidateQueries({ queryKey: myKeys.lists() })
+  await router.push(links.private.dashboard)
+  store.reset()
+}, [queryClient, store, router])
+```
+
+Wizard step flags must be **stable** — derived only from data that doesn't change mid-flow (URL params, API data), never from store selections that change when the user interacts:
+
+```typescript
+// ❌ Store dependency removes the step when user selects — shifts all indices
+const needsSelection =
+  !store.selectedReservationId && !reservationIdParam && reservations.length > 1
+
+// ✅ Stable — only depends on URL param and data count
+const needsSelection = !reservationIdParam && reservations.length > 1
 ```
 
 ## Anti-Patterns

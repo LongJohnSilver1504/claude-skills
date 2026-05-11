@@ -17,7 +17,6 @@ This skill provides the **principles and decision-making framework** for buildin
 |-------|-------------|
 | `create-feature` | Implementation templates for these principles |
 | `prd-to-ux` | UX foundations before building |
-| `ux-to-prompt` | Build-order prompts for implementation |
 | `frontend-testing` | Testing the structured code |
 
 ## The First Draft Philosophy

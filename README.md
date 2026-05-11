@@ -1,12 +1,12 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 26 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 25 skills that take you from a rough idea to a merged PR.
 
 ## What This Is
 
 Claude Skills is a composable skill library that turns Claude Code into a structured development partner. Instead of ad-hoc prompting, each skill enforces a specific workflow — brainstorming before coding, specs before implementation, tests before shipping.
 
-The skills connect into an **11-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX, planning implementation, autonomous execution with subagents, testing, documentation, and finalization.
+The skills connect into a **10-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX, planning implementation, autonomous execution with subagents, testing, documentation, and finalization.
 
 **Core principles:**
 - **Design before code** — No implementation without approved specs
@@ -21,19 +21,19 @@ The skills connect into an **11-step pipeline** that covers the full lifecycle o
 brainstorm(0) --> generate-prd(1) --> prd-clarifier(2) --> prd-to-ux(3) --> generate-test-plan(4)
      |                                                                            |
      v                                                                            v
-                    ux-to-prompt(5) --> plan-implementation(6) --> execute-tasks(7)
-                                                                        |
-                                        generate-feature-doc(9) <-- frontend-testing(8)
-                                                    |
-                                                    v
-                                             finish-feature(10)
+                                 plan-implementation(5) --> execute-tasks(6)
+                                                                  |
+                                       generate-feature-doc(8) <-- frontend-testing(7)
+                                                  |
+                                                  v
+                                           finish-feature(9)
 ```
 
 | Phase | Steps | Mode |
 |-------|-------|------|
-| Explore & Design | 0-6 | Human-in-the-loop (you drive design decisions) |
-| Build | 7 | Autonomous (subagents execute, smart triage on findings) |
-| Validate & Ship | 8-10 | Human-in-the-loop (testing, docs, merge) |
+| Explore & Design | 0-5 | Human-in-the-loop (you drive design decisions) |
+| Build | 6 | Autonomous (subagents execute, smart triage on findings) |
+| Validate & Ship | 7-9 | Human-in-the-loop (testing, docs, merge) |
 
 Invoke individual skills directly, or follow the pipeline order for a full feature build.
 
@@ -46,18 +46,17 @@ Each skill produces an artifact that the next skill consumes:
 | 0 | `/brainstorm` | Validated idea + approach | `/generate-prd` |
 | 1 | `/generate-prd` | `PRD.md` (requirements doc) | `/prd-clarifier` |
 | 2 | `/prd-clarifier` | Refined PRD (ambiguities resolved) | `/prd-to-ux` |
-| 3 | `/prd-to-ux` | `UX-spec.md` (screens, flows, states) | `/generate-test-plan`, `/ux-to-prompt` |
-| 4 | `/generate-test-plan` | Test matrix (interactions, states, edge cases) | `/frontend-testing` (later) |
-| 5 | `/ux-to-prompt` | `build-prompts.md` (ordered coding prompts) | `/plan-implementation` |
-| 6 | `/plan-implementation` | Implementation plan (ordered deliverables) | `/execute-tasks` |
-| 7 | `/execute-tasks` | Working code (built by agents) | `/frontend-testing` |
-| 8 | `/frontend-testing` | Test files | `/generate-feature-doc` |
-| 9 | `/generate-feature-doc` | `README.md` for the feature | `/finish-feature` |
-| 10 | `/finish-feature` | Commit / PR / merge | — |
+| 3 | `/prd-to-ux` | `UX-spec.md` (screens, flows, states) | `/generate-test-plan` |
+| 4 | `/generate-test-plan` | Test matrix (interactions, states, edge cases) | `/plan-implementation`, `/frontend-testing` (later) |
+| 5 | `/plan-implementation` | Implementation plan (ordered deliverables) | `/execute-tasks` |
+| 6 | `/execute-tasks` | Working code (built by agents) | `/frontend-testing` |
+| 7 | `/frontend-testing` | Test files | `/generate-feature-doc` |
+| 8 | `/generate-feature-doc` | `README.md` for the feature | `/finish-feature` |
+| 9 | `/finish-feature` | Commit / PR / merge | — |
 
-### How Execution Works (Step 7)
+### How Execution Works (Step 6)
 
-`/execute-tasks` is the autonomous build phase. It reads the implementation plan from step 6 and dispatches **subagents** — each agent gets a fresh context with only its task spec and relevant convention files.
+`/execute-tasks` is the autonomous build phase. It reads the implementation plan from step 5 and dispatches **subagents** — each agent gets a fresh context with only its task spec and relevant convention files.
 
 ```
 execute-tasks (orchestrator)
@@ -78,7 +77,7 @@ execute-tasks (orchestrator)
   └── Build verification ──── runs pnpm build to catch type errors
 ```
 
-**How `/create-feature` and `/create-infrastructure` fit in:** The implementation plan (step 6) classifies each deliverable as either a **domain feature** (entities, API, CRUD) or **shared infrastructure** (providers, hooks, layouts). When the implementer agent builds a deliverable, it follows the scaffolding patterns from `/create-feature` or `/create-infrastructure` depending on the type.
+**How `/create-feature` and `/create-infrastructure` fit in:** The implementation plan (step 5) classifies each deliverable as either a **domain feature** (entities, API, CRUD) or **shared infrastructure** (providers, hooks, layouts). When the implementer agent builds a deliverable, it follows the scaffolding patterns from `/create-feature` or `/create-infrastructure` depending on the type.
 
 **Agent model selection:** Simple deliverables (1-2 files, clear spec) use a fast model. Complex ones (3+ files, integration concerns) use a more capable model. If an agent gets stuck, it's automatically re-dispatched with a stronger model before escalating to you.
 
@@ -98,7 +97,6 @@ execute-tasks (orchestrator)
 | `/prd-clarifier` | Refine a PRD through structured questions that uncover ambiguities and edge cases |
 | `/prd-to-ux` | Translate PRD into UX specifications through 8 structured passes |
 | `/generate-test-plan` | Generate a test matrix from a UX spec (interaction, state, and edge case tests) |
-| `/ux-to-prompt` | Transform UX specs into build-order prompts for implementation |
 | `/plan-implementation` | Bridge design artifacts into a dependency-ordered implementation plan |
 | `/pipeline-help` | Interactive guide — explains the flow, which skill to use next, how to resume |
 

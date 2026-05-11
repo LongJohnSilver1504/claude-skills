@@ -1,6 +1,6 @@
 ---
 name: generate-test-plan
-description: Generate a test plan from a UX spec. Produces a test matrix with interaction tests, state tests, and edge cases that the frontend-testing skill consumes. Use after prd-to-ux and before ux-to-prompt.
+description: Generate a test plan from a UX spec. Produces a test matrix with interaction tests, state tests, and edge cases that the frontend-testing skill consumes. Use after prd-to-ux and before plan-implementation.
 ---
 
 # Generate Test Plan
@@ -9,7 +9,7 @@ description: Generate a test plan from a UX spec. Produces a test matrix with in
 
 Extract testable scenarios from a UX specification and produce a structured test matrix. This skill reads the UX spec (especially Passes 3, 5, and 6) and outputs a test plan that the `/frontend-testing` skill later implements.
 
-**Position in pipeline:** `prd-to-ux` → **generate-test-plan** → `ux-to-prompt`
+**Position in pipeline:** `prd-to-ux` → **generate-test-plan** → `plan-implementation`
 
 ## Input
 
@@ -153,7 +153,7 @@ After completing this skill, use the `AskUserQuestion` tool to present the next 
 
 Options to present:
 
-- **ux-to-prompt** — generate build-order prompts for implementation
+- **plan-implementation** — bridge specs into a dependency-ordered implementation plan
 - **Something else** — do something different
 
 Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.

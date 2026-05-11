@@ -12,7 +12,7 @@ Interactive guide for the TruckBays feature development pipeline. Explains each 
 ## The Pipeline
 
 ```
-generate-prd → prd-clarifier → prd-to-ux → generate-test-plan → ux-to-prompt → plan-implementation → create-feature / create-infrastructure → frontend-testing → generate-feature-doc
+generate-prd → prd-clarifier → prd-to-ux → generate-test-plan → plan-implementation → create-feature / create-infrastructure → frontend-testing → generate-feature-doc
 ```
 
 ## Pipeline Stages
@@ -23,12 +23,11 @@ generate-prd → prd-clarifier → prd-to-ux → generate-test-plan → ux-to-pr
 | 2 | `/prd-clarifier` | PRD | Clarified PRD | Yes — if PRD is clear |
 | 3 | `/prd-to-ux` | PRD | `UX-spec.md` (8 passes) | No |
 | 4 | `/generate-test-plan` | UX spec | `test-plan.md` | Yes — for small features |
-| 5 | `/ux-to-prompt` | UX spec | Build-order prompts | Yes — if building directly |
-| 6 | `/plan-implementation` | All specs | Implementation plan | No |
-| 7a | `/create-feature` | Plan | Feature scaffold + code | Choose 7a or 7b |
-| 7b | `/create-infrastructure` | Plan | Shared infrastructure | Choose 7a or 7b |
-| 8 | `/frontend-testing` | Feature code + test plan | Test files | No |
-| 9 | `/generate-feature-doc` | Feature code | `README.md` | Yes — for small features |
+| 5 | `/plan-implementation` | All specs | Implementation plan | No |
+| 6a | `/create-feature` | Plan | Feature scaffold + code | Choose 6a or 6b |
+| 6b | `/create-infrastructure` | Plan | Shared infrastructure | Choose 6a or 6b |
+| 7 | `/frontend-testing` | Feature code + test plan | Test files | No |
+| 8 | `/generate-feature-doc` | Feature code | `README.md` | Yes — for small features |
 
 ## Quick Start
 
@@ -57,7 +56,6 @@ Just fix the bug. No pipeline needed.
 ### What gets deleted (intermediate)
 Cleaned up by `/generate-feature-doc`:
 - `*-clarification-session.md`
-- `*-build-prompts.md`
 - `*-implementation-plan.md`
 - `*-test-plan.md`
 

@@ -46,6 +46,21 @@ Build the full paths: `{project-root}/.claude/rules/{rule-name}.md`
 
 If a deliverable touches multiple types (e.g., a hook + component), combine the rule sets and deduplicate.
 
+## Design Skill Injection
+
+Visual components (`.tsx` with rendered UI) get two extra skill invocations to enforce Refactoring UI principles:
+
+| Phase | Skill | Why |
+|-------|-------|-----|
+| Implementer (Step 2) | `refactoring-ui-designer` | Applies hierarchy / layout / typography / color / depth / polish principles BEFORE writing JSX. Prevents "looks generated" output. |
+| Quality reviewer (Step 5) | `refactoring-ui-reviewer` | Audits the built component against the 8-chapter rule set with prioritized findings (🔴/🟡/🟢). |
+
+**When to inject:**
+- ✅ Component deliverables (`.tsx` files with rendered UI)
+- ❌ Hooks-only deliverables, pure-logic deliverables, API adapters, type definitions — skip both
+
+Pure layout/wrapper components (e.g., a `<div>` with `className` and `{children}`) may skip the designer skill but should still go through the reviewer at quality gate.
+
 ## Step 0: Create Feature Branch
 
 Before starting execution, ensure work happens on an isolated branch:
@@ -103,7 +118,17 @@ Agent tool:
 
     ## Files to Work With
     {target file paths}
+
+    ## Skills to Invoke
+    {if deliverable is a visual component:}
+    - Invoke /refactoring-ui-designer BEFORE writing JSX. Read its
+      principles.md + tailwind-shadcn-cheatsheet.md, sketch hierarchy
+      (primary/secondary/tertiary), pick layout, then generate JSX
+      following the cheatsheet patterns. Run its self-review checklist
+      before reporting DONE.
 ```
+
+Only include the "Skills to Invoke" block when the deliverable matches the Design Skill Injection criteria above. Omit entirely for hooks, API adapters, pure logic, types.
 
 ### Step 3: Handle Implementer Status
 
@@ -157,7 +182,19 @@ Agent tool:
 
     ## Files to Review
     {files the implementer changed}
+
+    ## Skills to Invoke
+    {if deliverable is a visual component:}
+    - Invoke /refactoring-ui-reviewer on each visual component file.
+      Read its principles.md + checklist.md, run the full checklist,
+      output findings as 🔴 Critical / 🟡 Important / 🟢 Nitpick with
+      rule citations. Merge these findings into your quality review
+      output. Tag visual findings as ARCHITECTURAL when they affect
+      hierarchy/layout (rules 2.x, 3.x), TRIVIAL when they're color
+      token or weight cleanup.
 ```
+
+Only include the "Skills to Invoke" block when the deliverable matches the Design Skill Injection criteria above.
 
 Handle result using **smart triage**:
 - **PASS** → Proceed to Step 6 (test review) or mark complete

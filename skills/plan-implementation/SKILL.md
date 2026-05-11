@@ -1,11 +1,11 @@
 ---
 name: plan-implementation
-description: Bridge design artifacts (PRD, UX spec, test plan) into a structured implementation plan. Classifies deliverables as domain features or shared infrastructure, extracts specs, orders by dependencies, and detects shared patterns. Use after generate-test-plan, when planning feature scaffolding, or when user says "implementation plan", "what to build first", "plan the features".
+description: Bridge design artifacts (PRD, UX spec with embedded test matrix) into a structured implementation plan. Classifies deliverables as domain features or shared infrastructure, extracts specs, orders by dependencies, and detects shared patterns. Use after prd-to-ux, when planning feature scaffolding, or when user says "implementation plan", "what to build first", "plan the features".
 ---
 
 # Plan Implementation
 
-Bridge between design artifacts and code scaffolding. Read PRD, UX spec, and test plan. Produce a structured plan where each deliverable maps to either:
+Bridge between design artifacts and code scaffolding. Read PRD and UX spec (which includes the test matrix in Pass 9). Produce a structured plan where each deliverable maps to either:
 
 - **create-feature** — domain features with entities, API endpoints, CRUD (lives in `features/`)
 - **create-infrastructure** — shared infrastructure: providers, hooks, layouts, i18n, config (lives in `shared/`)
@@ -16,8 +16,7 @@ At minimum: the PRD. More artifacts = more precise extraction.
 
 1. **PRD** — the product requirements document
 2. **Clarified PRD** — if prd-clarifier was used (optional)
-3. **UX Specification** — from prd-to-ux (optional but recommended)
-4. **Test Plan** — from generate-test-plan (optional but recommended)
+3. **UX Specification** — from prd-to-ux (includes test matrix in Pass 9)
 
 ## Process
 
@@ -128,7 +127,7 @@ If context was cleaned mid-pipeline, restore state before proceeding:
 
 1. **Read DECISIONS.md** in the feature folder for accumulated context
 2. **Read the relevant artifact** for this skill's input:
-   - The PRD, UX spec, and test plan files
+   - The PRD and UX spec files
 3. **Continue from where you left off** — don't restart the skill from scratch
 
 ## Next Step
@@ -169,8 +168,7 @@ Do NOT recommend cleaning context — just show the percentage. The user will de
 
 | Skill | Relationship |
 |-------|-------------|
-| **generate-test-plan** | Upstream — produces test plan consumed here |
+| **prd-to-ux** | Upstream — produces UX spec with embedded test matrix consumed here |
 | **create-feature** | Downstream — scaffolds domain features (entity + API + CRUD) |
 | **create-infrastructure** | Downstream — scaffolds shared infrastructure (providers, hooks, layouts, i18n) |
 | **react-clean-architecture** | Reference — informs layer decisions during extraction |
-| **error-handling** | Reference — informs domain error identification |

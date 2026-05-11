@@ -1,13 +1,13 @@
 ---
 name: prd-to-ux
-description: Translate PRDs or feature specs into UX specifications through 8 structured passes. Use when user says "design the UX", "UX for this feature", "how should this look", before creating wireframes or component specs, or when translating requirements into design handoff documents.
+description: Translate PRDs or feature specs into UX specifications through 9 structured passes (mental model, IA, affordances, cognitive load, state design, flow integrity, component mapping, design language, test matrix). Use when user says "design the UX", "UX for this feature", "how should this look", before creating wireframes or component specs, or when translating requirements into design handoff documents.
 ---
 
 # PRD to UX Translation
 
-Translate product requirements into UX foundations through **8 structured passes**. Each pass asks different questions that visual-first approaches skip.
+Translate product requirements into UX foundations through **9 structured passes**. Each pass asks different questions that visual-first approaches skip.
 
-**Core principle:** UX foundations come BEFORE visual specifications. Mental models, information architecture, and cognitive load analysis prevent "pretty but unusable" designs. Do all 8 passes in order — skipping passes to "save time" produces specs that need redesign. The passes ARE the shortcut.
+**Core principle:** UX foundations come BEFORE visual specifications. Mental models, information architecture, and cognitive load analysis prevent "pretty but unusable" designs. Do all 9 passes in order — skipping passes to "save time" produces specs that need redesign. The passes ARE the shortcut.
 
 ## Output Location
 
@@ -18,9 +18,9 @@ Write the UX specification to a file in the same directory as the source PRD.
 
 Always write to file, not to conversation.
 
-## The 8 Passes
+## The 9 Passes
 
-Execute IN ORDER. No visual specs (colors, typography, layouts) until all 8 are complete.
+Execute IN ORDER. No visual specs (colors, typography, layouts) until all 9 are complete.
 
 ---
 
@@ -302,9 +302,78 @@ Fetch the design context using Figma MCP tool before finalizing. Compare against
 
 ---
 
+### Pass 9: Test Matrix
+
+**"How do we verify this works?"**
+
+Derive testable scenarios from Passes 3, 5, 6, and 7. This matrix becomes the input for `/frontend-testing` later.
+
+**Required output:**
+
+```markdown
+## Pass 9: Test Matrix
+
+### Interaction Tests (from Pass 3)
+
+| # | Interaction | Given | When | Then | Priority |
+|---|-------------|-------|------|------|----------|
+| I1 | [Action name] | [Precondition] | [User action] | [Expected result] | High/Medium/Low |
+
+### State Tests (from Pass 5)
+
+| # | Component | State | Expected Visual | Expected Behavior |
+|---|-----------|-------|-----------------|-------------------|
+| S1 | [Component] | Empty | [What user sees] | [What user can do] |
+| S2 | [Component] | Loading | [Skeleton/spinner] | [Disabled interactions] |
+| S3 | [Component] | Error | [Error display] | [Recovery action available] |
+
+### Edge Case Tests (from Pass 6)
+
+| # | Scenario | Setup | Action | Expected | Priority |
+|---|----------|-------|--------|----------|----------|
+| E1 | [Risk description] | [How to reproduce] | [Trigger] | [Expected guardrail] | High/Medium |
+
+### Accessibility Tests (from Pass 7)
+
+| # | Component | Check | Method |
+|---|-----------|-------|--------|
+| A1 | [Component] | Keyboard navigable | Tab + Enter/Space |
+| A2 | [Icon button] | aria-label present | Inspect attribute |
+| A3 | [Touch target] | ≥ 44px | Measure rendered size |
+| A4 | [Form input] | Error announced | aria-invalid + FieldError |
+
+### Test Summary
+
+| Category | Count | High | Medium | Low |
+|----------|-------|------|--------|-----|
+| Interaction | {n} | {n} | {n} | {n} |
+| State | {n} | {n} | {n} | {n} |
+| Edge Case | {n} | {n} | {n} | {n} |
+| Accessibility | {n} | {n} | {n} | {n} |
+| **Total** | **{n}** | **{n}** | **{n}** | **{n}** |
+```
+
+**Rules:**
+- Every Pass 3 affordance gets at least one interaction test
+- Every Pass 5 state gets a state test (Empty + Error always High, Loading Medium)
+- Every Pass 6 flow risk gets an edge case test
+- All tests use Given/When/Then format — maps directly to test code
+- Priority: critical path = High, secondary = Medium, pure edge case = Low
+- Tests describe user-visible behavior only — never implementation details (class names, internal state)
+
+**Coverage policy:** Minimum = all High priority. Recommended = High + Medium.
+
+**Anti-patterns to avoid:**
+- Testing implementation (`useState updates to true`) → test what the user sees
+- Only happy path → cover empty, loading, error, disabled
+- Vague assertions ("page works") → be specific about what's visible/clickable
+- Skipping accessibility → a11y is part of the matrix from the start
+
+---
+
 ## THEN: Visual Specifications
 
-Only after all 8 passes, create: screen layouts, component specifications, interaction specifications, responsive breakpoints. The 8 passes inform every visual decision.
+Only after all 9 passes, create: screen layouts, component specifications, interaction specifications, responsive breakpoints. The 9 passes inform every visual decision.
 
 ## Output Template
 

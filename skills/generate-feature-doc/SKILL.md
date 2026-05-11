@@ -136,7 +136,6 @@ After generating the README, delete intermediate pipeline `.md` files that serve
 | `PRD-*-clarification-session.md` | Intermediate — clarifications are already merged into the PRD |
 | `PRD-*-implementation-plan.md` | Intermediate — plan was executed, no longer needed |
 | `DECISIONS.md` | Intermediate — decisions absorbed into README |
-| `*-test-plan.md` | Intermediate — test plan consumed by frontend-testing |
 | `PRD-*.md` (iteration variants) | Intermediate — sub-PRDs for phases/iterations are absorbed into the main PRD and README |
 | `DESIGN.md` (in `.claude/pipeline/{feature}/`) | Intermediate — brainstorm output absorbed into PRD and README |
 
@@ -146,7 +145,6 @@ After writing the README, delete **all** intermediate files. Only `PRD.md`, `UX-
 # Delete all PRD variants and intermediate artifacts
 rm -f {feature-dir}/PRD-*.md
 rm -f {feature-dir}/DECISIONS.md
-rm -f {feature-dir}/*-test-plan.md
 # Also clean brainstorm artifact from pipeline directory
 rm -f .claude/pipeline/{feature-name}/DESIGN.md
 ```

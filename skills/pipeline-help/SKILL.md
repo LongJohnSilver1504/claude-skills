@@ -12,7 +12,7 @@ Interactive guide for the TruckBays feature development pipeline. Explains each 
 ## The Pipeline
 
 ```
-generate-prd → prd-clarifier → prd-to-ux → generate-test-plan → plan-implementation → create-feature / create-infrastructure → frontend-testing → generate-feature-doc
+generate-prd → prd-clarifier → prd-to-ux → plan-implementation → create-feature / create-infrastructure → frontend-testing → generate-feature-doc
 ```
 
 ## Pipeline Stages
@@ -21,13 +21,12 @@ generate-prd → prd-clarifier → prd-to-ux → generate-test-plan → plan-imp
 |---|-------|-------|--------|-----------|
 | 1 | `/generate-prd` | Feature idea | `PRD.md` | No — entry point |
 | 2 | `/prd-clarifier` | PRD | Clarified PRD | Yes — if PRD is clear |
-| 3 | `/prd-to-ux` | PRD | `UX-spec.md` (8 passes) | No |
-| 4 | `/generate-test-plan` | UX spec | `test-plan.md` | Yes — for small features |
-| 5 | `/plan-implementation` | All specs | Implementation plan | No |
-| 6a | `/create-feature` | Plan | Feature scaffold + code | Choose 6a or 6b |
-| 6b | `/create-infrastructure` | Plan | Shared infrastructure | Choose 6a or 6b |
-| 7 | `/frontend-testing` | Feature code + test plan | Test files | No |
-| 8 | `/generate-feature-doc` | Feature code | `README.md` | Yes — for small features |
+| 3 | `/prd-to-ux` | PRD | `UX-spec.md` (9 passes inc. test matrix) | No |
+| 4 | `/plan-implementation` | All specs | Implementation plan | No |
+| 5a | `/create-feature` | Plan | Feature scaffold + code | Choose 5a or 5b |
+| 5b | `/create-infrastructure` | Plan | Shared infrastructure | Choose 5a or 5b |
+| 6 | `/frontend-testing` | UX spec Pass 9 + code | Test files | No |
+| 7 | `/generate-feature-doc` | Feature code | `README.md` | Yes — for small features |
 
 ## Quick Start
 

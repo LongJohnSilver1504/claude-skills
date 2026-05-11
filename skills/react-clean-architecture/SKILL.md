@@ -323,134 +323,19 @@ Don't build a generic API and force the frontend to assemble data.
 
 ---
 
-## Component Responsibility
+## Component Responsibility (Principle)
 
-### Components Are Pure Renderers
+Components are **pure renderers** — they receive data and return JSX. Logic, state, and side effects belong in hooks.
 
-Ideal component: receives data, returns JSX.
-
-```tsx
-// ✅ Pure component
-function PromptPage() {
-  const { prompt, handleSubmit } = usePrompt()
-  
-  return (
-    <Layout>
-      <h1>{prompt.title}</h1>
-      {prompt.answered ? (
-        <AnswersList answers={prompt.answers} />
-      ) : (
-        <AnswerForm onSubmit={handleSubmit} />
-      )}
-    </Layout>
-  )
-}
-```
-
-The component doesn't know:
-- Where data comes from (HTTP? Cache? Mock?)
-- How submission works (POST? Optimistic? Retry?)
-- Caching strategy
-- Error recovery logic
-
-### Move Logic to Hooks
-
-```tsx
-// ❌ Logic in component
-function PromptPage() {
-  const [prompt, setPrompt] = useState(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
-  
-  useEffect(() => {
-    setIsLoading(true)
-    fetch('/api/prompts/active')
-      .then(res => res.json())
-      .then(data => {
-        setPrompt({
-          ...data,
-          answers: data.answers.map(a => ({
-            ...a,
-            createdAt: dayjs(a.createdAt).fromNow()
-          }))
-        })
-      })
-      .catch(setError)
-      .finally(() => setIsLoading(false))
-  }, [])
-  
-  // Submit logic...
-}
-
-// ✅ Logic in hook
-function PromptPage() {
-  const { prompt, handleSubmit } = usePrompt()
-  // Just render
-}
-```
+This skill covers the *why*. For the project-specific *how* (file structure, hook naming, wizard step patterns, dialog state naming), see your project's `component-hook-separation.md` rule.
 
 ---
 
-## Hardcoded Value Extraction
+## Hardcoded Value Extraction (Principle)
 
-### Extract Domain-Specific Constants
+Hardcoded strings (routes, endpoints, query keys) drift into bugs when copy-pasted. Extract them to a single source of truth so the type system catches typos.
 
-Hardcoded strings become bugs when copied incorrectly.
-
-```tsx
-// ❌ Hardcoded everywhere
-useQuery({ queryKey: ['prompt'] })
-// ... elsewhere
-queryClient.invalidateQueries(['prompts'])  // Typo: 'prompts' vs 'prompt'
-
-// ✅ Centralized constants
-// query-keys.ts
-export const queryKeys = {
-  prompt: ['prompt'],
-  prompts: ['prompts'],
-}
-
-// Usage
-useQuery({ queryKey: queryKeys.prompt })
-queryClient.invalidateQueries(queryKeys.prompt)
-```
-
-### What to Extract
-
-| Type | Extract To |
-|------|-----------|
-| App routes | `shared/links/index.ts` via `links` object |
-| API endpoints | Const object at top of feature's `api/{feature}.api.ts` |
-| Query keys | `query-keys.ts` |
-| Status values | Domain enums |
-| Error messages | Error constants |
-
-> **Full rule:** See `centralized-links.md` in your project's `.claude/rules/` for the complete centralized links & endpoints rule.
-
-```tsx
-// App routes — defined in shared/links/index.ts, used everywhere
-import { links, buildUrl } from '@/shared/links'
-
-redirect(links.public.signIn)
-router.push(links.private.dashboard)
-const url = buildUrl(links.public.signIn, { redirect: pathname })
-
-// API endpoints — defined once per feature, used in API adapter
-const paymentEndpoints = {
-  list: '/payments',
-  detail: (id: number) => `/payments/${id}`,
-} as const
-
-await client.get(paymentEndpoints.list)
-await client.get(paymentEndpoints.detail(id))
-```
-
-### What NOT to Extract
-
-Don't over-extract:
-- CSS class names (use Tailwind directly)
-- One-time strings (extract on second use)
-- Truly local constants (keep near usage)
+This skill covers the *why*. For project-specific extraction locations and patterns (where `links` lives, how endpoint constants are structured, query key conventions), see your project's `centralized-links.md` and `tanstack-query.md` rules.
 
 ---
 

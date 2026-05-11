@@ -1,12 +1,12 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 25 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 19 skills that take you from a rough idea to a merged PR.
 
 ## What This Is
 
 Claude Skills is a composable skill library that turns Claude Code into a structured development partner. Instead of ad-hoc prompting, each skill enforces a specific workflow — brainstorming before coding, specs before implementation, tests before shipping.
 
-The skills connect into a **10-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX, planning implementation, autonomous execution with subagents, testing, documentation, and finalization.
+The skills connect into a **9-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX (with embedded test matrix), planning implementation, autonomous execution with subagents, testing, documentation, and finalization.
 
 **Core principles:**
 - **Design before code** — No implementation without approved specs
@@ -18,22 +18,22 @@ The skills connect into a **10-step pipeline** that covers the full lifecycle of
 ## The Pipeline
 
 ```
-brainstorm(0) --> generate-prd(1) --> prd-clarifier(2) --> prd-to-ux(3) --> generate-test-plan(4)
-     |                                                                            |
-     v                                                                            v
-                                 plan-implementation(5) --> execute-tasks(6)
-                                                                  |
-                                       generate-feature-doc(8) <-- frontend-testing(7)
-                                                  |
-                                                  v
-                                           finish-feature(9)
+brainstorm(0) --> generate-prd(1) --> prd-clarifier(2) --> prd-to-ux(3)
+     |                                                          |
+     v                                                          v
+                            plan-implementation(4) --> execute-tasks(5)
+                                                              |
+                                   generate-feature-doc(7) <-- frontend-testing(6)
+                                                |
+                                                v
+                                         finish-feature(8)
 ```
 
 | Phase | Steps | Mode |
 |-------|-------|------|
-| Explore & Design | 0-5 | Human-in-the-loop (you drive design decisions) |
-| Build | 6 | Autonomous (subagents execute, smart triage on findings) |
-| Validate & Ship | 7-9 | Human-in-the-loop (testing, docs, merge) |
+| Explore & Design | 0-4 | Human-in-the-loop (you drive design decisions) |
+| Build | 5 | Autonomous (subagents execute, smart triage on findings) |
+| Validate & Ship | 6-8 | Human-in-the-loop (testing, docs, merge) |
 
 Invoke individual skills directly, or follow the pipeline order for a full feature build.
 
@@ -46,17 +46,16 @@ Each skill produces an artifact that the next skill consumes:
 | 0 | `/brainstorm` | Validated idea + approach | `/generate-prd` |
 | 1 | `/generate-prd` | `PRD.md` (requirements doc) | `/prd-clarifier` |
 | 2 | `/prd-clarifier` | Refined PRD (ambiguities resolved) | `/prd-to-ux` |
-| 3 | `/prd-to-ux` | `UX-spec.md` (screens, flows, states) | `/generate-test-plan` |
-| 4 | `/generate-test-plan` | Test matrix (interactions, states, edge cases) | `/plan-implementation`, `/frontend-testing` (later) |
-| 5 | `/plan-implementation` | Implementation plan (ordered deliverables) | `/execute-tasks` |
-| 6 | `/execute-tasks` | Working code (built by agents) | `/frontend-testing` |
-| 7 | `/frontend-testing` | Test files | `/generate-feature-doc` |
-| 8 | `/generate-feature-doc` | `README.md` for the feature | `/finish-feature` |
-| 9 | `/finish-feature` | Commit / PR / merge | — |
+| 3 | `/prd-to-ux` | `UX-spec.md` (9 passes inc. test matrix) | `/plan-implementation`, `/frontend-testing` (later) |
+| 4 | `/plan-implementation` | Implementation plan (ordered deliverables) | `/execute-tasks` |
+| 5 | `/execute-tasks` | Working code (built by agents) | `/frontend-testing` |
+| 6 | `/frontend-testing` | Test files | `/generate-feature-doc` |
+| 7 | `/generate-feature-doc` | `README.md` for the feature | `/finish-feature` |
+| 8 | `/finish-feature` | Commit / PR / merge | — |
 
-### How Execution Works (Step 6)
+### How Execution Works (Step 5)
 
-`/execute-tasks` is the autonomous build phase. It reads the implementation plan from step 5 and dispatches **subagents** — each agent gets a fresh context with only its task spec and relevant convention files.
+`/execute-tasks` is the autonomous build phase. It reads the implementation plan from step 4 and dispatches **subagents** — each agent gets a fresh context with only its task spec and relevant convention files.
 
 ```
 execute-tasks (orchestrator)
@@ -77,7 +76,7 @@ execute-tasks (orchestrator)
   └── Build verification ──── runs pnpm build to catch type errors
 ```
 
-**How `/create-feature` and `/create-infrastructure` fit in:** The implementation plan (step 5) classifies each deliverable as either a **domain feature** (entities, API, CRUD) or **shared infrastructure** (providers, hooks, layouts). When the implementer agent builds a deliverable, it follows the scaffolding patterns from `/create-feature` or `/create-infrastructure` depending on the type.
+**How `/create-feature` and `/create-infrastructure` fit in:** The implementation plan (step 4) classifies each deliverable as either a **domain feature** (entities, API, CRUD) or **shared infrastructure** (providers, hooks, layouts). When the implementer agent builds a deliverable, it follows the scaffolding patterns from `/create-feature` or `/create-infrastructure` depending on the type.
 
 **Agent model selection:** Simple deliverables (1-2 files, clear spec) use a fast model. Complex ones (3+ files, integration concerns) use a more capable model. If an agent gets stuck, it's automatically re-dispatched with a stronger model before escalating to you.
 
@@ -95,8 +94,7 @@ execute-tasks (orchestrator)
 | `/brainstorm` | Explore a feature idea with adaptive depth — Quick, Deep, or Grill mode for stress-testing |
 | `/generate-prd` | Convert an idea into a structured, builder-ready PRD |
 | `/prd-clarifier` | Refine a PRD through structured questions that uncover ambiguities and edge cases |
-| `/prd-to-ux` | Translate PRD into UX specifications through 8 structured passes |
-| `/generate-test-plan` | Generate a test matrix from a UX spec (interaction, state, and edge case tests) |
+| `/prd-to-ux` | Translate PRD into UX specifications through 9 structured passes (includes test matrix as Pass 9) |
 | `/plan-implementation` | Bridge design artifacts into a dependency-ordered implementation plan |
 | `/pipeline-help` | Interactive guide — explains the flow, which skill to use next, how to resume |
 
@@ -108,7 +106,6 @@ execute-tasks (orchestrator)
 | `/create-feature` | Scaffold a domain feature module (vertical slicing, hexagonal architecture) |
 | `/create-infrastructure` | Scaffold shared infrastructure (providers, hooks, layouts, i18n) |
 | `/frontend-testing` | Write tests using Vitest, React Testing Library, and MSW v2 |
-| `/tdd` | RED-GREEN-REFACTOR discipline — failing test first, minimal code to pass |
 
 ### Debug & Fix
 
@@ -122,7 +119,6 @@ execute-tasks (orchestrator)
 |-------|-------------|
 | `/generate-feature-doc` | Generate feature documentation by analyzing code changes |
 | `/web-design-guidelines` | Review UI code for Web Interface Guidelines compliance |
-| `/linear-ticket` | Create or improve Linear tickets with proper documentation |
 | `/git-commit` | Create commits following conventional commit style with descriptive bodies |
 | `/finish-feature` | Finalize a feature — run tests, build, present commit/PR/discard options |
 
@@ -133,10 +129,7 @@ These skills provide domain knowledge and are typically invoked by other skills,
 | Skill | What it covers |
 |-------|---------------|
 | `/shadcn-ui` | shadcn/ui project patterns, form conventions, post-install fixes |
-| `/error-handling` | Error creation, propagation, transformation, and display patterns |
 | `/react-clean-architecture` | React clean architecture principles — the WHY behind structure decisions |
-| `/vercel-react-best-practices` | React and Next.js performance optimization (from Vercel Engineering) |
-| `/vercel-composition-patterns` | React composition patterns that scale |
 | `/tailwindcss-fundamentals-v4` | Tailwind CSS v4 installation, configuration, and best practices |
 | `/find-skills` | Discover and install new agent skills |
 
@@ -202,8 +195,6 @@ Some skills were adapted from external sources. To pull updates, check the origi
 
 | Skill | Source |
 |-------|--------|
-| `/vercel-react-best-practices` | [Vercel Engineering blog](https://vercel.com/blog) |
-| `/vercel-composition-patterns` | [Vercel Engineering blog](https://vercel.com/blog) |
 | `/web-design-guidelines` | [Vercel Web Interface Guidelines](https://interfaces.rauno.me) |
 | `/tailwindcss-fundamentals-v4` | [Tailwind CSS v4 docs](https://tailwindcss.com/docs) |
 

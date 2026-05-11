@@ -84,6 +84,12 @@ A: Just tell Claude. The observer logs it. The retrospective will analyze whethe
 **Q: Where do I find the skills index?**
 A: `.claude/SKILLS-INDEX.md` has a use-case → skill mapping.
 
+**Q: How do I build visually polished components?**
+A: `/refactoring-ui-designer` auto-triggers when you ask to build/create UI. It applies Refactoring UI principles (hierarchy, typography, spacing, color, depth, polish) before writing JSX.
+
+**Q: How do I improve existing components?**
+A: Run `/refactoring-ui-reviewer src/.../component.tsx` to get a prioritized audit (🔴 Critical / 🟡 Important / 🟢 Nitpick) with rule citations. Pick which findings to apply, then ask Claude to fix them. Incremental — one component at a time.
+
 ## Context Management
 
 After presenting this guide, report the **context usage percentage**:

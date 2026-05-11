@@ -1,6 +1,6 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 19 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 20 skills that take you from a rough idea to a merged PR.
 
 ## What This Is
 
@@ -118,7 +118,7 @@ execute-tasks (orchestrator)
 | Skill | What it does |
 |-------|-------------|
 | `/generate-feature-doc` | Generate feature documentation by analyzing code changes |
-| `/web-design-guidelines` | Review UI code for Web Interface Guidelines compliance |
+| `/refactoring-ui-reviewer` | Audit existing UI against Refactoring UI principles — prioritized findings with rule citations |
 | `/git-commit` | Create commits following conventional commit style with descriptive bodies |
 | `/finish-feature` | Finalize a feature — run tests, build, present commit/PR/discard options |
 
@@ -130,6 +130,7 @@ These skills provide domain knowledge and are typically invoked by other skills,
 |-------|---------------|
 | `/shadcn-ui` | shadcn/ui project patterns, form conventions, post-install fixes |
 | `/react-clean-architecture` | React clean architecture principles — the WHY behind structure decisions |
+| `/refactoring-ui-designer` | Apply Refactoring UI principles when building new components — hierarchy, layout, polish |
 | `/tailwindcss-fundamentals-v4` | Tailwind CSS v4 installation, configuration, and best practices |
 | `/find-skills` | Discover and install new agent skills |
 
@@ -201,7 +202,8 @@ Some skills were adapted from external sources. To pull updates, check the origi
 
 | Skill | Source |
 |-------|--------|
-| `/web-design-guidelines` | [Vercel Web Interface Guidelines](https://interfaces.rauno.me) |
+| `/refactoring-ui-designer` | [Refactoring UI by Wathan & Schoger](https://refactoringui.com) |
+| `/refactoring-ui-reviewer` | [Refactoring UI by Wathan & Schoger](https://refactoringui.com) |
 | `/tailwindcss-fundamentals-v4` | [Tailwind CSS v4 docs](https://tailwindcss.com/docs) |
 
 These skills are snapshots — they don't auto-update. When a new version of Tailwind or React ships, review the source and update the skill content manually.

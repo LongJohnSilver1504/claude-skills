@@ -1,6 +1,6 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 20 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 22 skills that take you from a rough idea to a merged PR.
 
 ## What This Is
 
@@ -106,6 +106,7 @@ execute-tasks (orchestrator)
 | `/create-feature` | Scaffold a domain feature module (vertical slicing, hexagonal architecture) |
 | `/create-infrastructure` | Scaffold shared infrastructure (providers, hooks, layouts, i18n) |
 | `/frontend-testing` | Write tests using Vitest, React Testing Library, and MSW v2 |
+| `/using-git-worktrees` | Set up isolated workspace via native tools or git worktree fallback |
 
 ### Debug & Fix
 
@@ -132,6 +133,7 @@ These skills provide domain knowledge and are typically invoked by other skills,
 | `/react-clean-architecture` | React clean architecture principles — the WHY behind structure decisions |
 | `/refactoring-ui-designer` | Apply Refactoring UI principles when building new components — hierarchy, layout, polish |
 | `/tailwindcss-fundamentals-v4` | Tailwind CSS v4 installation, configuration, and best practices |
+| `/writing-skills` | TDD-style workflow for authoring new skills — baseline test, write, refactor |
 | `/find-skills` | Discover and install new agent skills |
 
 ## Installation

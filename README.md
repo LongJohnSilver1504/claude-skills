@@ -154,6 +154,12 @@ git clone git@github.com:LongJohnSilver1504/claude-skills.git ~/.claude/skills-r
 for skill in ~/.claude/skills-repo/skills/*/; do
   ln -sf "$skill" ~/.claude/skills/"$(basename "$skill")"
 done
+
+# Symlink the subagents (required by /execute-tasks)
+mkdir -p ~/.claude/agents
+for agent in ~/.claude/skills-repo/agents/*.md; do
+  ln -sf "$agent" ~/.claude/agents/"$(basename "$agent")"
+done
 ```
 
 ### Selective Installation
@@ -168,6 +174,20 @@ ln -sf ~/.claude/skills-repo/skills/brainstorm ~/.claude/skills/brainstorm
 ln -sf ~/.claude/skills-repo/skills/tdd ~/.claude/skills/tdd
 ln -sf ~/.claude/skills-repo/skills/systematic-debugging ~/.claude/skills/systematic-debugging
 ```
+
+## Agents (Required by `/execute-tasks`)
+
+The `agents/` directory contains the 5 subagents that `/execute-tasks` dispatches per deliverable. Without them, the autonomous build phase cannot run. They are project-agnostic — each reads conventions from the consuming project's `.claude/rules/` at dispatch time.
+
+| Agent | Purpose | Dispatched when |
+|-------|---------|-----------------|
+| `implementer` | Implements one deliverable, writes tests, self-reviews | Every deliverable |
+| `spec-reviewer` | Verifies code matches spec (compliance matrix) | After implementer reports DONE |
+| `quality-reviewer` | Checks code against `.claude/rules/` conventions | After spec passes |
+| `test-reviewer` | Checks test quality | After quality passes, if tests exist |
+| `code-reviewer` | Holistic full-feature review (cross-deliverable concerns) | After all deliverables pass |
+
+Install them globally (once) so every project can run `/execute-tasks` — see the symlink loop in [Installation](#manual-clone--symlink). Alternatively, copy them per-project into `.claude/agents/`.
 
 ## Rules (Example Project Conventions)
 

@@ -260,6 +260,12 @@ Maintain `PROGRESS.md` in the same directory as the implementation plan:
 
 ## Blocked Items
 {empty or description}
+
+## Design Review
+| Iteration | 🔴 fixed | 🟡 fixed | 🟢 fixed | Result |
+|-----------|----------|----------|----------|--------|
+| 1 | n | n | n | FINDINGS |
+| 2 | n | n | n | PASS |
 ```
 
 Update this file after EVERY deliverable — it's the resume state if context is cleaned.
@@ -275,7 +281,7 @@ If the build fails, dispatch the `implementer` agent with the build errors as th
 
 Do NOT run build after every single deliverable — it's slow. The two checkpoints above catch issues early enough.
 
-## Post-Execution: Code Review + User Flow Verification
+## Post-Execution: Code Review + Design Review + User Flow Verification
 
 After ALL deliverables are complete and the final build passes:
 
@@ -299,6 +305,48 @@ Agent tool:
 Handle findings using smart triage:
 - **TRIVIAL** → Auto-fix by dispatching implementer
 - **ARCHITECTURAL** → Report to user, ask: fix or accept?
+
+### Final Design Review & Polish
+
+Run **only if the feature produced visual components** (`.tsx` with rendered UI). Runs once, holistically, after Code Review passes. Catches **cross-screen** problems — inconsistent spacing/typography/hierarchy/color across the whole feature — that the per-deliverable `refactoring-ui-reviewer` at the quality gate cannot see because it audits one component in isolation.
+
+**1. Audit.** Dispatch the `design-reviewer` agent on every visual component in the feature:
+
+```
+Agent tool:
+  description: "Holistic design review for {feature-name}"
+  prompt: |
+    Audit the design of all visual components built in this feature.
+
+    ## Design rule files to read
+    {absolute paths to .claude/rules/: color-usage, design-system-map, layout-ownership, accessibility}
+
+    ## Visual component files to review (from PROGRESS.md)
+    {ALL .tsx files with rendered UI built in this feature}
+
+    ## Skill to invoke
+    - Invoke /refactoring-ui-reviewer. Read its principles.md + checklist.md,
+      run the full checklist ACROSS ALL components holistically, and output
+      findings as 🔴 Critical / 🟡 Important / 🟢 Nitpick with rule citations
+      and file:line. Tag each ARCHITECTURAL or TRIVIAL.
+
+    ## Focus
+    - Prioritize CROSS-SCREEN inconsistencies (spacing/typography/hierarchy/color
+      drift between components). Do NOT re-litigate single-component findings already
+      resolved at the quality gate.
+```
+
+**2. Triage-aligned fix loop** (mirrors the quality gate — capped at **3 iterations**):
+- **🔴 Critical / 🟡 Important** → auto-fix: dispatch the `implementer` agent with the findings as the task spec. For ARCHITECTURAL/visual findings, instruct it to **invoke `/refactoring-ui-designer`** before editing JSX (re-derive hierarchy/layout, then apply the cheatsheet patterns). Keep the diff surgical — visual treatment only, no behavior change. Preserve i18n keys, design tokens (no raw Tailwind colors), and update Storybook stories if states change.
+- **🟢 Nitpick** → do **not** auto-fix. Accumulate across iterations and present them to the user **once** at the end: "N nitpicks found — fix all or accept?" Apply only what the user accepts.
+
+**3. Re-review (holistic).** After each batch of fixes, re-dispatch the `design-reviewer` on **all visual components again** (not just the changed files — the point is cross-screen consistency, and a fix to one component can break alignment with another). Repeat steps 2–3 until **PASS** (zero 🔴/🟡) or the **3-iteration cap** is hit.
+
+**4. Cap reached.** If iteration 3 still returns 🔴/🟡, **stop the loop** and report the remaining findings to the user — do not keep looping. Ask: keep iterating, fix manually, or accept.
+
+**5. Build check.** Run `pnpm build` after the design fixes (visual changes can introduce type errors via prop changes). If it fails, dispatch `implementer` with the build errors before continuing.
+
+**6. Update `PROGRESS.md`** — add the "Design Review" table (iterations run, findings fixed by 🔴/🟡/🟢, final result).
 
 ### User Flow Verification
 
@@ -335,6 +383,8 @@ Do NOT ask user permission between deliverables. Run continuously. Only stop for
 - FAIL from spec reviewer
 - ARCHITECTURAL findings from quality reviewer
 - FAIL from test reviewer (if user hasn't said to accept)
+- 🟢 nitpicks pending user decision in the final design review
+- Final design review hit its 3-iteration cap with 🔴/🟡 remaining
 - User interruption
 - Context above 80% (mandatory pause)
 
@@ -365,6 +415,7 @@ If the user says "resume" or "continue executing":
 - Always update PROGRESS.md before moving to the next deliverable
 - Run build verification after final deliverable and after shared infra changes
 - Run holistic code review + user flow verification after all deliverables complete
+- Run the final holistic design review after code review when the feature has visual components — triage-aligned (auto-fix 🔴/🟡, ask once on 🟢), holistic re-review each round, capped at 3 iterations
 - Always ask user before committing (respect existing user feedback)
 - Run `pnpm build` before any commit (respect existing user feedback)
 - Use model selection to optimize cost — sonnet for simple tasks, opus for complex

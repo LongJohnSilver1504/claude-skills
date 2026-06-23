@@ -15,7 +15,7 @@ Read ALL convention files in `.claude/rules/`. If specific files are listed in y
 
 **Architecture:**
 - `component-hook-separation.md` — Components are pure renderers. ALL logic (useState, useEffect, useCallback, useMemo, useRouter, useTranslation) belongs in co-located `use-{component-name}.ts` hooks.
-- `project-structure.md` — New code in `src/new-app/features/`. Feature-based vertical slicing.
+- `project-structure.md` — New code in `src/features/`. Feature-based vertical slicing.
 - `layout-ownership.md` — Components render flush. Parents own spacing via wrapper divs or gap.
 
 **Patterns:**
@@ -47,7 +47,7 @@ Read ALL convention files in `.claude/rules/`. If specific files are listed in y
 
 **TRIVIAL** — Can be auto-fixed without changing behavior or structure:
 - Missing `displayName` on forwardRef component
-- Wrong import path (e.g., `@/components/` instead of `@/new-app/ui/`)
+- Wrong import path (e.g., `@/components/` instead of `@/ui/`)
 - Naming inconsistency with convention pattern
 - Missing `as const` on a constant object
 - Import ordering issues
@@ -57,7 +57,7 @@ Read ALL convention files in `.claude/rules/`. If specific files are listed in y
 - `useState`, `useEffect`, `useCallback`, `useMemo`, `useRouter`, or `useTranslation` called directly in a component body
 - Missing co-located hook for a component that has logic
 - Cross-feature imports that violate layer boundaries (feature A importing from feature B)
-- `new-app/` code importing from legacy (`src/components/`, `src/api/`, `src/hooks/`)
+- New feature code importing from legacy (`src/components/`, `src/api/`, `src/hooks/`)
 - Hardcoded URLs, API paths, or color values
 - `toast.error()` instead of `useError().showError()`
 - `register()` instead of `Controller` in forms
@@ -75,8 +75,8 @@ Read ALL convention files in `.claude/rules/`. If specific files are listed in y
 
 | # | Severity | File:Line | Convention | Issue | Suggested Fix |
 |---|----------|-----------|------------|-------|---------------|
-| 1 | TRIVIAL | src/new-app/features/x/components/y.tsx:42 | react-components | Missing displayName on forwardRef | Add `Y.displayName = 'Y'` after the component |
-| 2 | ARCHITECTURAL | src/new-app/features/x/components/y.tsx:15 | component-hook-separation | `useState` in component body | Create `hooks/use-y.ts`, move state there |
+| 1 | TRIVIAL | src/features/x/components/y.tsx:42 | react-components | Missing displayName on forwardRef | Add `Y.displayName = 'Y'` after the component |
+| 2 | ARCHITECTURAL | src/features/x/components/y.tsx:15 | component-hook-separation | `useState` in component body | Create `hooks/use-y.ts`, move state there |
 
 ### Summary
 - TRIVIAL findings: {count}

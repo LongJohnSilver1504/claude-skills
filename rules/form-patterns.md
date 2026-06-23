@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Form Patterns
 
-> **Scope:** These patterns apply to new code in `src/new-app/`. Legacy code in `src/components/` follows existing conventions.
+> **Scope:** These patterns apply to new code in `src/`. Legacy code in `src/components/` follows existing conventions.
 
 All forms use `react-hook-form` + `zodResolver` + `Controller` + custom `Field` components. Never use the deprecated `<Form>` / `<FormField>` wrappers.
 
@@ -14,7 +14,7 @@ All forms use `react-hook-form` + `zodResolver` + `Controller` + custom `Field` 
 
 1. **Always use `zodResolver`** with a Zod schema for validation.
 2. **Always use `Controller`** to bind fields — never `register()`.
-3. **Always use `Field` / `FieldLabel` / `FieldError`** from `@/new-app/ui/field` — never build inline error display.
+3. **Always use `Field` / `FieldLabel` / `FieldError`** from `@/ui/field` — never build inline error display.
 4. **Form schemas live in hooks** (with user-facing messages) or in `api/{feature}.schemas.ts` (for API request/response validation). Do not mix the two.
 5. **Infer types** with `z.infer<typeof schema>` — never hand-write form value types.
 6. **Always provide `defaultValues`** in `useForm`.
@@ -27,7 +27,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
-import { useError } from '@/new-app/shared/providers'
+import { useError } from '@/shared/providers'
 
 const mySchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -72,8 +72,8 @@ export function useMyForm() {
 
 ```tsx
 import { Controller } from 'react-hook-form'
-import { Field, FieldLabel, FieldError, FieldGroup } from '@/new-app/ui/field'
-import { Input } from '@/new-app/ui/input'
+import { Field, FieldLabel, FieldError, FieldGroup } from '@/ui/field'
+import { Input } from '@/ui/input'
 
 <FieldGroup>
   <Controller
@@ -122,7 +122,7 @@ useForm<MyFormValues>({ resolver: zodResolver(schema) })
 
 ## Related
 
-- [Field component source](mdc:new-app/ui/field.tsx)
-- [Auth form example](mdc:new-app/features/auth/components/sign-in-form.tsx)
-- [Auth hook example](mdc:new-app/features/auth/hooks/use-sign-in.ts)
+- [Field component source](mdc:ui/field.tsx)
+- [Auth form example](mdc:features/auth/components/sign-in-form.tsx)
+- [Auth hook example](mdc:features/auth/hooks/use-sign-in.ts)
 - Error handling: see `error-handling` skill in `.cursor/skills/error-handling/`

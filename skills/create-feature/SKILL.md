@@ -5,7 +5,7 @@ description: Scaffold a new domain feature module following vertical slicing and
 
 # Create Feature
 
-Scaffold a complete domain feature module following vertical slicing with hexagonal architecture. This skill handles features with **entities, API endpoints, and CRUD operations** that live in `src/new-app/features/`.
+Scaffold a complete domain feature module following vertical slicing with hexagonal architecture. This skill handles features with **entities, API endpoints, and CRUD operations** that live in `src/features/`.
 
 For shared infrastructure (providers, hooks, layouts, i18n, config), use **create-infrastructure** instead.
 
@@ -135,8 +135,8 @@ Feature: {name}
 
 - `api/{feature}.schemas.ts` — Zod response schemas with `.transform()` for field renaming, type coercion, and defaults. Inferred types are exported from the schema file.
 - `domain/{feature}.types.ts` — Re-exports types from `../api/{feature}.schemas.ts`. Domain types are the schema output types.
-- Use `parseResponse(schema, data)` from `@/new-app/shared/api` in adapters to validate and transform API responses.
-- Use `handleApiError(error, contextMappings?)` from `@/new-app/shared/api` to replace manual axios catch blocks.
+- Use `parseResponse(schema, data)` from `@/shared/api` in adapters to validate and transform API responses.
+- Use `handleApiError(error, contextMappings?)` from `@/shared/api` to replace manual axios catch blocks.
 
 ### Centralized Endpoints
 
@@ -151,11 +151,11 @@ All endpoint paths must be in a `const` object at the top of the API adapter fil
 ### Form Pattern
 
 Hooks: `useForm` + `zodResolver` + `useMutation` + `tryCatch`
-Components: `Controller` + `Field` / `FieldLabel` / `FieldError` from `@/new-app/ui/field`
+Components: `Controller` + `Field` / `FieldLabel` / `FieldError` from `@/ui/field`
 
 ### Feature Layout Shell
 
-If a feature page needs a custom page wrapper, create `{feature}-layout.tsx` inside the feature's `components/` folder. It imports shared building blocks from `@/new-app/shared/layouts`. Never put feature-specific layouts in `shared/layouts/`.
+If a feature page needs a custom page wrapper, create `{feature}-layout.tsx` inside the feature's `components/` folder. It imports shared building blocks from `@/shared/layouts`. Never put feature-specific layouts in `shared/layouts/`.
 
 ### Store (Zustand) — Optional
 

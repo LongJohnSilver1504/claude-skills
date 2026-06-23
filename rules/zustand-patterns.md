@@ -1,6 +1,6 @@
 # Zustand Patterns
 
-> **Scope:** All new code in `src/new-app/` that uses Zustand stores.
+> **Scope:** All new code in `src/` that uses Zustand stores.
 
 ## Hard Rules
 

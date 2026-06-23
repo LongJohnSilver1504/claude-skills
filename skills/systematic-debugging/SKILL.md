@@ -107,7 +107,7 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
    - Confirm the new test passes
    - Confirm existing tests still pass
 
-4. **Run the feature tests:** `pnpm vitest run src/new-app/features/{feature}/`
+4. **Run the feature tests:** `pnpm vitest run src/features/{feature}/`
    - No regressions in the feature
 
 5. **Run the build:** `pnpm build`

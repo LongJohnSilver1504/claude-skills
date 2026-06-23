@@ -1,11 +1,11 @@
 ---
 name: create-infrastructure
-description: Scaffold shared infrastructure projects — providers, hooks, layout components, i18n, config/theme. Use when the project builds reusable plumbing in new-app/shared/, or when user says "scaffold shared", "create provider", "setup layout".
+description: Scaffold shared infrastructure projects — providers, hooks, layout components, i18n, config/theme. Use when the project builds reusable plumbing in shared/, or when user says "scaffold shared", "create provider", "setup layout".
 ---
 
 # Create Infrastructure
 
-Scaffold shared infrastructure that lives in `src/new-app/shared/`, `public/`, or the project root. Covers providers, hooks, layout components, i18n translations, config/theme setup, and shared utilities.
+Scaffold shared infrastructure that lives in `src/shared/`, `public/`, or the project root. Covers providers, hooks, layout components, i18n translations, config/theme setup, and shared utilities.
 
 For domain features with entities, API endpoints, and CRUD operations, use **create-feature** instead.
 
@@ -34,14 +34,14 @@ Gather from the user (or extract from the implementation plan):
 | Config/Foundation | project root or `src/styles/` | `globals.css`, `components.json` |
 | Test page | `pages/{page-name}.tsx` | `reservation-details-v2/[id].tsx` |
 
-All paths relative to `src/new-app/` unless noted otherwise.
+All paths relative to `src/` unless noted otherwise.
 
 > **Layout shells are not infra deliverables.** A layout shell that assembles building blocks for a specific page belongs in the feature's `components/` folder (e.g., `features/reservation-details/components/reservation-detail-layout.tsx`), not in `shared/layouts/`.
 
 ## Infrastructure Directory Structure
 
 ```
-src/new-app/
+src/
   shared/
     providers/
       {name}-provider.tsx       # Context + Provider + useX hook

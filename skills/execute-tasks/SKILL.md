@@ -391,7 +391,7 @@ Do NOT ask user permission between deliverables. Run continuously. Only stop for
 ## Resuming After Context Clean
 
 If the user says "resume" or "continue executing":
-1. Find the most recent `PROGRESS.md` in `src/new-app/features/*/`
+1. Find the most recent `PROGRESS.md` in `src/features/*/`
 2. Read the implementation plan it references
 3. Find the first deliverable with status != DONE
 4. Continue the loop from that deliverable

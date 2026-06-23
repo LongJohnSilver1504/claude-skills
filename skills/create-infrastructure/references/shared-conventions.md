@@ -45,23 +45,23 @@ export const {Name} = () => {
 
 | Import | From |
 |--------|------|
-| `client`, `isAxiosError` | `@/new-app/shared/api` |
-| `AppError` | `@/new-app/shared/errors` |
-| `tryCatch` | `@/new-app/shared/utils` |
-| `useError` | `@/new-app/shared/providers` |
-| `links` | `@/new-app/shared/links` |
+| `client`, `isAxiosError` | `@/shared/api` |
+| `AppError` | `@/shared/errors` |
+| `tryCatch` | `@/shared/utils` |
+| `useError` | `@/shared/providers` |
+| `links` | `@/shared/links` |
 | `clsxm` | `@/utils/clsxm` |
-| shadcn components | `@/new-app/ui/{component}` |
+| shadcn components | `@/ui/{component}` |
 | Icons | `lucide-react` |
 | `useTranslation` | `next-i18next` (only in hooks) |
-| Centralized routes | `@/new-app/shared/links` |
-| Providers | `@/new-app/shared/providers/{provider}` |
+| Centralized routes | `@/shared/links` |
+| Providers | `@/shared/providers/{provider}` |
 
 ## Shared Anti-Patterns
 
 - **Don't put logic in component files** — ALL logic goes in hooks
 - **Don't hardcode routes** — use `links` from `shared/links`
-- **Don't import from legacy** — `new-app/` must not import from `src/components/`, `src/api/`, `src/hooks/`
+- **Don't import from legacy** — new feature code must not import from `src/components/`, `src/api/`, `src/hooks/`
 - **Don't use function declarations** — arrow function components with named exports
 - **Don't use `toast.error()` directly** — use `useError().showError()`
 - **Don't inline i18n strings** — all user-facing text comes from translation files

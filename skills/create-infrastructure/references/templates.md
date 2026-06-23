@@ -428,7 +428,7 @@ export const useBackHeader = ({ onBack }: UseBackHeaderOptions = {}): UseBackHea
 ```tsx
 import { useTranslation } from 'next-i18next'
 import { ChevronLeft } from 'lucide-react'
-import { Button } from '@/new-app/ui/button'
+import { Button } from '@/ui/button'
 import { clsxm } from '@/utils/clsxm'
 import { useBackHeader } from './hooks/use-back-header'
 
@@ -514,15 +514,15 @@ export const useNavbar = (): UseNavbarReturn => {
 import Link from 'next/link'
 import { useTranslation } from 'next-i18next'
 import { Menu } from 'lucide-react'
-import { Button } from '@/new-app/ui/button'
+import { Button } from '@/ui/button'
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/new-app/ui/sheet'
-import { Separator } from '@/new-app/ui/separator'
+} from '@/ui/sheet'
+import { Separator } from '@/ui/separator'
 import { clsxm } from '@/utils/clsxm'
 import { useNavbar } from './hooks/use-navbar'
 import { useNavbarItems } from './hooks/use-navbar-items'

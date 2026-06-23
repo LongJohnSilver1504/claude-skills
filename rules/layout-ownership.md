@@ -1,16 +1,16 @@
 # Layout Ownership
 
-> **Scope:** All new code in `src/new-app/`. Inspired by Alex Kondov's component architecture philosophy: a component should never dictate how it's spaced relative to its siblings.
+> **Scope:** All new code in `src/`. Inspired by Alex Kondov's component architecture philosophy: a component should never dictate how it's spaced relative to its siblings.
 
 Components own their **internal** layout. Parent layouts own **external** spacing between children.
 
 ## Page Root: AppContainer
 
-**Every page component must wrap its content in `AppContainer`** from `@/new-app/ui/custom/app-container`. AppContainer provides the viewport constraint (full-width on mobile, max-w-sm centered on desktop), full-height scrollability, semantic `<main>` element, and consistent background. Pages own the layout inside AppContainer — sections, spacing, and content structure.
+**Every page component must wrap its content in `AppContainer`** from `@/ui/custom/app-container`. AppContainer provides the viewport constraint (full-width on mobile, max-w-sm centered on desktop), full-height scrollability, semantic `<main>` element, and consistent background. Pages own the layout inside AppContainer — sections, spacing, and content structure.
 
 ```tsx
 // ✅ Every page renders inside AppContainer
-import { AppContainer } from '@/new-app/ui/custom/app-container'
+import { AppContainer } from '@/ui/custom/app-container'
 
 <AppContainer>
   <TruckerNavbar />

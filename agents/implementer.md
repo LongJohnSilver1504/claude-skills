@@ -19,7 +19,7 @@ You are a focused implementer. You receive one task, implement it precisely, and
    - `centralized-links.md` — Never hardcode URLs or paths
    - `color-usage.md` — Semantic tokens only, never raw Tailwind colors
    - `accessibility.md` — WCAG 2.1 AA, 44x44px touch targets, ARIA labels
-   - `project-structure.md` — New code in `src/new-app/`, feature-based architecture
+   - `project-structure.md` — New code in `src/`, feature-based architecture
    - `design-system-map.md` — Which shadcn/ui components exist and when to use them
    - `package-manager.md` — pnpm only
 
@@ -49,7 +49,7 @@ Before reporting, review with fresh eyes:
 **Conventions:**
 - Does every file follow the convention rules I read?
 - Are components pure renderers with co-located hooks?
-- Are imports using `@/new-app/` paths?
+- Are imports using `@/` paths?
 - Are all colors using semantic tokens?
 - Are all URLs coming from centralized links?
 

@@ -110,10 +110,10 @@ export type Create{Feature}Request = z.infer<typeof create{Feature}Schema>
 export type Update{Feature}Request = z.infer<typeof update{Feature}Schema>
 ```
 
-Use `paginatedResponseSchema()` from `@/new-app/shared/api` for paginated responses:
+Use `paginatedResponseSchema()` from `@/shared/api` for paginated responses:
 
 ```tsx
-import { paginatedResponseSchema } from '@/new-app/shared/api'
+import { paginatedResponseSchema } from '@/shared/api'
 const paginated{Feature}Schema = paginatedResponseSchema({feature}ResponseSchema)
 ```
 
@@ -129,8 +129,8 @@ Now: `api/{feature}.schemas.ts` defines the schema, transforms, AND exports infe
 > **Rule:** All endpoint paths in a centralized constant object. See `centralized-links.md` in your project's `.claude/rules/`.
 
 ```tsx
-import { client, handleApiError, parseResponse, paginatedResponseSchema } from '@/new-app/shared/api'
-import { AppError } from '@/new-app/shared/errors'
+import { client, handleApiError, parseResponse, paginatedResponseSchema } from '@/shared/api'
+import { AppError } from '@/shared/errors'
 import { {feature}ResponseSchema, type {Feature}, type Create{Feature}Request, type Update{Feature}Request } from './{feature}.schemas'
 
 const {feature}Endpoints = {
@@ -619,20 +619,20 @@ export const {Feature}List = ({ {feature}s, onEdit }: {Feature}ListProps) => {
 
 ### 6.3 Form Component (`components/{feature}-form.tsx`)
 
-Uses Controller + Field/FieldLabel/FieldError pattern from `@/new-app/ui/field`.
+Uses Controller + Field/FieldLabel/FieldError pattern from `@/ui/field`.
 
 ```tsx
 'use client'
 
 import { Controller } from 'react-hook-form'
-import { Button } from '@/new-app/ui/button'
-import { Input } from '@/new-app/ui/input'
+import { Button } from '@/ui/button'
+import { Input } from '@/ui/input'
 import {
   Field,
   FieldLabel,
   FieldError,
   FieldGroup,
-} from '@/new-app/ui/field'
+} from '@/ui/field'
 import { useCreate{Feature}Form } from '../hooks/use-{feature}-form'
 
 export const {Feature}Form = () => {
@@ -677,7 +677,7 @@ export const {Feature}Form = () => {
 
 import { use{Feature}s } from '../hooks/use-{feature}s'
 import { {Feature}List } from './{feature}-list'
-import { Skeleton } from '@/new-app/ui/skeleton'
+import { Skeleton } from '@/ui/skeleton'
 
 type {Feature}sViewProps = {
   // Add required props like locationId if needed

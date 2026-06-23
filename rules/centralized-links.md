@@ -6,7 +6,7 @@ alwaysApply: true
 
 # Centralized Links & Endpoints
 
-> **Scope:** These patterns apply to new code in `src/new-app/`. Legacy pages use hardcoded routes — when touching legacy code, prefer migrating routes to the centralized system.
+> **Scope:** These patterns apply to new code in `src/`. Legacy pages use hardcoded routes — when touching legacy code, prefer migrating routes to the centralized system.
 
 All routes and API endpoints must be created and consumed through centralized builders. Never hardcode URLs or paths in components, hooks, services, utils, or tests.
 
@@ -14,17 +14,17 @@ All routes and API endpoints must be created and consumed through centralized bu
 
 1. **Never hardcode URLs or paths** in components, hooks, services, utils, or tests.
 
-2. **App/UI routes** must come from [new-app/shared/links/index.ts](mdc:new-app/shared/links/index.ts) via the `links` object.
+2. **App/UI routes** must come from [shared/links/index.ts](mdc:shared/links/index.ts) via the `links` object.
 
-3. **Internal API routes** (Next.js `/api/*`) must be defined in the `apiRoutes` section of [new-app/shared/links/index.ts](mdc:new-app/shared/links/index.ts).
+3. **Internal API routes** (Next.js `/api/*`) must be defined in the `apiRoutes` section of [shared/links/index.ts](mdc:shared/links/index.ts).
 
 4. **External API endpoints** (paths relative to `baseURL`) must be defined as a typed constant object at the top of the feature's API adapter file.
 
 5. **Dynamic params** must be built inside builder functions, not inline.
 
-6. **Query strings** must be built using the `buildUrl` helper from [new-app/shared/links/index.ts](mdc:new-app/shared/links/index.ts).
+6. **Query strings** must be built using the `buildUrl` helper from [shared/links/index.ts](mdc:shared/links/index.ts).
 
-7. **API base URL** comes from env via the `client` singleton in [new-app/shared/api/index.ts](mdc:new-app/shared/api/index.ts). Never repeat the base URL in multiple places. Never inline full API URLs.
+7. **API base URL** comes from env via the `client` singleton in [shared/api/index.ts](mdc:shared/api/index.ts). Never repeat the base URL in multiple places. Never inline full API URLs.
 
 8. **No string interpolation for URLs** outside the builder/endpoint files.
 
@@ -32,11 +32,11 @@ All routes and API endpoints must be created and consumed through centralized bu
 
 | Type | Location | Called With | Example |
 |------|----------|-------------|---------|
-| Public routes | `new-app/shared/links/index.ts` → `publicRoutes` | `router.push()`, `<Link>` | `links.public.signIn` |
-| Private routes | `new-app/shared/links/index.ts` → `privateRoutes` | `router.push()`, `<Link>` | `links.private.dashboard` |
-| Internal API routes | `new-app/shared/links/index.ts` → `apiRoutes` | `fetch()` (same-origin) | `links.api.auth.session` |
-| External API endpoints | Feature's `api/{feature}.api.ts` → top-level const | `client` from `@/new-app/shared/api` | `authEndpoints.signIn` |
-| Query strings | `buildUrl()` from `new-app/shared/links` | any of the above | `buildUrl(path, { q, page })` |
+| Public routes | `shared/links/index.ts` → `publicRoutes` | `router.push()`, `<Link>` | `links.public.signIn` |
+| Private routes | `shared/links/index.ts` → `privateRoutes` | `router.push()`, `<Link>` | `links.private.dashboard` |
+| Internal API routes | `shared/links/index.ts` → `apiRoutes` | `fetch()` (same-origin) | `links.api.auth.session` |
+| External API endpoints | Feature's `api/{feature}.api.ts` → top-level const | `client` from `@/shared/api` | `authEndpoints.signIn` |
+| Query strings | `buildUrl()` from `shared/links` | any of the above | `buildUrl(path, { q, page })` |
 
 > **Note:** This project uses Next.js 12 Pages Router. Use `router.push()` from `next/router` — not `redirect()` (App Router only).
 
@@ -56,7 +56,7 @@ router.push('/dashboard')
 
 // Good
 import { useRouter } from 'next/router'
-import { links } from '@/new-app/shared/links'
+import { links } from '@/shared/links'
 
 const router = useRouter()
 router.push(links.public.signIn)
@@ -71,7 +71,7 @@ router.push(links.private.dashboard)
 router.push(`/sign-in?redirect=${pathname}`)
 
 // Good
-import { links, buildUrl } from '@/new-app/shared/links'
+import { links, buildUrl } from '@/shared/links'
 
 router.push(buildUrl(links.public.signIn, { redirect: pathname }))
 ```
@@ -89,7 +89,7 @@ const response = await fetch('/api/auth/session', {
 })
 
 // Good — path from links.api
-import { links } from '@/new-app/shared/links'
+import { links } from '@/shared/links'
 
 const response = await fetch(links.api.auth.session, {
   method: 'POST',
@@ -100,7 +100,7 @@ const response = await fetch(links.api.auth.session, {
 
 ### External API Endpoints (per-feature)
 
-External API calls use the `client` singleton from `@/new-app/shared/api`, which has the `baseURL` injected from `env.NEXT_PUBLIC_API_HOST`. Endpoint paths are relative to that base.
+External API calls use the `client` singleton from `@/shared/api`, which has the `baseURL` injected from `env.NEXT_PUBLIC_API_HOST`. Endpoint paths are relative to that base.
 
 ```typescript
 // Bad — hardcoded strings scattered in methods
@@ -148,6 +148,6 @@ const response = await client.patch(locationEndpoints.detail(id), data)
 
 ## Existing Infrastructure
 
-- **App routes & helpers**: [new-app/shared/links/index.ts](mdc:new-app/shared/links/index.ts) — `links`, `buildUrl`, `isPublicRoute`, `routePatterns`
-- **API client**: [new-app/shared/api/index.ts](mdc:new-app/shared/api/index.ts) — singleton `client` with `baseURL` from `env.NEXT_PUBLIC_API_HOST`
-- **API client class**: [new-app/shared/api/client.ts](mdc:new-app/shared/api/client.ts) — `ApiClient` with dependency-injected `baseURL`
+- **App routes & helpers**: [shared/links/index.ts](mdc:shared/links/index.ts) — `links`, `buildUrl`, `isPublicRoute`, `routePatterns`
+- **API client**: [shared/api/index.ts](mdc:shared/api/index.ts) — singleton `client` with `baseURL` from `env.NEXT_PUBLIC_API_HOST`
+- **API client class**: [shared/api/client.ts](mdc:shared/api/client.ts) — `ApiClient` with dependency-injected `baseURL`

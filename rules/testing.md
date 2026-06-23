@@ -6,14 +6,14 @@ alwaysApply: false
 
 # Testing
 
-> **Scope:** All tests in `src/new-app/`. Legacy tests follow existing conventions.
+> **Scope:** All tests in `src/`. Legacy tests follow existing conventions.
 
 ## Runner & Config
 
 - **Vitest 4** with `jsdom` environment, configured in `vitest.config.ts`
 - **React Testing Library** for component tests
 - **MSW v2** for API mocking
-- **Coverage** scoped to `src/new-app/` only (excludes `ui/`, test files, barrel `index.ts`)
+- **Coverage** scoped to `src/` only (excludes `ui/`, test files, barrel `index.ts`)
 - `globals: true` — no need to import `describe`, `it`, `expect`, `vi`
 
 ## Polyfills (`vitest.setup.ts`)
@@ -75,7 +75,7 @@ hooks/
 
 ```bash
 pnpm test                                          # all tests
-pnpm vitest run src/new-app/features/{feature}     # feature tests
+pnpm vitest run src/features/{feature}     # feature tests
 pnpm test:watch                                    # watch mode
 pnpm test:coverage                                 # coverage report
 ```

@@ -6,42 +6,42 @@
 
 | UI Concept | Component | Import Path | When to Use |
 |------------|-----------|-------------|-------------|
-| Action trigger | `Button` | `@/new-app/ui/button` | Primary/secondary/ghost/destructive actions |
-| Status label | `Badge` | `@/new-app/ui/badge` | Status indicators, tags, counts |
-| Text input | `Input` | `@/new-app/ui/input` | Single-line text, email, password |
-| Dropdown select | `Select` | `@/new-app/ui/select` | Fixed option lists |
-| Modal dialog | `Dialog` | `@/new-app/ui/dialog` | Confirmations, forms, detail views |
-| Side panel | `Sheet` | `@/new-app/ui/sheet` | Settings, filters, detail sidebars. **Always `side="right"`** unless explicitly specified otherwise (see Sheet Defaults below) |
-| Info popup | `Popover` | `@/new-app/ui/popover` | Contextual information, date pickers |
-| Hover hint | `Tooltip` | `@/new-app/ui/tooltip` | Icon labels, truncated text hints |
-| Loading placeholder | `Skeleton` | `@/new-app/ui/skeleton` | Content loading states |
-| Inline message | `Alert` | `@/new-app/ui/alert` | Warnings, info, error callouts |
-| Data grid | `DataTable` + `Table` | `@/new-app/ui/data-table`, `@/new-app/ui/table` | Structured data lists |
-| Tab navigation | `Tabs` | `@/new-app/ui/tabs` | Content switching within a view |
-| Scrollable area | `ScrollArea` | `@/new-app/ui/scroll-area` | Vertical scroll in fixed-height containers |
-| Expandable section | `Collapsible` | `@/new-app/ui/collapsible` | Show/hide content sections |
-| Toast notifications | `Sonner` | `@/new-app/ui/sonner` | Success/error feedback (via ErrorProvider for errors) |
+| Action trigger | `Button` | `@/ui/button` | Primary/secondary/ghost/destructive actions |
+| Status label | `Badge` | `@/ui/badge` | Status indicators, tags, counts |
+| Text input | `Input` | `@/ui/input` | Single-line text, email, password |
+| Dropdown select | `Select` | `@/ui/select` | Fixed option lists |
+| Modal dialog | `Dialog` | `@/ui/dialog` | Confirmations, forms, detail views |
+| Side panel | `Sheet` | `@/ui/sheet` | Settings, filters, detail sidebars. **Always `side="right"`** unless explicitly specified otherwise (see Sheet Defaults below) |
+| Info popup | `Popover` | `@/ui/popover` | Contextual information, date pickers |
+| Hover hint | `Tooltip` | `@/ui/tooltip` | Icon labels, truncated text hints |
+| Loading placeholder | `Skeleton` | `@/ui/skeleton` | Content loading states |
+| Inline message | `Alert` | `@/ui/alert` | Warnings, info, error callouts |
+| Data grid | `DataTable` + `Table` | `@/ui/data-table`, `@/ui/table` | Structured data lists |
+| Tab navigation | `Tabs` | `@/ui/tabs` | Content switching within a view |
+| Scrollable area | `ScrollArea` | `@/ui/scroll-area` | Vertical scroll in fixed-height containers |
+| Expandable section | `Collapsible` | `@/ui/collapsible` | Show/hide content sections |
+| Toast notifications | `Sonner` | `@/ui/sonner` | Success/error feedback (via ErrorProvider for errors) |
 
 ## Custom Components (`ui/custom/`)
 
 | UI Concept | Component | Import Path | When to Use |
 |------------|-----------|-------------|-------------|
-| Page wrapper | `AppContainer` | `@/new-app/ui/custom/app-container` | Root layout container for pages |
-| Navigate back | `BackButton` | `@/new-app/ui/custom/back-button` | Page-level back navigation |
-| Progress indicator | `FuelMeter` | `@/new-app/ui/custom/fuel-meter` | Visual progress/level display |
-| Multi-step flow | `Stepper` | `@/new-app/ui/custom/stepper` | Wizard/checkout flows |
-| Language toggle | `LanguageSelector` | `@/new-app/ui/custom/language-selector` | EN/ES language switch |
-| Top navigation | `TruckerNavbar` | `@/new-app/ui/custom/navbar` | App header with nav |
-| Debug overlay | `DevToolPanel` | `@/new-app/ui/custom/dev-tool-panel` | Development-only debugging |
+| Page wrapper | `AppContainer` | `@/ui/custom/app-container` | Root layout container for pages |
+| Navigate back | `BackButton` | `@/ui/custom/back-button` | Page-level back navigation |
+| Progress indicator | `FuelMeter` | `@/ui/custom/fuel-meter` | Visual progress/level display |
+| Multi-step flow | `Stepper` | `@/ui/custom/stepper` | Wizard/checkout flows |
+| Language toggle | `LanguageSelector` | `@/ui/custom/language-selector` | EN/ES language switch |
+| Top navigation | `TruckerNavbar` | `@/ui/custom/navbar` | App header with nav |
+| Debug overlay | `DevToolPanel` | `@/ui/custom/dev-tool-panel` | Development-only debugging |
 
 ## Form Components
 
 | UI Concept | Component | Import Path | When to Use |
 |------------|-----------|-------------|-------------|
-| Form field wrapper | `Field` | `@/new-app/ui/field` | Wraps every form input |
-| Field label | `FieldLabel` | `@/new-app/ui/field` | Accessible label for inputs |
-| Validation error | `FieldError` | `@/new-app/ui/field` | Displays field validation errors |
-| Field group | `FieldGroup` | `@/new-app/ui/field` | Groups multiple fields with spacing |
+| Form field wrapper | `Field` | `@/ui/field` | Wraps every form input |
+| Field label | `FieldLabel` | `@/ui/field` | Accessible label for inputs |
+| Validation error | `FieldError` | `@/ui/field` | Displays field validation errors |
+| Field group | `FieldGroup` | `@/ui/field` | Groups multiple fields with spacing |
 
 ## Not Installed (Install When Needed)
 

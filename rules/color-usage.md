@@ -1,6 +1,6 @@
 # Color Usage
 
-> **Scope:** All new code in `src/new-app/`. Legacy code in `src/components/` follows existing conventions.
+> **Scope:** All new code in `src/`. Legacy code in `src/components/` follows existing conventions.
 
 All colors must come from the design token system defined in `src/styles/globals.css`. Never use raw Tailwind color utilities in component code.
 

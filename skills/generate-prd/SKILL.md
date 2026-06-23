@@ -96,8 +96,8 @@ Co-locate PRDs next to the code they describe:
 
 | Scope | Location |
 |-------|----------|
-| Feature | `src/new-app/features/{feature}/PRD.md` |
-| Shared module | `src/new-app/shared/{module}/PRD.md` |
+| Feature | `src/features/{feature}/PRD.md` |
+| Shared module | `src/shared/{module}/PRD.md` |
 | Project-wide (rare) | `PRD.md` at repo root |
 
 ## Quality Check
@@ -119,7 +119,7 @@ If context was cleaned mid-pipeline, restore state before proceeding:
 
 1. **Read DECISIONS.md** in the feature folder for accumulated context
 2. **Read the relevant artifact** for this skill's input:
-   - The feature folder in `src/new-app/features/{feature}/` for existing PRD drafts
+   - The feature folder in `src/features/{feature}/` for existing PRD drafts
 3. **Continue from where you left off** — don't restart the skill from scratch
 
 ## Next Step

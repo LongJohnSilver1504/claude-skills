@@ -1,6 +1,6 @@
 # Verification Before Completion
 
-> **Scope:** All agents and skills in `src/new-app/`. Applies to any claim that code works, tests pass, or a task is done.
+> **Scope:** All agents and skills in `src/`. Applies to any claim that code works, tests pass, or a task is done.
 
 No completion claims without fresh verification evidence. If you have not run the verification command in THIS response, you cannot claim it passes.
 

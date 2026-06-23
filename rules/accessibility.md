@@ -1,6 +1,6 @@
 # Accessibility Standard
 
-> **Scope:** Project-wide. Applies to all new code in `src/new-app/`.
+> **Scope:** Project-wide. Applies to all new code in `src/`.
 
 ## Compliance Level
 

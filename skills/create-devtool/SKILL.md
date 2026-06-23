@@ -110,9 +110,9 @@ Tabs: [ Visual | Dev Mode ]
 ### Component (complex flow)
 
 ```tsx
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/new-app/ui/tabs'
-import { DevToolPanel } from '@/new-app/ui/custom/dev-tool-panel'
-import { StoreField, StatusDot, StateSnapshot } from '@/new-app/shared/devtool'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/ui/tabs'
+import { DevToolPanel } from '@/ui/custom/dev-tool-panel'
+import { StoreField, StatusDot, StateSnapshot } from '@/shared/devtool'
 import { use{Feature}Devtool } from '../hooks/use-{feature}-devtool'
 
 export const {Feature}Devtool = () => {
@@ -161,9 +161,9 @@ export const {Feature}Devtool = () => {
 
 ```tsx
 import { useMemo } from 'react'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/new-app/ui/tabs'
-import { DevToolPanel } from '@/new-app/ui/custom/dev-tool-panel'
-import { StoreField, StatusDot, StateSnapshot } from '@/new-app/shared/devtool'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/ui/tabs'
+import { DevToolPanel } from '@/ui/custom/dev-tool-panel'
+import { StoreField, StatusDot, StateSnapshot } from '@/shared/devtool'
 // import the page's store and hooks directly
 
 export const {Name}Devtool = () => {
@@ -200,7 +200,7 @@ export const {Name}Devtool = () => {
 ```ts
 import { useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { AppError } from '@/new-app/shared/errors'
+import { AppError } from '@/shared/errors'
 // import the feature's store, keys, API
 
 type QueryStatus = {
@@ -298,7 +298,7 @@ The `DevToolPanel` wrapper handles:
 
 ## Shared Primitives
 
-All from `@/new-app/shared/devtool`:
+All from `@/shared/devtool`:
 
 | Component | Purpose | Usage |
 |-----------|---------|-------|
@@ -307,7 +307,7 @@ All from `@/new-app/shared/devtool`:
 | `StateSnapshot` | Formatted JSON + copy button | `<StateSnapshot data={snapshotData} />` |
 | `isDevToolEnabled` | Guard (checks env/flag) | Used internally by `DevToolPanel` |
 
-And from `@/new-app/ui/custom/dev-tool-panel`:
+And from `@/ui/custom/dev-tool-panel`:
 
 | Component | Purpose |
 |-----------|---------|

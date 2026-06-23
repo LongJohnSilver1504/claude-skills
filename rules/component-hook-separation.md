@@ -1,12 +1,12 @@
 ---
 description: Enforce separation of business logic into hooks, keeping components as pure renderers
-globs: src/new-app/**/*.tsx, src/new-app/**/*.ts
+globs: src/**/*.tsx, src/**/*.ts
 alwaysApply: false
 ---
 
 # Component–Hook Separation
 
-Components in `src/new-app/` must be **pure renderers**. All business logic, state management, side effects, and data transformation belong in co-located custom hooks.
+Components in `src/` must be **pure renderers**. All business logic, state management, side effects, and data transformation belong in co-located custom hooks.
 
 ## Hard Rules
 
@@ -192,7 +192,7 @@ A **standalone dialog component** that owns its own trigger via `DialogTrigger` 
 
 ## When to Skip
 
-- **shadcn/ui primitives** (`src/new-app/ui/`) — these are low-level wrappers, not feature components.
+- **shadcn/ui primitives** (`src/ui/`) — these are low-level wrappers, not feature components.
 - **Pure composition components** that receive all data via props and have zero hook calls (e.g., `ChangeDateAction` composing `ChangesBanner` + `ActionRow`). These are leaf renderers, not feature components.
 - **Legacy code** (`src/components/`, `src/pages/`) — apply this pattern only when adding new features there, not during bug fixes.
 

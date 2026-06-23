@@ -19,7 +19,7 @@ Read ALL convention files in `.claude/rules/`:
 - `error-handling.md` — `.catch()` + `handleApiError()`, `useError().showError()`
 - `tanstack-query.md` — Feature query keys, `isPending`, mutations with `onError`
 - `form-patterns.md` — `zodResolver` + `Controller` + `Field`
-- `project-structure.md` — New code in `src/new-app/`, feature-based architecture
+- `project-structure.md` — New code in `src/`, feature-based architecture
 - `accessibility.md` — WCAG 2.1 AA, 44x44px touch targets, ARIA labels
 - `design-system-map.md` — Which shadcn/ui components exist and when to use them
 - `zustand-patterns.md` — Never put store in useEffect dependency array
@@ -39,7 +39,7 @@ These are issues that only appear when looking at the FULL feature:
 1. **Naming consistency** — Are similar concepts named the same way across files from different deliverables? (e.g., `reservation` vs `booking` vs `rsv` in different files)
 2. **Duplicate logic** — Did two deliverables independently implement similar logic that should be a shared hook or utility?
 3. **Integration gaps** — Are hook exports missing from barrel files (`index.ts`)? Are routes registered in centralized links? Do components import from the right locations?
-4. **Import direction** — Does any `new-app/` code import from legacy (`src/components/`, `src/api/`, `src/hooks/`)? This violates project-structure rules.
+4. **Import direction** — Does any new feature code import from legacy (`src/components/`, `src/api/`, `src/hooks/`)? This violates project-structure rules.
 5. **Missed shared patterns** — Do 2+ hooks fetch the same data, transform through the same pipeline, or extract the same value? These should be shared.
 6. **Type consistency** — Are the same domain types used everywhere, or did different deliverables define overlapping types?
 

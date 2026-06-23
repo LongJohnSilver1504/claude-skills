@@ -15,7 +15,7 @@ Run these checks in order:
 
 1. **Feature tests:**
    ```bash
-   pnpm vitest run src/new-app/features/{feature}/
+   pnpm vitest run src/features/{feature}/
    ```
    Report: X tests passed, Y failed
 
@@ -40,7 +40,7 @@ If tests or build fail, report the failures and ask the user:
 
 Look for PROGRESS.md files to determine the base branch:
 
-1. Check for `PROGRESS.md` in the feature directory (`src/new-app/features/{feature}/`)
+1. Check for `PROGRESS.md` in the feature directory (`src/features/{feature}/`)
 2. Read the `**Base Branch**` field if it exists
 3. If found, use it as the target for PR creation and merge operations
 4. If not found, ask the user which branch to target

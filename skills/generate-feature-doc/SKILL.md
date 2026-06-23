@@ -96,9 +96,9 @@ Documentation lives **next to the code it describes**, not in a separate `docs/`
 
 | Scope | Location |
 |-------|----------|
-| **Feature doc** | `src/new-app/features/{feature}/README.md` |
-| **Shared infrastructure doc** | `src/new-app/shared/{module}/README.md` (e.g., `shared/layouts/README.md`) |
-| **Provider/utility doc** | `src/new-app/shared/{folder}/README.md` |
+| **Feature doc** | `src/features/{feature}/README.md` |
+| **Shared infrastructure doc** | `src/shared/{module}/README.md` (e.g., `shared/layouts/README.md`) |
+| **Provider/utility doc** | `src/shared/{folder}/README.md` |
 
 Co-location ensures documentation is:
 - Discoverable when browsing code
@@ -162,7 +162,7 @@ If context was cleaned mid-pipeline, restore state before proceeding:
 
 1. **Read DECISIONS.md** in the feature folder for accumulated context
 2. **Read the relevant artifact** for this skill's input:
-   - The feature code in `src/new-app/features/{feature}/` and any existing README.md draft
+   - The feature code in `src/features/{feature}/` and any existing README.md draft
 3. **Continue from where you left off** — don't restart the skill from scratch
 
 ## Next Step

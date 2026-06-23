@@ -6,20 +6,20 @@ alwaysApply: false
 
 # Error Handling
 
-> **Scope:** These patterns apply to new code in `src/new-app/`. Legacy code in `src/api/` and `src/hooks/` follows existing conventions.
+> **Scope:** These patterns apply to new code in `src/`. Legacy code in `src/api/` and `src/hooks/` follows existing conventions.
 
 Errors flow upward through well-defined layers. Transform at the adapter boundary, display at the hook/component boundary.
 
 ## Hard Rules
 
-1. **Use `.catch()` with `handleApiError()`** from `@/new-app/shared/api` in API adapters — never use try/catch boilerplate.
-2. **Use `parseResponse()`** from `@/new-app/shared/api` to validate API responses against Zod schemas — catches shape mismatches at runtime.
+1. **Use `.catch()` with `handleApiError()`** from `@/shared/api` in API adapters — never use try/catch boilerplate.
+2. **Use `parseResponse()`** from `@/shared/api` to validate API responses against Zod schemas — catches shape mismatches at runtime.
 3. **Never swallow errors** — always re-throw or show user feedback.
 4. **Use `useNotification().showError()`** for user-visible errors — never `toast.error()` directly.
 5. **Use `AppError.isAppError()`** to type-check errors before accessing `.code` or `.status`.
 6. **Error codes are `UPPER_SNAKE_CASE`** strings — never enums.
-7. **Domain error classes** go in `new-app/features/{feature}/domain/{feature}.errors.ts` and extend `AppError`.
-8. **Use `tryCatch()`** from `@/new-app/shared/utils` for imperative async flows needing sequential steps. Returns a `Result<T, E>` discriminated union.
+7. **Domain error classes** go in `features/{feature}/domain/{feature}.errors.ts` and extend `AppError`.
+8. **Use `tryCatch()`** from `@/shared/utils` for imperative async flows needing sequential steps. Returns a `Result<T, E>` discriminated union.
 9. **The `ApiClient` logs errors but always re-throws** — it is side-effect only.
 
 ## axios v0.21 Gotcha
@@ -60,7 +60,7 @@ API adapter (.catch → handleApiError → throw AppError)
 ## API Adapter Pattern
 
 ```typescript
-import { client, handleApiError, parseResponse } from '@/new-app/shared/api'
+import { client, handleApiError, parseResponse } from '@/shared/api'
 import { myResponseSchema } from './my-feature.schemas'
 
 export const myApi = {
@@ -101,8 +101,8 @@ onError: (error) => {
 }
 
 // Option B: tryCatch (sequential steps after success)
-import { tryCatch } from '@/new-app/shared/utils'
-import { links } from '@/new-app/shared/links'
+import { tryCatch } from '@/shared/utils'
+import { links } from '@/shared/links'
 
 const { data, error } = await tryCatch(mutation.mutateAsync(values))
 if (error) {
@@ -116,8 +116,8 @@ router.push(links.private.dashboard)
 ## Domain Error Classes
 
 ```typescript
-// new-app/features/payments/domain/payment.errors.ts
-import { AppError } from '@/new-app/shared/errors'
+// features/payments/domain/payment.errors.ts
+import { AppError } from '@/shared/errors'
 
 export class PaymentNotFoundError extends AppError {
   constructor(id: number) {
@@ -175,9 +175,9 @@ try { await api.create(data) } catch (e) { ... }
 
 ## Related
 
-- [AppError source](mdc:new-app/shared/errors/app-error.ts)
-- [tryCatch source](mdc:new-app/shared/utils/try-catch.ts)
-- [handleApiError source](mdc:new-app/shared/api/handle-api-error.ts)
-- [parseResponse source](mdc:new-app/shared/api/parse-response.ts)
-- [NotificationProvider source](mdc:new-app/shared/providers/notification-provider.tsx)
-- [Location adapter example](mdc:new-app/features/reservations/api/location.api.ts)
+- [AppError source](mdc:shared/errors/app-error.ts)
+- [tryCatch source](mdc:shared/utils/try-catch.ts)
+- [handleApiError source](mdc:shared/api/handle-api-error.ts)
+- [parseResponse source](mdc:shared/api/parse-response.ts)
+- [NotificationProvider source](mdc:shared/providers/notification-provider.tsx)
+- [Location adapter example](mdc:features/reservations/api/location.api.ts)

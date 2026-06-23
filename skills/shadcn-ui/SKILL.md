@@ -14,8 +14,8 @@ For component catalog, props, variants, and installation examples, **use the sha
 | React | **18.x** (`forwardRef` still required for ref forwarding) |
 | Tailwind | **v4** (PostCSS, `@theme` directive, OKLCH colors) |
 | Animation | `tw-animate-css` (NOT `tailwindcss-animate`) |
-| Component path | `@/new-app/ui/` |
-| Custom components | `@/new-app/ui/custom/` |
+| Component path | `@/ui/` |
+| Custom components | `@/ui/custom/` |
 | Utility function | `cn` from `@/utils/clsxm` |
 | Icon library | `lucide-react` |
 | Style | `new-york` |
@@ -31,21 +31,21 @@ pnpm dlx shadcn@latest add <component-name>
 1. **Fix `cn` import path** — the CLI generates `from "src/lib/utils"` instead of the configured alias:
 
 ```bash
-grep -rl 'from "src/lib/utils"' src/new-app/ui/ | xargs sed -i '' 's|from "src/lib/utils"|from "@/utils/clsxm"|g'
+grep -rl 'from "src/lib/utils"' src/ui/ | xargs sed -i '' 's|from "src/lib/utils"|from "@/utils/clsxm"|g'
 ```
 
 2. **Add `forwardRef` to components** — shadcn/ui targets React 19 where `forwardRef` is no longer needed, but this project uses React 18. After installing, check the generated file and wrap any component that forwards a ref to a native element or Radix primitive with `React.forwardRef`. Add `displayName` and spread `...rest` props on every converted component.
 
 ## Import Path Rules
 
-All imports use `@/new-app/ui/`, never the legacy `@/components/ui/` path.
+All imports use `@/ui/`, never the legacy `@/components/ui/` path.
 
 ```tsx
 // ✅ Correct
-import { Button } from '@/new-app/ui/button'
-import { Card, CardContent } from '@/new-app/ui/card'
-import { Field, FieldLabel, FieldError } from '@/new-app/ui/field'
-import { BackButton } from '@/new-app/ui/custom/back-button'
+import { Button } from '@/ui/button'
+import { Card, CardContent } from '@/ui/card'
+import { Field, FieldLabel, FieldError } from '@/ui/field'
+import { BackButton } from '@/ui/custom/back-button'
 
 // ❌ Wrong — legacy path
 import { Button } from '@/components/ui/button'
@@ -57,14 +57,14 @@ Use `Controller` from `react-hook-form` with `Field` components. **Never use the
 
 ```tsx
 import { Controller } from 'react-hook-form'
-import { Button } from '@/new-app/ui/button'
-import { Input } from '@/new-app/ui/input'
+import { Button } from '@/ui/button'
+import { Input } from '@/ui/input'
 import {
   Field,
   FieldLabel,
   FieldError,
   FieldGroup,
-} from '@/new-app/ui/field'
+} from '@/ui/field'
 
 export const MyForm = () => {
   const { form, isDisabled, onSubmit } = useMyFormHook()
@@ -128,7 +128,7 @@ Use `ErrorProvider` for errors — never call `toast.error()` directly.
 
 ```tsx
 // ✅ In hooks — use error provider
-import { useError } from '@/new-app/shared/providers'
+import { useError } from '@/shared/providers'
 
 const { showError, showWarning } = useError()
 showError('Something went wrong')

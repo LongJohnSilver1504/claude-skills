@@ -47,6 +47,11 @@ If tests or build fail, report the failures and ask the user:
 3. At each key state: screenshot, and check the console/network panel for errors (uncaught exceptions, 4xx/5xx, literal `undefined` in query params, Zod VALIDATION_ERRORs).
 4. Report pass/fail per step with the screenshots. A failed step blocks the commit/PR offer — fix first (or the user explicitly waives).
 
+**Authentication (how the walk gets a session — in this order, never improvise):**
+1. **Mock mode (default)**: run the dev server with the project's mock flag enabled; before first navigation, inject a fake session in the exact shape the project's auth layer expects (see the auth feature's domain types + testing factories) via Playwright `addInitScript`/`localStorage`. Client-side expiry checks need a token with a future `exp`; mocked endpoints don't validate it. Zero real credentials, fully deterministic.
+2. **Staging (opt-in only)**: reuse a saved Playwright `storageState` file from a ONE-TIME manual login with a dedicated TEST user (never real user data). The state file lives in a gitignored path (e.g. `.playwright/`); when it's missing or expired, STOP and report "auth wall — needs a one-time manual login", don't attempt to script OTP/password flows.
+3. **Never**: credentials or OTPs in the repo/skill, auth bypasses in production code, or guessing at login forms.
+
 Skip only for pure-logic, infrastructure, or docs-only changes — say so explicitly ("smoke-walk skipped: no UI surface"). Keep walks under ~15 steps; longer flows degrade browser-agent reliability — split or fall back to manual QA for the tail.
 
 ### Step 2: Read Branch Context

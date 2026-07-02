@@ -161,3 +161,7 @@ feat: Create shared links
 - **Don't skip the body** for multi-file changes
 - **Don't amend previous commits** unless explicitly asked
 - **Don't push** unless explicitly asked
+
+## PR Base
+
+When a PR follows the commit, the base is the project's documented integration branch (check CLAUDE.md — e.g. `develop`), never assumed to be `main`.

@@ -1,6 +1,6 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 21 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 22 skills that take you from a rough idea to a merged PR.
 
 ## What This Is
 
@@ -122,6 +122,7 @@ execute-tasks (orchestrator)
 | `/generate-feature-doc` | Generate feature documentation by analyzing code changes |
 | `/refactoring-ui` | Apply Refactoring UI principles when building new UI, and audit existing components — prioritized findings with rule citations |
 | `/receiving-code-review` | Evaluate code review feedback with technical rigor — verify before implementing, no performative agreement |
+| `/audit-branch` | One-command holistic audit of an ad-hoc branch: conventions + design + tests + correctness, triage, fix loop |
 | `/git-commit` | Create commits following conventional commit style with descriptive bodies |
 | `/finish-feature` | Finalize a feature — run tests, build, present commit/PR/discard options |
 

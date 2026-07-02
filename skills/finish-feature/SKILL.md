@@ -38,9 +38,16 @@ If tests or build fail, report the failures and ask the user:
 - **Continue anyway** — proceed to Step 2 despite failures
 - **Stop** — abort finalization
 
-### Step 1.5: Offer Runtime Verification (UI features, optional)
+### Step 1.5: Browser Smoke-Walk (UI features — mandatory gate)
 
-After tests and build pass, if the feature has visual components or user flows, offer the built-in `/verify` skill — it runs the app and observes actual behavior. "Tests green" has repeatedly not meant "flow works". Present it as an optional step; skip for pure-logic or infrastructure-only changes.
+"Tests green" has repeatedly NOT meant "flow works" — session mining found ~35+ manual QA rounds where the human caught redirect bugs, runtime schema crashes, and viewport breaks that the unit suite structurally cannot see. If the feature has visual components or user flows, walk it in a real browser BEFORE offering commit/PR:
+
+1. Start the dev server in the background (the project's dev command; reuse it if already running).
+2. Walk the CHANGED flow only — ≤15 steps, at the project's real viewport (mobile-only projects: use the Playwright MCP's device emulation if configured, e.g. `--device "iPhone 15"`; otherwise the built-in `/verify` skill). Derive the steps from the UX spec's flow matrix when one exists.
+3. At each key state: screenshot, and check the console/network panel for errors (uncaught exceptions, 4xx/5xx, literal `undefined` in query params, Zod VALIDATION_ERRORs).
+4. Report pass/fail per step with the screenshots. A failed step blocks the commit/PR offer — fix first (or the user explicitly waives).
+
+Skip only for pure-logic, infrastructure, or docs-only changes — say so explicitly ("smoke-walk skipped: no UI surface"). Keep walks under ~15 steps; longer flows degrade browser-agent reliability — split or fall back to manual QA for the tail.
 
 ### Step 2: Read Branch Context
 
@@ -49,7 +56,7 @@ Look for PROGRESS.md files to determine the base branch:
 1. Check for `PROGRESS.md` in the feature directory (under the features root per `.claude/rules/project-structure.md`)
 2. Read the `**Base Branch**` field if it exists
 3. If found, use it as the target for PR creation and merge operations
-4. If not found, ask the user which branch to target
+4. If not found, use the project's documented PR base (check CLAUDE.md — e.g. TruckBays targets `develop`, never `main`); only ask the user when no convention is documented, and offer to record the answer in CLAUDE.md
 
 Also check `.claude/pipeline/{feature}/` for any pipeline artifacts.
 

@@ -36,7 +36,7 @@ Analyze the PRD complexity (features, integrations, edge cases) and recommend a 
 ### Prioritize by impact
 
 1. **Blockers**: requirements that block other work or have safety/security implications
-2. **Contract verification**: flag any PRD statement about an API endpoint, request/response shape, or field that is not yet verified against the backend (real code, MSW mocks, or backend docs) — ask how it will be verified or mark it UNVERIFIED in the PRD
+2. **Contract verification**: flag any PRD statement about an API endpoint, request/response shape, or field that is not yet verified against the backend (real code, MSW mocks, or backend docs) — ask how it will be verified or mark it UNVERIFIED in the PRD Verify against the project's local backend checkout (per CLAUDE.md) before asking the user to relay.
 3. **Vague language**: missing acceptance criteria, undefined terms, "should be fast"
 4. **Integration points**: APIs, third-party services, data dependencies
 5. **Edge cases**: error handling, boundary conditions, empty states

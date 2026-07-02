@@ -89,7 +89,7 @@ Make implicit assumptions explicit so nothing is left to interpretation.
 
 ### Contract Reality Check (before writing Data Flow)
 
-Unverified API contracts are the pipeline's most recurrent bug source. Before writing section 7, verify **every** claimed API endpoint and response shape against reality:
+Unverified API contracts are the pipeline's most recurrent bug source. **If the project documents a local backend checkout (see the project's CLAUDE.md), read its source directly** (controllers, DTOs, routes) to verify — do NOT ask the user to relay questions to the backend team unless the answer genuinely isn't in the code. Before writing section 7, verify **every** claimed API endpoint and response shape against reality:
 
 1. Real code (existing API adapters, Zod schemas in `api/{feature}.schemas.ts`)
 2. MSW mocks that mirror the backend

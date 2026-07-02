@@ -233,6 +233,10 @@ Handle result:
 - **CONCERNS** → Log for user awareness, mark complete
 - **FAIL** → Report to user. Ask: fix tests, or accept?
 
+### Step 6.5: Commit Checkpoint
+
+After every 2-3 deliverables pass all reviews (and after any single large one), offer a commit checkpoint via the git-commit skill — session mining found multi-day runs carrying ALL work uncommitted in the working tree across dozens of compactions. The user decides; never checkpoint silently.
+
 ### Step 7: Mark Complete
 
 Update PROGRESS.md. Move to next deliverable.

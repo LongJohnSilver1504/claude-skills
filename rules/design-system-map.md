@@ -2,7 +2,22 @@
 
 > **Scope:** Reference for all skills that generate or reference UI components. Use this map to ensure correct component usage — never invent components that already exist.
 
-## shadcn/ui Components (Installed)
+## Live Inventory & API (source of truth — never trust static tables)
+
+Static component lists rot. Resolve inventory and APIs live, in this order:
+
+1. **What's installed:** `ls` the project's ui root (per `project-structure.md`, e.g. `src/ui/` or `src/new-app/ui/`) and its `custom/` subfolder. If a file exists there, the component is installed — regardless of what any table in this file says.
+2. **Discover / inspect / install via the shadcn MCP** (always current from the registry):
+   - `mcp__shadcn__search_items_in_registries` — find a component by concept ("date picker", "avatar")
+   - `mcp__shadcn__view_items_in_registries` — full source + props of an item (e.g. `@shadcn/card`)
+   - `mcp__shadcn__get_item_examples_from_registries` — usage demos with source
+   - `mcp__shadcn__get_add_command_for_items` — the exact install command
+   - `mcp__shadcn__get_audit_checklist` — post-install verification (run BEFORE the project checklist below)
+3. The `shadcn` skill's CLI works too: `pnpm dlx shadcn@latest search/docs/info`.
+
+The tables below map **UI concepts to component choices** (the project's design decisions) — use them for *which* component, and the live sources above for *whether it's installed* and *its API*.
+
+## shadcn/ui Components — concept map
 
 | UI Concept | Component | Import Path | When to Use |
 |------------|-----------|-------------|-------------|
@@ -20,7 +35,9 @@
 | Tab navigation | `Tabs` | `@/ui/tabs` | Content switching within a view |
 | Scrollable area | `ScrollArea` | `@/ui/scroll-area` | Vertical scroll in fixed-height containers |
 | Expandable section | `Collapsible` | `@/ui/collapsible` | Show/hide content sections |
-| Toast notifications | `Sonner` | `@/ui/sonner` | Success/error feedback (via ErrorProvider for errors) |
+| Toast notifications | `Sonner` | `@/ui/sonner` | Success/error feedback (via the project's notification provider for errors) |
+
+> Not exhaustive — the live inventory (`ls` the ui root) is the source of truth.
 
 ## Custom Components (`ui/custom/`)
 
@@ -43,18 +60,9 @@
 | Validation error | `FieldError` | `@/ui/field` | Displays field validation errors |
 | Field group | `FieldGroup` | `@/ui/field` | Groups multiple fields with spacing |
 
-## Not Installed (Install When Needed)
+## Components Not Yet Installed
 
-| UI Concept | Component | Install Command |
-|------------|-----------|----------------|
-| Bordered container | `Card` | `pnpm dlx shadcn@latest add card` |
-| Confirmation modal | `AlertDialog` | `pnpm dlx shadcn@latest add alert-dialog` |
-| Action menu | `DropdownMenu` | `pnpm dlx shadcn@latest add dropdown-menu` |
-| User avatar | `Avatar` | `pnpm dlx shadcn@latest add avatar` |
-| Navigation trail | `Breadcrumb` | `pnpm dlx shadcn@latest add breadcrumb` |
-| Page navigation | `Pagination` | `pnpm dlx shadcn@latest add pagination` |
-| Visual divider | `Separator` | `pnpm dlx shadcn@latest add separator` |
-| Progress bar | `Progress` | `pnpm dlx shadcn@latest add progress` |
+Do NOT maintain a list here — static install-state lists go stale within weeks. `ls` the ui root first; if missing, resolve via `mcp__shadcn__search_items_in_registries` → `get_add_command_for_items`, then run the checklists below.
 
 ## shadcn/ui Post-Install Checklist
 

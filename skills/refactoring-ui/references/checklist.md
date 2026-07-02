@@ -1,5 +1,9 @@
 # Refactoring UI — Audit Checklist
 
+> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
+> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
+
+
 Run this checklist when reviewing a component or screen. For each chapter, scan for the failure modes listed. Cite the specific rule (e.g. "2.3 grey on color") in findings so the user can look up the underlying principle in `principles.md`.
 
 Severity tiers (use these labels in the audit output):
@@ -23,7 +27,7 @@ This is where most fixable issues live. Spend time here.
 - [ ] **2.1 Clear primary action / focus** — when you squint, what stands out? Is there one obvious primary element per area, or does everything compete?
 - [ ] **2.2 Hierarchy by weight + color, not just size** — are headlines huge to compensate for being styled identically to body text? Is secondary text tiny instead of just being a softer color? Are there more than 2 font weights or more than 3 text colors?
 - [ ] **2.2 Font weights ≥ 400** — any text under 400 weight at sizes under ~24px?
-- [ ] **2.3 Grey text on colored backgrounds** — any grey or low-opacity-white text sitting on a colored panel? Should be hand-picked same-hue color.
+- [ ] **2.3 Grey text on colored backgrounds** — any grey or low-opacity-white text sitting on a colored panel? Should be the surface's paired same-hue token (e.g. `text-warning-foreground` on `bg-warning`), or a new token per color-usage.md.
 - [ ] **2.4 Emphasis by addition only** — does the primary thing pop because of itself, or because competitors are softer? If primary doesn't pop, try subtracting from the competition.
 - [ ] **2.5 `Label: value` patterns** — any `Email: x`, `Status: y`, `Bedrooms: 3` patterns that could lose the label or fold it into the value?
 - [ ] **2.5 Labels not de-emphasized** — when labels are genuinely needed, are they styled smaller/lighter than the value?
@@ -42,6 +46,7 @@ This is where most fixable issues live. Spend time here.
 - [ ] **3.4 Misuse of grid** — sidebars sized as % of viewport instead of fixed width? Elements scaling fluidly when they should have an optimal size with `max-width`?
 - [ ] **3.5 Relative sizing across breakpoints** — `em` units defining cross-breakpoint relationships? Button padding scaled `em`-relative to font size?
 - [ ] **3.6 Ambiguous grouping spacing** — in label-input pairs, lists, etc., is the spacing within a group ≥ the spacing between groups?
+- [ ] **3.7 User images at intrinsic aspect ratio** — user-uploaded images breaking layout instead of being clipped to a fixed container with `object-fit: cover`? Borders around images that should be inner box-shadows?
 
 ## Chapter 4 — Typography
 
@@ -59,8 +64,8 @@ This is where most fixable issues live. Spend time here.
 ## Chapter 5 — Color
 
 - [ ] **5.2 Too-thin palette** — only 2–3 greys defined, hitting "I need something between these two" friction?
-- [ ] **5.3 Ad-hoc shade creation** — using `lighten()`, `color-mix()`, or one-off opacity layers instead of a defined shade?
-- [ ] **5.4 Washed-out edges of palette** — very light or very dark shades that look grey/dirty? May need saturation bumped.
+- [ ] **5.3 Ad-hoc shade creation** — using `lighten()`, `color-mix()`, or one-off opacity layers instead of a defined token?
+- [ ] **5.4 Washed-out edges of palette** — very light or very dark shades that look grey/dirty? May need chroma bumped in the token definition.
 - [ ] **5.5 Sterile greys** — pure 0%-saturation greys throughout?
 - [ ] **5.6 Contrast fails** — text below 4.5:1 ratio against its background? (3:1 for ≥18px or bold ≥14px.) Run a contrast checker on every text/background pair.
 - [ ] **5.7 Color as sole signal** — status, change direction, categories conveyed only by color? Need a second channel (icon, label, shape).
@@ -68,22 +73,12 @@ This is where most fixable issues live. Spend time here.
 ## Chapter 6 — Depth
 
 - [ ] **6.1 Light from wrong direction** — shadows above elements? Highlights on the bottom of raised elements?
-- [ ] **6.1 Semi-transparent white overlays** as "lighter" — desaturates the underlying color. Hand-pick instead.
+- [ ] **6.1 Semi-transparent white overlays** as "lighter" — desaturates the underlying color. Use a lighter same-hue token instead.
 - [ ] **6.2 No elevation system** — every shadow a unique value? Should be ~5 defined levels.
 - [ ] **6.2 Wrong elevation for purpose** — modal with a subtle shadow? Button with a huge shadow?
 - [ ] **6.3 Single-layer shadows** for cards/modals — opportunity to use the two-shadow contact + directional technique.
 - [ ] **6.4 Flat with no depth cues** — a flat design that reads as a wall of equal-weight rectangles? Use lighter/darker fills or solid offset shadows.
 - [ ] **6.5 Everything boxed inside its parent** — no overlap or layer interplay where it could add interest?
-
-## Chapter 7 — Images
-
-- [ ] **7.1 Placeholder / smartphone-quality images** — bad photography ruining an otherwise good design.
-- [ ] **7.2 Text on photos with no contrast treatment** — text laid directly on a varied background without overlay, contrast reduction, or text shadow.
-- [ ] **7.3 Tiny icons blown up** — 16/24px icons used at 64px+ without being wrapped in a colored container.
-- [ ] **7.3 Screenshots scaled to illegible sizes** — text in the screenshot too small to read.
-- [ ] **7.3 Logo shrunk for favicon** — should be a hand-redrawn 16px version.
-- [ ] **7.4 User images at intrinsic aspect ratio** — breaking layout instead of being clipped to a container.
-- [ ] **7.4 Borders around images** — should usually be inner box-shadow instead, especially for user content.
 
 ## Chapter 8 — Finishing Touches
 
@@ -94,6 +89,14 @@ This is where most fixable issues live. Spend time here.
 - [ ] **8.5 Border overload** — borders + different background colors (one is redundant); cards with borders that could use shadows instead.
 - [ ] **8.6 Stock-default components** — dropdowns / tables / radio groups in their most boring possible form when the UI would benefit from something more deliberate.
 
+## Project-specific (from `.claude/rules/`)
+
+These come from `.claude/rules/` in the app repo, not the book. Cite them as P1/P2/P3. All three default to 🔴 Critical — they're enforced conventions, not taste.
+
+- [ ] **P1 Raw Tailwind palette classes** — any `text-red-500`, `bg-blue-200`, `border-gray-300`, `text-slate-400`, etc.? Every color must be a semantic token; map to the replacement in the token table in `.claude/rules/color-usage.md` (e.g. `text-red-500` → `text-destructive`, `text-gray-500` → `text-muted-foreground`, `bg-green-500` → `bg-success`). A PreToolUse hook blocks these in `{app}/`.
+- [ ] **P2 External spacing on the component root** — does the component's root element carry `mt-*`, `mb-*`, `mx-*`, `my-*`, `pt-*`, `pb-*`, or `px-*` that positions it relative to siblings? Components must render flush; the parent layout owns inter-component spacing (`.claude/rules/layout-ownership.md`). Internal padding on inner elements is fine.
+- [ ] **P3 Touch targets under 44×44px** — any interactive element (button, link, icon button, checkbox) smaller than 44×44px? Mobile-only app; accessibility rule 1 in `.claude/rules/accessibility.md` requires a 44px minimum (e.g. `min-h-11 min-w-11`, or padding that reaches it).
+
 ---
 
 ## Output structure for an audit
@@ -102,14 +105,14 @@ Group findings by severity, not by chapter. Within each severity, cite the rule 
 
 ```
 🔴 Critical (3)
+- P1 `text-gray-400` helper text is a raw palette class — replace with `text-muted-foreground` per color-usage.md.
 - 2.8 Three solid-filled primary-style buttons in the card header — only "Save" should be primary; "Cancel" should be outline, "Delete" tertiary.
-- 5.6 The grey-on-blue helper text fails WCAG AA (2.1:1 ratio). Hand-pick a darker shade with the same hue as the background.
 - 3.6 Label and input have 8px gap, but form groups also have 8px between them — groups don't read as connected.
 
 🟡 Important (4)
 - 2.2 Page title is 36px regular weight — could be 24px semibold and still feel like the primary heading.
 - 2.5 "Status: Active" pattern in the user row. Either drop the label (status is implied by an active dot) or fold it ("Active user").
-- 4.3 Article body is 1024px wide — about 110 chars/line. Cap at ~680px (~70 chars).
+- P3 The icon-only edit button is 32×32px — below the 44px touch-target minimum; bump to `size-11` or add padding.
 - 6.2 Button and modal both use the same `shadow-md`. The modal should be at a much higher elevation.
 
 🟢 Nitpick (2)

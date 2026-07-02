@@ -48,7 +48,9 @@ For each candidate, produce a spec block.
 
 **Domain Feature spec** — include: feature name (singular, lowercase), entity fields with types, API endpoints with HTTP methods, which CRUD operations are needed, UX components mapped to build prompts, whether a Zustand store is needed and why, domain-specific errors.
 
-**Infrastructure spec** — include: name, type (see [references/infrastructure-types.md](references/infrastructure-types.md)), target file path, dependencies on other deliverables, acceptance criteria, props/API surface, exports.
+**Contract verification (required per API endpoint):** for every endpoint in a domain feature spec, include a `verified-against` field stating what the request/response shape was checked against — one of: `real API`, `MSW mock`, `backend doc`, or `UNVERIFIED`. Zod schemas drifting from real API responses is a recurring bug class; `UNVERIFIED` endpoints must be flagged prominently in the plan so implementers and reviewers know the schema is a guess, not a contract.
+
+**Infrastructure spec** — include: name, type (one of the Deliverable Type Catalog entries in the `create-infrastructure` skill: Provider, Shared hook, Layout component/hook/barrel, i18n namespace, Shared utility, Config/Foundation, Test page), target file path, dependencies on other deliverables, acceptance criteria, props/API surface, exports.
 
 ### Step 3: Identify Shared Infrastructure
 
@@ -114,6 +116,7 @@ Save as `{prd-basename}-implementation-plan.md` in the same directory as the sou
 - [ ] Every PRD functional requirement maps to at least one deliverable
 - [ ] Every deliverable is classified as Domain Feature or Infrastructure
 - [ ] Domain features have: entity fields with types, endpoints, operations
+- [ ] Every API endpoint has a contract-verification field (`real API` / `MSW mock` / `backend doc` / `UNVERIFIED`)
 - [ ] Infrastructure deliverables have: type, location, dependencies, acceptance criteria
 - [ ] Implementation order respects dependencies
 - [ ] Shared infrastructure listed first
@@ -125,50 +128,37 @@ Save as `{prd-basename}-implementation-plan.md` in the same directory as the sou
 
 If context was cleaned mid-pipeline, restore state before proceeding:
 
-1. **Read DECISIONS.md** in the feature folder for accumulated context
+1. **Read the feature's pipeline artifacts** (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, PROGRESS.md — whichever exist) for accumulated context
 2. **Read the relevant artifact** for this skill's input:
    - The PRD and UX spec files
 3. **Continue from where you left off** — don't restart the skill from scratch
 
 ## Next Step
 
-After completing this skill, use the `AskUserQuestion` tool to present the next step options. Include a summary of what was completed in the question text. The options depend on the plan content:
-
-**If the plan is infrastructure-only:**
+After completing this skill, use the `AskUserQuestion` tool to present the next step options. Include a summary of what was completed in the question text.
 
 Options to present:
 
-- **create-infrastructure** — scaffold {first deliverable}
-- **Something else** — do something different
-
-**If the plan has both domain features and infrastructure:**
-
-Options to present:
-
-- **create-infrastructure** — scaffold infrastructure first
-- **create-feature** — scaffold {first feature}
+- **execute-tasks** (primary, default) — execute the full plan with autonomous subagents. This is the skill that consumes the plan produced here.
+- **Manual scaffolding** — scaffold a single deliverable by hand instead of running the pipeline: `/create-feature` for one domain feature, `/create-infrastructure` for one infrastructure deliverable
 - **Something else** — do something different
 
 **Skill routing:**
 
-- For domain features: invoke `/create-feature` with the feature spec
-- For infrastructure deliverables: invoke `/create-infrastructure` with the deliverable spec
+- Primary path: invoke `/execute-tasks` with the path to the implementation plan
+- Manual scaffolding alternatives (only when the user explicitly wants to build one deliverable by hand):
+  - Domain feature: invoke `/create-feature` with the feature spec
+  - Infrastructure deliverable: invoke `/create-infrastructure` with the deliverable spec
 
 Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
 
-## Context Management
-
-After completing this skill's work, report the **context usage percentage** so the user can decide whether to clean context:
-
-> "{Skill output summary}. Context usage: **{X}%**"
-
-Do NOT recommend cleaning context — just show the percentage. The user will decide.
 
 ## Related Skills
 
 | Skill | Relationship |
 |-------|-------------|
 | **prd-to-ux** | Upstream — produces UX spec with embedded test matrix consumed here |
-| **create-feature** | Downstream — scaffolds domain features (entity + API + CRUD) |
-| **create-infrastructure** | Downstream — scaffolds shared infrastructure (providers, hooks, layouts, i18n) |
+| **execute-tasks** | Downstream (primary) — consumes the plan and executes it with subagents |
+| **create-feature** | Downstream (manual alternative) — scaffolds one domain feature by hand |
+| **create-infrastructure** | Downstream (manual alternative) — scaffolds one infrastructure deliverable by hand |
 | **react-clean-architecture** | Reference — informs layer decisions during extraction |

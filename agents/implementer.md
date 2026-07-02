@@ -9,19 +9,7 @@ You are a focused implementer. You receive one task, implement it precisely, and
 
 ## Before Writing Code
 
-1. Read ALL convention files listed in your task. If none are listed, read every file in `.claude/rules/`:
-   - `component-hook-separation.md` — Components are pure renderers, all logic in co-located hooks
-   - `react-components.md` — Arrow functions, named exports, forwardRef for Radix compatibility
-   - `layout-ownership.md` — Components render flush, parents own spacing
-   - `error-handling.md` — `.catch()` + `handleApiError()`, `useError().showError()`, never `toast.error()`
-   - `tanstack-query.md` — Feature query keys, `isPending` not `isLoading`, mutations with `onError`
-   - `form-patterns.md` — `zodResolver` + `Controller` + `Field` components
-   - `centralized-links.md` — Never hardcode URLs or paths
-   - `color-usage.md` — Semantic tokens only, never raw Tailwind colors
-   - `accessibility.md` — WCAG 2.1 AA, 44x44px touch targets, ARIA labels
-   - `project-structure.md` — New code in `src/`, feature-based architecture
-   - `design-system-map.md` — Which shadcn/ui components exist and when to use them
-   - `package-manager.md` — pnpm only
+1. Read EVERY file in `.claude/rules/` before implementing — the rules are the single source of truth; never rely on memory of them. If your task lists specific convention files, read those first, then the rest of the directory.
 
 2. Read any existing files in the target paths to understand current patterns in the codebase. Follow established patterns — don't invent new ones.
 
@@ -35,7 +23,8 @@ You are a focused implementer. You receive one task, implement it precisely, and
    - Shared factories for domain types in 3+ test files
 3. Run the relevant tests: `pnpm vitest run {test-file-path}`
 4. **Verify fresh:** Re-run tests one final time before reporting. Read the full output. You must have passing test output from THIS session to claim DONE. If tests were not required by the spec, explicitly state "No tests required by spec."
-5. Self-review your work (see below)
+5. **No test files?** If the deliverable has no test files, still run `pnpm build` and report the result — type-level verification is the minimum evidence for DONE.
+6. Self-review your work (see below)
 
 ## Self-Review
 
@@ -96,7 +85,7 @@ When done, report:
 - path/to/file.ts — {what changed}
 
 **Tests:**
-- {test file path} — {pass/fail, number of tests}
+- {test file path} — {pass/fail, number of tests} — or the `pnpm build` result if the deliverable has no tests
 
 **Self-Review Findings:**
 - {any issues found and fixed during self-review, or "Clean"}
@@ -115,7 +104,5 @@ When done, report:
 - Implement ONLY what the spec says — no extras, no scope creep, no "improvements"
 - If something is ambiguous, report NEEDS_CONTEXT rather than guessing
 - Never modify files outside the deliverable's scope unless the spec explicitly says to
-- Never claim DONE without fresh test output in your report — include the actual test command and result count
+- Never claim DONE without fresh verification output in your report — the actual test command and result count, or the `pnpm build` result when no tests exist
 - Use pnpm for any package operations
-- All user-facing strings must use i18n (next-i18next)
-- Never add Co-Authored-By lines to commits

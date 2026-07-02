@@ -19,55 +19,6 @@ This skill provides the **principles and decision-making framework** for buildin
 | `prd-to-ux` | UX foundations before building |
 | `frontend-testing` | Testing the structured code |
 
-## The First Draft Philosophy
-
-### Start Working, Then Structure
-
-Don't design upfront. Get something on screen first.
-
-```tsx
-// ✅ First draft: Everything in one component
-export default function PromptPage() {
-  const [prompt, setPrompt] = useState(null)
-
-  useEffect(() => {
-    fetch('/api/prompts/active')
-      .then(res => res.json())
-      .then(setPrompt)
-  }, [])
-
-  return (
-    <div>
-      <h1>{prompt?.title}</h1>
-      {prompt?.answered ? (
-        prompt.answers.map(a => <div key={a.id}>{a.text}</div>)
-      ) : (
-        <form>...</form>
-      )}
-    </div>
-  )
-}
-```
-
-This is fine for:
-- Validating an idea
-- Prototyping UI
-- Exploring new technology
-- Pre-demo crunch
-
-**When to stop and structure:** When the first draft works and you're not in prototype mode.
-
-### The Editing Mindset
-
-Think of code like writing:
-1. **First draft** - Get it working, ignore structure
-2. **Editing** - Apply principles, extract layers
-3. **Ship** - Clean, maintainable code
-
-Don't skip step 1. Don't skip step 2.
-
----
-
 ## Layer Separation
 
 ### The Three Layers
@@ -143,7 +94,7 @@ A **shallow module** exposes too much, hiding little.
 // Shallow module: Large API, simple internals
 const {
   data,
-  isLoading,
+  isPending,
   isError,
   error,
   refetch,
@@ -170,74 +121,21 @@ Don't create abstractions when they're **shallow**:
 
 ---
 
+## Interface Design for Testability
+
+Interfaces that **accept dependencies** (instead of creating them) and **return results** (instead of producing side effects) are testable by construction, and mockable at system boundaries without touching internals. See [references/interface-design.md](references/interface-design.md) for the patterns: dependency injection at boundaries and SDK-style API adapters over generic fetchers.
+
+---
+
 ## Guard Clauses
 
-### Eliminate Nested Conditionals
-
-Nested ternaries in JSX signal a component needs splitting.
-
-```tsx
-// ❌ Nested conditionals
-return (
-  <main>
-    {prompt ? (
-      prompt.answered ? (
-        <AnswersList answers={prompt.answers} />
-      ) : (
-        <AnswerForm />
-      )
-    ) : (
-      <LoadingQuote />
-    )}
-  </main>
-)
-
-// ✅ Guard clause pattern
-if (!prompt) {
-  return <LoadingQuote />
-}
-
-return (
-  <main>
-    <PromptContent prompt={prompt} />
-  </main>
-)
-
-// In PromptContent:
-function PromptContent({ prompt }) {
-  if (!prompt.answered) {
-    return <AnswerForm />
-  }
-  return <AnswersList answers={prompt.answers} />
-}
-```
-
-### Guard Clause Rules
-
-1. **Check faulty state first** - Handle edge cases at the top
-2. **Return early** - Don't nest the happy path
-3. **Invert conditions** - Use `if (!x)` not `if (x) { ... } else`
-
-```tsx
-// ❌ Else statement
-function canRefund(payment) {
-  if (payment.status === 'succeeded') {
-    return Date.now() - payment.createdAt < REFUND_WINDOW
-  } else {
-    return false
-  }
-}
-
-// ✅ Guard clause
-function canRefund(payment) {
-  if (payment.status !== 'succeeded') return false
-  return Date.now() - payment.createdAt < REFUND_WINDOW
-}
-```
+Prefer early returns over nested conditionals: handle faulty/loading states first (`if (!prompt) return <LoadingQuote />`), keep the happy path unnested, and invert conditions (`if (!x) return ...` instead of `else`). A nested ternary in JSX is a signal the component needs splitting.
 
 ---
 
 ## Trust Boundary Validation
+
+This pattern has a name: the **Anti-Corruption Layer** (DDD), implemented as **DTO + Mapper**, following **"Parse, don't validate"** (Alexis King). Validate the wire format at the boundary (`parseResponse(dtoSchema, data)`), map it to a frontend-owned domain model (`toX(dto)`), and the rest of the app never doubts the data — backend changes stop at `api/`. The full rule (file layout, import restrictions, detection layers) lives in `rules/api-boundary.md`.
 
 ### Validate at the Edge
 
@@ -261,7 +159,8 @@ function usePrompt() {
 // ✅ Validation in transport layer
 export function getActivePrompt() {
   const { data } = await client.get('/prompts/active')
-  return promptSchema.parse(data)  // Zod validates here
+  const dto = promptDtoSchema.parse(data)  // 1. validate the wire format
+  return toPrompt(dto)                     // 2. map to the domain model
 }
 ```
 
@@ -391,50 +290,13 @@ export const PageToolbar = ({ children, className }) => (
 
 ---
 
-## Iterative Refinement Workflow
-
-### The Cycle
-
-```
-1. FIRST DRAFT
-   └─→ Get it working (ignore structure)
-   
-2. IDENTIFY ISSUES
-   └─→ Too many responsibilities?
-   └─→ Nested conditionals?
-   └─→ Repeated patterns?
-   
-3. APPLY PRINCIPLES
-   └─→ Extract layers
-   └─→ Create hooks
-   └─→ Add validation
-   
-4. VERIFY
-   └─→ Each piece has single responsibility?
-   └─→ Changes stay contained?
-   └─→ Easy to test?
-   
-5. SHIP
-```
-
-### Questions to Ask
-
-After first draft, ask:
-
-1. **Responsibilities:** Does this component know too much?
-2. **Layers:** Is transport mixed with presentation?
-3. **Conditionals:** Are there nested ternaries?
-4. **Validation:** Where does bad data get caught?
-5. **Reuse:** What would I copy-paste for similar features?
-
----
-
 ## Anti-Patterns
 
 See [references/anti-patterns.md](references/anti-patterns.md) for detailed examples including:
 - **Component Knows Too Much** -- mixing state, fetching, transforms, and business logic
 - **Shallow Abstraction** -- wrappers that add no value vs deep modules
 - **Validation in Wrong Place** -- scattered checks vs single boundary validation
+- **Domain Re-Exporting Wire Types** -- `z.infer` of a DTO schema passed off as the domain model
 
 ---
 

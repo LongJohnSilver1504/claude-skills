@@ -3,6 +3,8 @@ name: generate-feature-doc
 description: Generate feature documentation after implementation by analyzing code changes. Use when documenting completed features, writing technical docs, creating developer guides, or when user wants to document what was built.
 ---
 
+> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
+> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
 # Generate Feature Documentation
 
 ## Overview
@@ -96,7 +98,7 @@ Documentation lives **next to the code it describes**, not in a separate `docs/`
 
 | Scope | Location |
 |-------|----------|
-| **Feature doc** | `src/features/{feature}/README.md` |
+| **Feature doc** | `{features-root}/{feature}/README.md` (features root per `.claude/rules/project-structure.md`) |
 | **Shared infrastructure doc** | `src/shared/{module}/README.md` (e.g., `shared/layouts/README.md`) |
 | **Provider/utility doc** | `src/shared/{folder}/README.md` |
 
@@ -160,9 +162,9 @@ After completing documentation generation and artifact cleanup, invoke the `git-
 
 If context was cleaned mid-pipeline, restore state before proceeding:
 
-1. **Read DECISIONS.md** in the feature folder for accumulated context
+1. **Read the feature's pipeline artifacts** (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, PROGRESS.md — whichever exist) for accumulated context
 2. **Read the relevant artifact** for this skill's input:
-   - The feature code in `src/features/{feature}/` and any existing README.md draft
+   - The feature code in the feature directory (under the features root per `.claude/rules/project-structure.md`) and any existing README.md draft
 3. **Continue from where you left off** — don't restart the skill from scratch
 
 ## Next Step
@@ -176,10 +178,3 @@ Options to present:
 
 Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
 
-## Context Management
-
-After completing this skill's work, report the **context usage percentage** so the user can decide whether to clean context:
-
-> "{Skill output summary}. Context usage: **{X}%**"
-
-Do NOT recommend cleaning context — just show the percentage. The user will decide.

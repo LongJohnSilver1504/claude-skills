@@ -60,14 +60,11 @@ Per user preference, do NOT add `Co-Authored-By` lines.
 
 ## Process
 
-### Step 1: Gather Context
+### Step 0: Build Freshness
 
-Run these commands in parallel:
-1. `git status` — see all changed/untracked files
-2. `git diff --staged` and `git diff` — see actual changes
-3. `git log --oneline -5` — see recent commit style for consistency
+Ensure a successful `pnpm build` ran within the last 30 minutes — the `check-build-before-commit.js` hook blocks commits otherwise. If not (or unsure), run `pnpm build` first and confirm it succeeds before proceeding. One fresh build covers all split commits in the same session.
 
-### Step 2: Analyze and Group Changes
+### Step 1: Analyze and Group Changes
 
 Split changes into **multiple focused commits by layer/concern**. Never combine everything into one monolithic commit.
 
@@ -87,28 +84,17 @@ Not every commit group will apply — skip empty groups. If a group has only 1-2
 For each group:
 - Identify the type (feat/fix/refactor/chore/test/docs)
 - Draft subject line and body bullets
-- Stage only the files for that group
-- Commit, then move to the next group
+
+### Step 2: Confirm With the User
+
+**Always confirm with the user before creating any commit** (standing preference — never auto-commit). Present the planned groups with their draft messages and wait for approval before staging anything.
 
 ### Step 3: Stage and Commit Each Group
 
-For each group from Step 2:
+For each approved group:
 
 1. **Stage** specific files by name — never use `git add -A` or `git add .`
-2. **Commit** using HEREDOC format:
-
-```bash
-git commit -m "$(cat <<'EOF'
-{type}: {Subject line}
-
-- {Bullet 1}
-- {Bullet 2}
-- {Bullet 3}
-EOF
-)"
-```
-
-3. Repeat for the next group
+2. **Commit** with the drafted subject and body, then move to the next group
 
 - Do NOT stage files that contain secrets (.env, credentials)
 

@@ -151,7 +151,7 @@ For each state: What does the user see? What do they understand? What can they d
 **Interactive Element States Matrix** — for EVERY interactive element:
 
 ```markdown
-| Element | Default | Hover | Focus | Disabled | Loading | Error |
+| Element | Default | Pressed/Active | Focus | Disabled | Loading | Error |
 |---------|---------|-------|-------|----------|---------|-----|
 | [Button] | [Visual] | [Change] | [Ring] | [When + tooltip] | [Spinner/label?] | [Recovery] |
 ```
@@ -279,11 +279,12 @@ Fetch the design context using Figma MCP tool before finalizing. Compare against
 - Strategy: [Monochromatic / complementary / etc.]
 - New tokens: [Additions to globals.css or "none — existing palette sufficient"]
 
-**Motion:**
-- High-impact moment: [Key animation]
-- Micro-interactions: [Hover, focus, feedback]
+**Motion (opt-in — default is CSS transitions only):**
+- Default: CSS transitions / `tw-animate-css` — no library
+- High-impact moment: [Key animation, or "none — transitions sufficient"]
+- Micro-interactions: [Pressed/active, focus, feedback]
 - Easing + Duration: [e.g., ease-out 150-300ms for feedback, 400-600ms for reveals]
-- Library: Motion (motion.dev) for orchestrated — CSS transitions for simple
+- Library: propose the `motion` package (motion.dev) ONLY when the PRD justifies an orchestrated reveal (staggered lists, exit animations, gestures) — otherwise stick with CSS transitions
 
 **Spatial personality:**
 - Density: [Airy / Balanced / Dense]
@@ -298,7 +299,7 @@ Fetch the design context using Figma MCP tool before finalizing. Compare against
 - Color is evenly distributed — no clear dominant
 - No animation beyond browser defaults
 
-**Motion setup:** See [references/output-template.md](references/output-template.md) for motion code examples.
+**Motion setup (only when the `motion` package is justified):** See [references/output-template.md](references/output-template.md) for motion code examples.
 
 ---
 
@@ -373,11 +374,11 @@ Derive testable scenarios from Passes 3, 5, 6, and 7. This matrix becomes the in
 
 ## THEN: Visual Specifications
 
-Only after all 9 passes, create: screen layouts, component specifications, interaction specifications, responsive breakpoints. The 9 passes inform every visual decision.
+Only after all 9 passes, create: screen layouts, component specifications, interaction specifications. Single mobile viewport — no responsive breakpoints. The 9 passes inform every visual decision.
 
 ## Output Template
 
-See [references/output-template.md](references/output-template.md) for the complete markdown template with all 8 pass sections pre-formatted.
+See [references/output-template.md](references/output-template.md) for the complete markdown template with all 9 pass sections pre-formatted.
 
 ## Related Skills
 

@@ -52,8 +52,8 @@ Visual components (`.tsx` with rendered UI) get two extra skill invocations to e
 
 | Phase | Skill | Why |
 |-------|-------|-----|
-| Implementer (Step 2) | `refactoring-ui-designer` | Applies hierarchy / layout / typography / color / depth / polish principles BEFORE writing JSX. Prevents "looks generated" output. |
-| Quality reviewer (Step 5) | `refactoring-ui-reviewer` | Audits the built component against the 8-chapter rule set with prioritized findings (🔴/🟡/🟢). |
+| Implementer (Step 2) | `refactoring-ui` (Build workflow) | Applies hierarchy / layout / typography / color / depth / polish principles BEFORE writing JSX. Prevents "looks generated" output. |
+| Quality reviewer (Step 5) | `refactoring-ui` (Audit workflow) | Audits the built component against the full rule set with prioritized findings (🔴/🟡/🟢). |
 
 **When to inject:**
 - ✅ Component deliverables (`.tsx` files with rendered UI)
@@ -121,11 +121,16 @@ Agent tool:
 
     ## Skills to Invoke
     {if deliverable is a visual component:}
-    - Invoke /refactoring-ui-designer BEFORE writing JSX. Read its
+    - Invoke /refactoring-ui (Build workflow) BEFORE writing JSX. Read its
       principles.md + tailwind-shadcn-cheatsheet.md, sketch hierarchy
       (primary/secondary/tertiary), pick layout, then generate JSX
       following the cheatsheet patterns. Run its self-review checklist
       before reporting DONE.
+
+    ## Report Requirements
+    Your DONE report MUST include the exact test command you ran and its
+    pass count, from THIS session (fresh verification — no claim without
+    output). A DONE report without fresh test output is not accepted.
 ```
 
 Only include the "Skills to Invoke" block when the deliverable matches the Design Skill Injection criteria above. Omit entirely for hooks, API adapters, pure logic, types.
@@ -164,6 +169,8 @@ Agent tool:
     {files the implementer reported as changed}
 ```
 
+**For API-adapter deliverables**, add to the spec-reviewer prompt: verify the Zod schemas match the MSW mock or real API response used in the tests — field names, optionality/nullability, and nesting must agree. Schema/response drift is a recurring bug class in this project.
+
 Handle result:
 - **PASS** → Proceed to Step 5 (quality review)
 - **CONCERNS** → Report concerns to user. Ask: fix and re-review, or accept and continue?
@@ -185,7 +192,7 @@ Agent tool:
 
     ## Skills to Invoke
     {if deliverable is a visual component:}
-    - Invoke /refactoring-ui-reviewer on each visual component file.
+    - Invoke /refactoring-ui (Audit workflow) on each visual component file.
       Read its principles.md + checklist.md, run the full checklist,
       output findings as 🔴 Critical / 🟡 Important / 🟢 Nitpick with
       rule citations. Merge these findings into your quality review
@@ -302,13 +309,17 @@ Agent tool:
     {all files changed across all deliverables, from PROGRESS.md}
 ```
 
+**Also run the built-in `/code-review` skill** on the feature diff, alongside the code-reviewer agent. The agent suite checks spec, conventions, and tests — but nothing in it hunts logic bugs. `/code-review` covers correctness: race conditions, null handling, stale closures. Merge its findings into the same triage below.
+
 Handle findings using smart triage:
 - **TRIVIAL** → Auto-fix by dispatching implementer
 - **ARCHITECTURAL** → Report to user, ask: fix or accept?
 
+Process findings per the `receiving-code-review` skill — verify each finding against the codebase before implementing; a finding that conflicts with a project rule is rejected, not applied.
+
 ### Final Design Review & Polish
 
-Run **only if the feature produced visual components** (`.tsx` with rendered UI). Runs once, holistically, after Code Review passes. Catches **cross-screen** problems — inconsistent spacing/typography/hierarchy/color across the whole feature — that the per-deliverable `refactoring-ui-reviewer` at the quality gate cannot see because it audits one component in isolation.
+Run **only if the feature produced visual components** (`.tsx` with rendered UI). Runs once, holistically, after Code Review passes. Catches **cross-screen** problems — inconsistent spacing/typography/hierarchy/color across the whole feature — that the per-deliverable `refactoring-ui` audit at the quality gate cannot see because it audits one component in isolation.
 
 **1. Audit.** Dispatch the `design-reviewer` agent on every visual component in the feature:
 
@@ -325,7 +336,7 @@ Agent tool:
     {ALL .tsx files with rendered UI built in this feature}
 
     ## Skill to invoke
-    - Invoke /refactoring-ui-reviewer. Read its principles.md + checklist.md,
+    - Invoke /refactoring-ui (Audit workflow). Read its principles.md + checklist.md,
       run the full checklist ACROSS ALL components holistically, and output
       findings as 🔴 Critical / 🟡 Important / 🟢 Nitpick with rule citations
       and file:line. Tag each ARCHITECTURAL or TRIVIAL.
@@ -337,7 +348,7 @@ Agent tool:
 ```
 
 **2. Triage-aligned fix loop** (mirrors the quality gate — capped at **3 iterations**):
-- **🔴 Critical / 🟡 Important** → auto-fix: dispatch the `implementer` agent with the findings as the task spec. For ARCHITECTURAL/visual findings, instruct it to **invoke `/refactoring-ui-designer`** before editing JSX (re-derive hierarchy/layout, then apply the cheatsheet patterns). Keep the diff surgical — visual treatment only, no behavior change. Preserve i18n keys, design tokens (no raw Tailwind colors), and update Storybook stories if states change.
+- **🔴 Critical / 🟡 Important** → auto-fix: dispatch the `implementer` agent with the findings as the task spec. For ARCHITECTURAL/visual findings, instruct it to **invoke `/refactoring-ui` (Build workflow)** before editing JSX (re-derive hierarchy/layout, then apply the cheatsheet patterns). Keep the diff surgical — visual treatment only, no behavior change. Preserve i18n keys, design tokens (no raw Tailwind colors), and update Storybook stories if states change.
 - **🟢 Nitpick** → do **not** auto-fix. Accumulate across iterations and present them to the user **once** at the end: "N nitpicks found — fix all or accept?" Apply only what the user accepts.
 
 **3. Re-review (holistic).** After each batch of fixes, re-dispatch the `design-reviewer` on **all visual components again** (not just the changed files — the point is cross-screen consistency, and a fix to one component can break alignment with another). Repeat steps 2–3 until **PASS** (zero 🔴/🟡) or the **3-iteration cap** is hit.
@@ -370,11 +381,6 @@ After code review, walk through each user flow from the UX spec:
 
 Only report issues — don't list every passing check.
 
-## Context Management
-
-After every 3 deliverables, check context usage. If above 70%:
-
-> "Completed D1-D3. Context at **X%**. Recommend compacting before continuing — PROGRESS.md has the full state to resume from."
 
 ## Continuous Execution
 
@@ -391,7 +397,7 @@ Do NOT ask user permission between deliverables. Run continuously. Only stop for
 ## Resuming After Context Clean
 
 If the user says "resume" or "continue executing":
-1. Find the most recent `PROGRESS.md` in `src/features/*/`
+1. Find the most recent `PROGRESS.md` under the features root defined in `.claude/rules/project-structure.md`
 2. Read the implementation plan it references
 3. Find the first deliverable with status != DONE
 4. Continue the loop from that deliverable

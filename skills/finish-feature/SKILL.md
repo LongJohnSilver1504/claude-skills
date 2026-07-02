@@ -15,8 +15,10 @@ Run these checks in order:
 
 1. **Feature tests:**
    ```bash
-   pnpm vitest run src/features/{feature}/
+   pnpm vitest run {feature-dir}
    ```
+   `{feature-dir}` is the feature's directory under the features root defined in `.claude/rules/project-structure.md`.
+   **If the glob matches 0 test files, treat verification as FAILED** — the path is wrong or tests are missing; never report a vacuous pass.
    Report: X tests passed, Y failed
 
 2. **Build:**
@@ -36,11 +38,15 @@ If tests or build fail, report the failures and ask the user:
 - **Continue anyway** — proceed to Step 2 despite failures
 - **Stop** — abort finalization
 
+### Step 1.5: Offer Runtime Verification (UI features, optional)
+
+After tests and build pass, if the feature has visual components or user flows, offer the built-in `/verify` skill — it runs the app and observes actual behavior. "Tests green" has repeatedly not meant "flow works". Present it as an optional step; skip for pure-logic or infrastructure-only changes.
+
 ### Step 2: Read Branch Context
 
 Look for PROGRESS.md files to determine the base branch:
 
-1. Check for `PROGRESS.md` in the feature directory (`src/features/{feature}/`)
+1. Check for `PROGRESS.md` in the feature directory (under the features root per `.claude/rules/project-structure.md`)
 2. Read the `**Base Branch**` field if it exists
 3. If found, use it as the target for PR creation and merge operations
 4. If not found, ask the user which branch to target
@@ -60,20 +66,11 @@ Use AskUserQuestion to present:
 
 ### If "Commit changes"
 
-1. Run `git status` and `git diff --stat` to see what's changed
-2. Ask the user for commit message guidance or suggest based on the changes
-3. Split commits by layer/concern:
-   - Infrastructure changes (new packages, config)
-   - Domain/API layer changes
-   - Hook/business logic changes
-   - Component/UI changes
-   - Test files
-4. Run `pnpm build` before each commit to verify
-5. Never add `Co-Authored-By` lines
+Invoke the `git-commit` skill for the commit flow — it owns build-freshness, user confirmation, grouping commits by layer, and message format.
 
 ### If "Create PR"
 
-1. First commit all changes (following the commit flow above)
+1. First commit all changes (via the `git-commit` skill, as above)
 2. Push current branch:
    ```bash
    git push -u origin {branch-name}
@@ -106,8 +103,6 @@ After committing or creating a PR:
 ## Rules
 
 - **Always ask before committing** — never auto-commit
-- **Always run `pnpm build` before committing** — catch type errors early
-- **Split commits by concern** — not one giant commit
+- **Commit flow is owned by the `git-commit` skill** — build-freshness, layer grouping, and message conventions live there, not here
 - **Never force-push** unless user explicitly requests it
 - **Never discard without confirmation** — destructive operations require explicit "yes"
-- If the user says "just commit everything", still run the build first but don't split commits

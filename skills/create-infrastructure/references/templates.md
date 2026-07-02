@@ -1,7 +1,15 @@
 # Create Infrastructure — Code Templates
 
+> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
+> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
+
+
 Complete code templates for each infrastructure deliverable type.
-Replace `{component}` with the component name (lowercase, kebab-case) and `{Component}` with PascalCase.
+Replace `{component}` / `{module}` with the module name (lowercase, kebab-case) and `{Component}` with PascalCase.
+
+**Paths:** templates use placeholders — shared root `@/{app}/shared/...` and UI `@/{app}/ui/...` come from the project's `.claude/rules/project-structure.md`; resolve them before writing any file. `cn` import path also comes from the project's conventions.
+
+Conventions (component/hook separation, translate-in-hooks, centralized links, colors, layout ownership) live in the project's `.claude/rules/` — templates comply; the rule file wins.
 
 ---
 
@@ -12,7 +20,7 @@ Providers follow: context + provider component + consumer hook + guard.
 ### 1.1 Provider File (`shared/providers/{name}-provider.tsx`)
 
 ```tsx
-import { createContext, useContext, ReactNode } from 'react'
+import { createContext, useContext, useState, ReactNode } from 'react'
 
 /**
  * {Component} Provider
@@ -65,15 +73,16 @@ export { {Component}Provider, use{Component} } from './{component}-provider'
 
 ---
 
-## Step 2: Layout Component
+## Step 2: Layout Component Module
 
-Every layout component MUST extract logic into a hook. The component file contains only UI rendering.
+Every layout component MUST extract logic into a hook. The component file contains only UI rendering and lives in `{module}/components/` — never at the module root.
 
-### 2.1 Layout Hook (`shared/layouts/{component}/hooks/use-{component}.ts`)
+### 2.1 Layout Hook (`{module}/hooks/use-{component}.ts`)
+
+The hook owns all logic AND all user-facing strings — `useTranslation` is never called in the component.
 
 ```tsx
-import { useState, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/router'
+import { useState, useCallback } from 'react'
 import { useTranslation } from 'next-i18next'
 
 /**
@@ -81,22 +90,15 @@ import { useTranslation } from 'next-i18next'
  * Contains all logic for the {Component} component
  */
 
-type Use{Component}Options = {
-  // Hook configuration options
-  defaultValue?: string
-}
-
 type Use{Component}Return = {
-  // Return shape - everything the component needs
+  // Return shape — everything the component needs, strings already translated
   isActive: boolean
   handleAction: () => void
   label: string
 }
 
-export const use{Component} = (options: Use{Component}Options = {}): Use{Component}Return => {
-  const { defaultValue } = options
-  const { t } = useTranslation('app-layout')
-  const router = useRouter()
+export const use{Component} = (): Use{Component}Return => {
+  const { t } = useTranslation('{namespace}')
 
   // State
   const [isActive, setIsActive] = useState(false)
@@ -106,64 +108,56 @@ export const use{Component} = (options: Use{Component}Options = {}): Use{Compone
     setIsActive((prev) => !prev)
   }, [])
 
-  // Computed values
-  const label = useMemo(() => t('{component}.label'), [t])
-
   return {
     isActive,
     handleAction,
-    label,
+    label: t('{component}.label'),
   }
 }
 ```
 
-### 2.2 Layout Component (`shared/layouts/{component}/{component}.tsx`)
+If the hook needs navigation, import `useRouter` from `next/router` (Pages Router) and push routes from the `links` object — never hardcoded paths (see `centralized-links.md`).
+
+### 2.2 Layout Component (`{module}/components/{component}.tsx`)
+
+Renders flush — no external spacing props. The parent layout owns spacing between siblings (see `layout-ownership.md`), so there is no `className` passthrough for positioning.
 
 ```tsx
-import { clsxm } from '@/utils/clsxm'
-import { use{Component} } from './hooks/use-{component}'
+import { cn } from '@/utils/clsxm'
+import { use{Component} } from '../hooks/use-{component}'
 
 /**
  * {Component}
- * UI-only component - all logic lives in use{Component} hook
+ * UI-only component — all logic lives in the use{Component} hook
  */
 
-type {Component}Props = {
-  className?: string
-  // Props that affect rendering only
-}
-
-export const {Component} = ({ className }: {Component}Props) => {
+export const {Component} = () => {
   const { isActive, handleAction, label } = use{Component}()
 
   return (
-    <div
-      className={clsxm(
-        'base-styles-here',
-        isActive && 'active-styles',
-        className
-      )}
+    <button
+      type="button"
+      className={cn('base-styles-here', isActive && 'active-styles')}
       onClick={handleAction}
     >
       {label}
-    </div>
+    </button>
   )
 }
 ```
 
-### 2.3 Layout Barrel (`shared/layouts/{component}/index.ts`)
+### 2.3 Module Barrel (`{module}/index.ts`)
 
 ```tsx
-export { {Component} } from './{component}'
+export { {Component} } from './components/{component}'
 export { use{Component} } from './hooks/use-{component}'
 ```
 
-### 2.4 Layouts Root Barrel (`shared/layouts/index.ts`)
+### 2.4 Root Barrel (layouts root `index.ts`)
 
 ```tsx
-export { Navbar, useNavbar, useNavbarItems } from './navbar'
-export { BackHeader, useBackHeader } from './back-header'
-export { ProfileFooter, FooterTab, useFooterTab } from './profile-footer'
+export { {ComponentA}, use{ComponentA} } from './{module-a}'
+export { {ComponentB}, use{ComponentB} } from './{module-b}'
 ```
 
 ---
@@ -193,21 +187,18 @@ type Use{Name}Return = {
   // Return shape
   value: string
   setValue: (value: string) => void
-  isLoading: boolean
 }
 
 export const use{Name} = (options: Use{Name}Options = {}): Use{Name}Return => {
   const { initialValue = '', delay = 300 } = options
 
   const [value, setValue] = useState(initialValue)
-  const [isLoading, setIsLoading] = useState(false)
 
   // Hook logic here
 
   return {
     value,
     setValue,
-    isLoading,
   }
 }
 ```
@@ -235,14 +226,8 @@ export { use{Name} } from './use-{name}'
     "messages": "Messages",
     "profile": "Profile"
   },
-  "backHeader": {
+  "backButton": {
     "back": "Go back"
-  },
-  "footer": {
-    "home": "Home",
-    "bookings": "Bookings",
-    "messages": "Messages",
-    "profile": "Profile"
   }
 }
 ```
@@ -258,14 +243,8 @@ export { use{Name} } from './use-{name}'
     "messages": "Mensajes",
     "profile": "Perfil"
   },
-  "backHeader": {
+  "backButton": {
     "back": "Volver"
-  },
-  "footer": {
-    "home": "Inicio",
-    "bookings": "Reservas",
-    "messages": "Mensajes",
-    "profile": "Perfil"
   }
 }
 ```
@@ -295,318 +274,15 @@ export const anotherHelper = <T>(items: T[]): T[] => {
 
 ---
 
-## Complete Examples
+## Living Examples
 
-### Example: FooterTab with Hook
+Don't copy long examples from this file — read the project's real shipped modules instead (e.g., `{app}/ui/custom/`). Each follows the module pattern above (`components/` + `hooks/` + `index.ts`, plus PRD/UX-spec docs):
 
-**Hook:** `shared/layouts/profile-footer/hooks/use-footer-tab.ts`
+| Module | What it shows |
+|--------|---------------|
+| `ui/custom/navbar/` | Sheet-based top nav, hook-owned items + translations |
+| `ui/custom/back-button/` | Small component with a dedicated hook for navigation |
+| `ui/custom/app-container/` | Page wrapper (viewport constraint, navbar/footer slots) |
+| `ui/custom/language-selector/` | Locale toggle, hook-owned locale logic |
 
-```tsx
-import { useRouter } from 'next/router'
-
-type UseFooterTabOptions = {
-  href: string
-  isActive?: boolean
-}
-
-type UseFooterTabReturn = {
-  isActive: boolean
-  href: string
-}
-
-export const useFooterTab = ({ href, isActive: isActiveProp }: UseFooterTabOptions): UseFooterTabReturn => {
-  const router = useRouter()
-  const isActive = isActiveProp ?? router.pathname === href
-
-  return {
-    isActive,
-    href,
-  }
-}
-```
-
-**Component:** `shared/layouts/profile-footer/profile-footer.tsx`
-
-```tsx
-import { ReactNode } from 'react'
-import Link from 'next/link'
-import { LucideIcon } from 'lucide-react'
-import { clsxm } from '@/utils/clsxm'
-import { useFooterTab } from './hooks/use-footer-tab'
-
-type FooterTabProps = {
-  href: string
-  icon: LucideIcon
-  label: string
-  isActive?: boolean
-}
-
-export const FooterTab = ({ href, icon: Icon, label, isActive: isActiveProp }: FooterTabProps) => {
-  const { isActive } = useFooterTab({ href, isActive: isActiveProp })
-
-  return (
-    <Link href={href} legacyBehavior>
-      <a
-        className={clsxm(
-          'relative flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors',
-          isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-        )}
-      >
-        {isActive && (
-          <span className="absolute inset-x-0 top-0 h-0.5 bg-primary" />
-        )}
-        <Icon className="h-5 w-5 shrink-0" />
-        <span className="text-xs font-medium">{label}</span>
-      </a>
-    </Link>
-  )
-}
-
-type ProfileFooterProps = {
-  children: ReactNode
-  className?: string
-}
-
-export const ProfileFooter = ({ children, className }: ProfileFooterProps) => {
-  return (
-    <footer
-      className={clsxm(
-        'fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background',
-        className
-      )}
-    >
-      <nav className="mx-auto flex h-16 max-w-sm items-stretch">
-        {children}
-      </nav>
-    </footer>
-  )
-}
-```
-
-**Barrel:** `shared/layouts/profile-footer/index.ts`
-
-```tsx
-export { ProfileFooter, FooterTab } from './profile-footer'
-export { useFooterTab } from './hooks/use-footer-tab'
-```
-
-### Example: BackHeader with Hook
-
-**Hook:** `shared/layouts/back-header/hooks/use-back-header.ts`
-
-```tsx
-import { useCallback } from 'react'
-import { useRouter } from 'next/router'
-
-type UseBackHeaderOptions = {
-  onBack?: () => void
-}
-
-type UseBackHeaderReturn = {
-  handleBack: () => void
-}
-
-export const useBackHeader = ({ onBack }: UseBackHeaderOptions = {}): UseBackHeaderReturn => {
-  const router = useRouter()
-
-  const handleBack = useCallback(() => {
-    if (onBack) {
-      onBack()
-    } else {
-      router.back()
-    }
-  }, [onBack, router])
-
-  return {
-    handleBack,
-  }
-}
-```
-
-**Component:** `shared/layouts/back-header/back-header.tsx`
-
-```tsx
-import { useTranslation } from 'next-i18next'
-import { ChevronLeft } from 'lucide-react'
-import { Button } from '@/ui/button'
-import { clsxm } from '@/utils/clsxm'
-import { useBackHeader } from './hooks/use-back-header'
-
-type BackHeaderProps = {
-  title?: string
-  onBack?: () => void
-  className?: string
-}
-
-export const BackHeader = ({ title, onBack, className }: BackHeaderProps) => {
-  const { t } = useTranslation('app-layout')
-  const { handleBack } = useBackHeader({ onBack })
-
-  return (
-    <header
-      className={clsxm(
-        'sticky top-0 z-40 w-full border-b border-border bg-background',
-        className
-      )}
-    >
-      <div className="mx-auto flex h-14 max-w-sm items-center gap-2 px-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleBack}
-          aria-label={t('backHeader.back')}
-          className="-ml-2 shrink-0"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-
-        {title && (
-          <h1 className="truncate text-base font-semibold text-foreground">
-            {title}
-          </h1>
-        )}
-      </div>
-    </header>
-  )
-}
-```
-
-### Example: Navbar with Hook
-
-**Hook:** `shared/layouts/navbar/hooks/use-navbar.ts`
-
-```tsx
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/router'
-
-type UseNavbarReturn = {
-  isOpen: boolean
-  setIsOpen: (open: boolean) => void
-  closeSheet: () => void
-  isActive: (href: string) => boolean
-}
-
-export const useNavbar = (): UseNavbarReturn => {
-  const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-
-  const closeSheet = useCallback(() => {
-    setIsOpen(false)
-  }, [])
-
-  const isActive = useCallback(
-    (href: string) => router.pathname === href,
-    [router.pathname]
-  )
-
-  return {
-    isOpen,
-    setIsOpen,
-    closeSheet,
-    isActive,
-  }
-}
-```
-
-**Component:** `shared/layouts/navbar/navbar.tsx`
-
-```tsx
-import Link from 'next/link'
-import { useTranslation } from 'next-i18next'
-import { Menu } from 'lucide-react'
-import { Button } from '@/ui/button'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/ui/sheet'
-import { Separator } from '@/ui/separator'
-import { clsxm } from '@/utils/clsxm'
-import { useNavbar } from './hooks/use-navbar'
-import { useNavbarItems } from './hooks/use-navbar-items'
-
-type NavbarProps = {
-  className?: string
-}
-
-export const Navbar = ({ className }: NavbarProps) => {
-  const { t } = useTranslation('app-layout')
-  const { isOpen, setIsOpen, closeSheet, isActive } = useNavbar()
-  const navItems = useNavbarItems()
-
-  return (
-    <header
-      className={clsxm(
-        'sticky top-0 z-40 w-full border-b border-border bg-background',
-        className
-      )}
-    >
-      <div className="mx-auto flex h-14 max-w-sm items-center justify-between px-4">
-        <Link href="/" legacyBehavior>
-          <a className="text-lg font-semibold tracking-tight text-foreground">
-            TruckBays
-          </a>
-        </Link>
-
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('navbar.menu')}
-              className="shrink-0"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-
-          <SheetContent side="right" className="w-[280px] sm:w-[320px]">
-            <SheetHeader>
-              <SheetTitle className="text-left">TruckBays</SheetTitle>
-            </SheetHeader>
-
-            <Separator className="my-4" />
-
-            <nav className="flex flex-col gap-1">
-              {navItems.map((item) => {
-                const IconComponent = item.icon
-                const active = isActive(item.href)
-
-                return (
-                  <Link key={item.key} href={item.href} legacyBehavior>
-                    <a
-                      onClick={closeSheet}
-                      className={clsxm(
-                        'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
-                        active
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                      )}
-                    >
-                      <IconComponent className="h-5 w-5 shrink-0" />
-                      <span>{item.label}</span>
-                    </a>
-                  </Link>
-                )
-              })}
-            </nav>
-          </SheetContent>
-        </Sheet>
-      </div>
-    </header>
-  )
-}
-```
-
-**Barrel:** `shared/layouts/navbar/index.ts`
-
-```tsx
-export { Navbar } from './navbar'
-export { useNavbar } from './hooks/use-navbar'
-export { useNavbarItems } from './hooks/use-navbar-items'
-export type { NavbarItem } from './hooks/use-navbar-items'
-```
-
----
+For a shared provider example, read `{app}/shared/providers/notification-provider.tsx`.

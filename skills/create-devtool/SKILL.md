@@ -3,6 +3,8 @@ name: create-devtool
 description: Create a DevTool debug panel for a page or feature. Scaffolds the component + hook that surfaces store state, query status, API payloads, and a JSON snapshot — all behind the dev-only wrench button.
 ---
 
+> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
+> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
 # Create DevTool
 
 Scaffold a DevTool debug panel for a page or wizard flow. The panel surfaces internal state that's invisible from the UI: store values, query statuses, computed payloads, errors, and a full JSON snapshot for copy-paste bug reports.
@@ -110,9 +112,9 @@ Tabs: [ Visual | Dev Mode ]
 ### Component (complex flow)
 
 ```tsx
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/ui/tabs'
-import { DevToolPanel } from '@/ui/custom/dev-tool-panel'
-import { StoreField, StatusDot, StateSnapshot } from '@/shared/devtool'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/{app}/ui/tabs'
+import { DevToolPanel } from '@/{app}/ui/custom/dev-tool-panel'
+import { StoreField, StatusDot, StateSnapshot } from '@/{app}/shared/devtool'
 import { use{Feature}Devtool } from '../hooks/use-{feature}-devtool'
 
 export const {Feature}Devtool = () => {
@@ -161,9 +163,9 @@ export const {Feature}Devtool = () => {
 
 ```tsx
 import { useMemo } from 'react'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/ui/tabs'
-import { DevToolPanel } from '@/ui/custom/dev-tool-panel'
-import { StoreField, StatusDot, StateSnapshot } from '@/shared/devtool'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/{app}/ui/tabs'
+import { DevToolPanel } from '@/{app}/ui/custom/dev-tool-panel'
+import { StoreField, StatusDot, StateSnapshot } from '@/{app}/shared/devtool'
 // import the page's store and hooks directly
 
 export const {Name}Devtool = () => {
@@ -200,7 +202,7 @@ export const {Name}Devtool = () => {
 ```ts
 import { useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { AppError } from '@/shared/errors'
+import { AppError } from '@/{app}/shared/errors'
 // import the feature's store, keys, API
 
 type QueryStatus = {
@@ -224,7 +226,9 @@ export const use{Feature}Devtool = (): Use{Feature}DevtoolReturn => {
   const field1 = use{Feature}Store((s) => s.field1)
   // ...
 
-  // Build query status list from query keys
+  // Build query status list from query keys.
+  // Keys MUST come from the feature's queries/*.keys.ts factory — never inline
+  // queryKey arrays in the devtool hook.
   const queryKeyMap = useMemo(() => [
     { key: 'queryName', queryKey: featureKeys.something() },
     // ...
@@ -298,7 +302,7 @@ The `DevToolPanel` wrapper handles:
 
 ## Shared Primitives
 
-All from `@/shared/devtool`:
+All from `@/{app}/shared/devtool`:
 
 | Component | Purpose | Usage |
 |-----------|---------|-------|
@@ -307,7 +311,7 @@ All from `@/shared/devtool`:
 | `StateSnapshot` | Formatted JSON + copy button | `<StateSnapshot data={snapshotData} />` |
 | `isDevToolEnabled` | Guard (checks env/flag) | Used internally by `DevToolPanel` |
 
-And from `@/ui/custom/dev-tool-panel`:
+And from `@/{app}/ui/custom/dev-tool-panel`:
 
 | Component | Purpose |
 |-----------|---------|
@@ -337,6 +341,7 @@ Before reporting done:
 
 - [ ] DevTool surfaces all store fields relevant to the page
 - [ ] Query statuses are tracked for every TanStack query the page uses
+- [ ] All query keys in the devtool hook come from the feature's `queries/*.keys.ts` factory (no inline arrays)
 - [ ] Errors are filtered and shown prominently (with copy support for complex flows)
 - [ ] Snapshot tab includes all state needed for a bug report
 - [ ] Component is placed in the page, after all visible content
@@ -345,6 +350,8 @@ Before reporting done:
 - [ ] Tested: wrench button appears, panel opens, data renders
 
 ## Examples in Codebase
+
+Paths are relative to the features root defined in `.claude/rules/project-structure.md`.
 
 | DevTool | Complexity | Pattern | Path |
 |---------|-----------|---------|------|

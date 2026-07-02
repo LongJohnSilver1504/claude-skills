@@ -1,12 +1,12 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 22 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 20 skills that take you from a rough idea to a merged PR.
 
 ## What This Is
 
 Claude Skills is a composable skill library that turns Claude Code into a structured development partner. Instead of ad-hoc prompting, each skill enforces a specific workflow — brainstorming before coding, specs before implementation, tests before shipping.
 
-The skills connect into a **9-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX (with embedded test matrix), planning implementation, autonomous execution with subagents, testing, documentation, and finalization.
+The skills connect into an **8-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX (with embedded test matrix), planning implementation, autonomous execution with subagents, finalization, and documentation — with optional branches for prototyping and issue farming.
 
 **Core principles:**
 - **Design before code** — No implementation without approved specs
@@ -23,17 +23,17 @@ brainstorm(0) --> generate-prd(1) --> prd-clarifier(2) --> prd-to-ux(3)
      v                                                          v
                             plan-implementation(4) --> execute-tasks(5)
                                                               |
-                                   generate-feature-doc(7) <-- frontend-testing(6)
-                                                |
-                                                v
-                                         finish-feature(8)
+                                                              v
+                            generate-feature-doc(7) <-- finish-feature(6)
 ```
+
+**Optional branches:** `/prototype` — flesh out a design before committing to it (branch off during brainstorm or UX design). `/to-issues` — convert the implementation plan into tracker issues instead of executing locally.
 
 | Phase | Steps | Mode |
 |-------|-------|------|
 | Explore & Design | 0-4 | Human-in-the-loop (you drive design decisions) |
 | Build | 5 | Autonomous (subagents execute, smart triage on findings) |
-| Validate & Ship | 6-8 | Human-in-the-loop (testing, docs, merge) |
+| Validate & Ship | 6-7 | Human-in-the-loop (testing, merge, docs) |
 
 Invoke individual skills directly, or follow the pipeline order for a full feature build.
 
@@ -45,13 +45,12 @@ Each skill produces an artifact that the next skill consumes:
 |------|-------|----------|-------------|
 | 0 | `/brainstorm` | Validated idea + approach | `/generate-prd` |
 | 1 | `/generate-prd` | `PRD.md` (requirements doc) | `/prd-clarifier` |
-| 2 | `/prd-clarifier` | Refined PRD (ambiguities resolved) | `/prd-to-ux` |
-| 3 | `/prd-to-ux` | `UX-spec.md` (9 passes inc. test matrix) | `/plan-implementation`, `/frontend-testing` (later) |
-| 4 | `/plan-implementation` | Implementation plan (ordered deliverables) | `/execute-tasks` |
-| 5 | `/execute-tasks` | Working code (built by agents) | `/frontend-testing` |
-| 6 | `/frontend-testing` | Test files | `/generate-feature-doc` |
-| 7 | `/generate-feature-doc` | `README.md` for the feature | `/finish-feature` |
-| 8 | `/finish-feature` | Commit / PR / merge | — |
+| 2 | `/prd-clarifier` | Refined PRD (clarifications merged into `PRD.md`) | `/prd-to-ux` |
+| 3 | `/prd-to-ux` | `UX-spec.md` (9 passes inc. test matrix) | `/plan-implementation` |
+| 4 | `/plan-implementation` | Implementation plan (ordered deliverables) | `/execute-tasks` (or `/to-issues`) |
+| 5 | `/execute-tasks` | Working code + tests (built by agents) | `/finish-feature` |
+| 6 | `/finish-feature` | Commit / PR / merge | `/generate-feature-doc` |
+| 7 | `/generate-feature-doc` | `README.md` for the feature | — |
 
 ### How Execution Works (Step 5)
 
@@ -96,6 +95,7 @@ execute-tasks (orchestrator)
 | `/prd-clarifier` | Refine a PRD through structured questions that uncover ambiguities and edge cases |
 | `/prd-to-ux` | Translate PRD into UX specifications through 9 structured passes (includes test matrix as Pass 9) |
 | `/plan-implementation` | Bridge design artifacts into a dependency-ordered implementation plan |
+| `/prototype` | Build a throwaway prototype to flesh out a design before committing — terminal app for state/logic questions, or several UI variations on one route |
 | `/pipeline-help` | Interactive guide — explains the flow, which skill to use next, how to resume |
 
 ### Build
@@ -106,7 +106,7 @@ execute-tasks (orchestrator)
 | `/create-feature` | Scaffold a domain feature module (vertical slicing, hexagonal architecture) |
 | `/create-infrastructure` | Scaffold shared infrastructure (providers, hooks, layouts, i18n) |
 | `/frontend-testing` | Write tests using Vitest, React Testing Library, and MSW v2 |
-| `/using-git-worktrees` | Set up isolated workspace via native tools or git worktree fallback |
+| `/create-devtool` | Create a dev-only DevTool debug panel that surfaces store state, query status, and API payloads |
 
 ### Debug & Fix
 
@@ -119,7 +119,8 @@ execute-tasks (orchestrator)
 | Skill | What it does |
 |-------|-------------|
 | `/generate-feature-doc` | Generate feature documentation by analyzing code changes |
-| `/refactoring-ui-reviewer` | Audit existing UI against Refactoring UI principles — prioritized findings with rule citations |
+| `/refactoring-ui` | Apply Refactoring UI principles when building new UI, and audit existing components — prioritized findings with rule citations |
+| `/receiving-code-review` | Evaluate code review feedback with technical rigor — verify before implementing, no performative agreement |
 | `/git-commit` | Create commits following conventional commit style with descriptive bodies |
 | `/finish-feature` | Finalize a feature — run tests, build, present commit/PR/discard options |
 
@@ -129,37 +130,41 @@ These skills provide domain knowledge and are typically invoked by other skills,
 
 | Skill | What it covers |
 |-------|---------------|
-| `/shadcn-ui` | shadcn/ui project patterns, form conventions, post-install fixes |
 | `/react-clean-architecture` | React clean architecture principles — the WHY behind structure decisions |
-| `/refactoring-ui-designer` | Apply Refactoring UI principles when building new components — hierarchy, layout, polish |
-| `/tailwindcss-fundamentals-v4` | Tailwind CSS v4 installation, configuration, and best practices |
-| `/writing-skills` | TDD-style workflow for authoring new skills — baseline test, write, refactor |
-| `/find-skills` | Discover and install new agent skills |
+| `/writing-skills` | Authoring skills — discovery-focused descriptions, lean structure, test before trusting |
 
 ## Installation
 
-### As a Claude Code Plugin
+### Clone + Symlink (Primary)
 
-```bash
-claude plugin add LongJohnSilver1504/claude-skills
-```
-
-### Manual (Clone + Symlink)
+The repo is designed to live at `~/claude-skills` with symlinks into `~/.claude/skills` and `~/.claude/agents`:
 
 ```bash
 # Clone the repo
-git clone git@github.com:LongJohnSilver1504/claude-skills.git ~/.claude/skills-repo
+git clone git@github.com:LongJohnSilver1504/claude-skills.git ~/claude-skills
 
 # Symlink all skills
-for skill in ~/.claude/skills-repo/skills/*/; do
+mkdir -p ~/.claude/skills
+for skill in ~/claude-skills/skills/*/; do
   ln -sf "$skill" ~/.claude/skills/"$(basename "$skill")"
 done
 
 # Symlink the subagents (required by /execute-tasks)
 mkdir -p ~/.claude/agents
-for agent in ~/.claude/skills-repo/agents/*.md; do
+for agent in ~/claude-skills/agents/*.md; do
   ln -sf "$agent" ~/.claude/agents/"$(basename "$agent")"
 done
+```
+
+Because the skills are symlinked, a `git pull` in `~/claude-skills` updates every installed skill in place.
+
+### As a Claude Code Plugin
+
+Inside Claude Code:
+
+```
+/plugin marketplace add LongJohnSilver1504/claude-skills
+/plugin install claude-skills
 ```
 
 ### Selective Installation
@@ -167,17 +172,17 @@ done
 Only want specific skills? Symlink individual ones:
 
 ```bash
-git clone git@github.com:LongJohnSilver1504/claude-skills.git ~/.claude/skills-repo
+git clone git@github.com:LongJohnSilver1504/claude-skills.git ~/claude-skills
 
 # Pick the skills you want
-ln -sf ~/.claude/skills-repo/skills/brainstorm ~/.claude/skills/brainstorm
-ln -sf ~/.claude/skills-repo/skills/tdd ~/.claude/skills/tdd
-ln -sf ~/.claude/skills-repo/skills/systematic-debugging ~/.claude/skills/systematic-debugging
+ln -sf ~/claude-skills/skills/brainstorm ~/.claude/skills/brainstorm
+ln -sf ~/claude-skills/skills/git-commit ~/.claude/skills/git-commit
+ln -sf ~/claude-skills/skills/systematic-debugging ~/.claude/skills/systematic-debugging
 ```
 
 ## Agents (Required by `/execute-tasks`)
 
-The `agents/` directory contains the 5 subagents that `/execute-tasks` dispatches per deliverable. Without them, the autonomous build phase cannot run. They are project-agnostic — each reads conventions from the consuming project's `.claude/rules/` at dispatch time.
+The `agents/` directory contains the 6 subagents that `/execute-tasks` dispatches per deliverable. Without them, the autonomous build phase cannot run. They are project-agnostic — each reads conventions from the consuming project's `.claude/rules/` at dispatch time.
 
 | Agent | Purpose | Dispatched when |
 |-------|---------|-----------------|
@@ -186,6 +191,7 @@ The `agents/` directory contains the 5 subagents that `/execute-tasks` dispatche
 | `quality-reviewer` | Checks code against `.claude/rules/` conventions | After spec passes |
 | `test-reviewer` | Checks test quality | After quality passes, if tests exist |
 | `code-reviewer` | Holistic full-feature review (cross-deliverable concerns) | After all deliverables pass |
+| `design-reviewer` | Holistic visual/design audit of the feature UI against Refactoring UI principles | After code review passes |
 
 Install them globally (once) so every project can run `/execute-tasks` — see the symlink loop in [Installation](#manual-clone--symlink). Alternatively, copy them per-project into `.claude/agents/`.
 
@@ -214,8 +220,8 @@ The `rules/` directory contains 16 example `.claude/rules/` files from a product
 
 ```bash
 # Copy rules you want to your project
-cp ~/.claude/skills-repo/rules/component-hook-separation.md .claude/rules/
-cp ~/.claude/skills-repo/rules/error-handling.md .claude/rules/
+cp ~/claude-skills/rules/component-hook-separation.md .claude/rules/
+cp ~/claude-skills/rules/error-handling.md .claude/rules/
 ```
 
 ## Upstream Skills
@@ -224,11 +230,11 @@ Some skills were adapted from external sources. To pull updates, check the origi
 
 | Skill | Source |
 |-------|--------|
-| `/refactoring-ui-designer` | [Refactoring UI by Wathan & Schoger](https://refactoringui.com) |
-| `/refactoring-ui-reviewer` | [Refactoring UI by Wathan & Schoger](https://refactoringui.com) |
-| `/tailwindcss-fundamentals-v4` | [Tailwind CSS v4 docs](https://tailwindcss.com/docs) |
+| `/refactoring-ui` | [Refactoring UI by Wathan & Schoger](https://refactoringui.com) |
+| `/receiving-code-review` | [obra/superpowers](https://github.com/obra/superpowers) (adapted) |
+| `/writing-skills` | [obra/superpowers](https://github.com/obra/superpowers) (adapted) + [Anthropic skill authoring docs](https://docs.claude.com) |
 
-These skills are snapshots — they don't auto-update. When a new version of Tailwind or React ships, review the source and update the skill content manually.
+These skills are snapshots — they don't auto-update. When the upstream source changes, review it and update the skill content manually.
 
 ## Customization
 

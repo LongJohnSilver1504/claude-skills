@@ -103,6 +103,10 @@ Tests describe what the **user sees or does**, not internal state:
 - Total findings: {count}
 - By rule: Query Priority ({n}), CSS ({n}), Factories ({n}), Behavioral ({n}), Async ({n}), Structure ({n}), Impl Details ({n})
 
+Before evaluating quality, run the tests: `pnpm vitest run {files}`. A suite that doesn't execute cannot PASS — report it as FAIL with the runner output.
+
+Also check the anti-pattern catalog at `skills/frontend-testing/references/testing-anti-patterns.md` (testing the mock instead of the behavior, test-only methods in production code, mocking without understanding the dependency) — findings from it count as FAIL.
+
 ## Status Rules
 
 - **PASS** — Zero findings

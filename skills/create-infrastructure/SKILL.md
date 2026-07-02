@@ -5,13 +5,15 @@ description: Scaffold shared infrastructure projects — providers, hooks, layou
 
 # Create Infrastructure
 
-Scaffold shared infrastructure that lives in `src/shared/`, `public/`, or the project root. Covers providers, hooks, layout components, i18n translations, config/theme setup, and shared utilities.
+Scaffold shared infrastructure that lives in the shared root, `public/`, or the project root. Covers providers, hooks, layout components, i18n translations, config/theme setup, and shared utilities.
+
+All `shared/` and `ui/` paths below resolve against the roots defined in the project's `.claude/rules/project-structure.md`.
 
 For domain features with entities, API endpoints, and CRUD operations, use **create-feature** instead.
 
-**Related:** create-feature (domain features), plan-implementation (upstream planning), react-clean-architecture (architecture rationale), frontend-testing (post-scaffold tests), error-handling (AppError patterns), generate-feature-doc (post-implementation docs), shadcn-ui (component patterns), tailwindcss-fundamentals-v4 (theme/config).
+**Related:** create-feature (domain features), plan-implementation (upstream planning), react-clean-architecture (architecture rationale), frontend-testing (post-scaffold tests), generate-feature-doc (post-implementation docs).
 
-For shared architecture conventions (hook/component separation, imports, translations, anti-patterns), see [references/shared-conventions.md](references/shared-conventions.md).
+**Conventions live in the project's `.claude/rules/`** (component/hook separation, error handling, centralized links, colors, layout ownership) — this skill carries only the deliverable catalog, scaffold order, and templates. Small deltas not covered by the rules: [references/shared-conventions.md](references/shared-conventions.md).
 
 ## Before You Begin
 
@@ -125,14 +127,14 @@ A layout shell composes shared building blocks for a specific feature page. It b
 
 ### i18n Pattern
 
-- One JSON file per locale per namespace
-- Keys scoped by section: `navbar.bookings`, `footer.home`, `backHeader.back`
-- Consumed via `useTranslation('{namespace}')` from `next-i18next`
+- One JSON file per locale per namespace in `public/locales/{locale}/{namespace}.json`
+- Keys scoped by section: `navbar.bookings`, `footer.home`, `backButton.back` (nested objects, not flat dot-notation)
+- Consumed via `useTranslation('{namespace}')` from `next-i18next` — **only inside hooks**; components receive already-translated strings (see `component-hook-separation.md`)
 - Always create both EN and ES files
 
 ### Centralized Links
 
-All routes from `shared/links/index.ts`, never hardcoded. See [centralized-links rule](../../.claude/rules/centralized-links.md).
+All routes come from the centralized `links` object, never hardcoded. See `centralized-links.md` in the project's `.claude/rules/`.
 
 ## Infrastructure-Specific Anti-Patterns
 
@@ -143,7 +145,7 @@ All routes from `shared/links/index.ts`, never hardcoded. See [centralized-links
 - **Don't build feature-specific layout shells in `shared/layouts/`** — compose shared building blocks inside the feature's `components/` folder
 - **Don't put component-specific hooks in `shared/hooks/`** — if a hook is only used by one layout component, it lives in `shared/layouts/{component-name}/hooks/`
 
-For general anti-patterns (logic in components, hardcoded routes, legacy imports, etc.), see [references/shared-conventions.md](references/shared-conventions.md).
+General anti-patterns (logic in components, hardcoded routes/colors, legacy imports, etc.) are covered by the project's `.claude/rules/`.
 
 ## Code Templates
 

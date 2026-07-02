@@ -45,12 +45,11 @@ function usePayment(id) {
   const query = useQuery({
     queryKey: paymentKeys.detail(id),
     queryFn: () => paymentApi.getById(id),
-    staleTime: 5 * 60 * 1000,
   })
 
   return {
     payment: query.data,
-    isLoading: query.isLoading,
+    isPending: query.isPending,
     canRefund: query.data ? canRefund(query.data) : false,
     canEdit: query.data ? canEdit(query.data) : false,
   }
@@ -74,9 +73,29 @@ function Page() {
   if (!data?.valid) return null  // And here
 }
 
-// Good: Validate once at boundary
+// Good: Validate once at boundary, then map to the domain model
 function getItems() {
   const response = await client.get('/items')
-  return itemsSchema.parse(response.data)  // Only here
+  const dto = itemsDtoSchema.parse(response.data)  // Only here
+  return dto.results.map(toItem)
+}
+```
+
+## Domain Re-Exporting Wire Types
+
+The domain layer must own its types. Re-exporting `z.infer` of a wire (DTO) schema as the domain type couples every hook and component to the backend's shape — a backend rename ripples through the whole app instead of stopping at `api/`. See `rules/api-boundary.md`.
+
+```tsx
+// Bad: domain/{feature}.types.ts is just a passthrough of the wire format
+export type { Stay } from '../api/stays.schemas'
+export type Stay = z.infer<typeof stayDtoSchema>
+
+// Good: hand-authored, frontend-owned domain type; mapper converts dto → domain
+// domain/stays.types.ts
+export type Stay = {
+  id: number
+  status: StayStatus
+  plate: string | null
+  // ...named and shaped for the app, not the wire
 }
 ```

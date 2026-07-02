@@ -12,7 +12,7 @@ Systematically improve a PRD by asking targeted questions that uncover ambiguiti
 
 1. Read the PRD
 2. Ask user for session depth
-3. Ask questions one at a time, adapting based on answers
+3. Ask questions in small batches, adapting based on answers
 4. Track Q&A as you go
 5. **Update PRD.md directly** with all clarifications — no separate file
 
@@ -36,10 +36,11 @@ Analyze the PRD complexity (features, integrations, edge cases) and recommend a 
 ### Prioritize by impact
 
 1. **Blockers**: requirements that block other work or have safety/security implications
-2. **Vague language**: missing acceptance criteria, undefined terms, "should be fast"
-3. **Integration points**: APIs, third-party services, data dependencies
-4. **Edge cases**: error handling, boundary conditions, empty states
-5. **Missing non-functionals**: performance targets, accessibility, scalability
+2. **Contract verification**: flag any PRD statement about an API endpoint, request/response shape, or field that is not yet verified against the backend (real code, MSW mocks, or backend docs) — ask how it will be verified or mark it UNVERIFIED in the PRD
+3. **Vague language**: missing acceptance criteria, undefined terms, "should be fast"
+4. **Integration points**: APIs, third-party services, data dependencies
+5. **Edge cases**: error handling, boundary conditions, empty states
+6. **Missing non-functionals**: performance targets, accessibility, scalability
 
 ### Adapt after each answer
 
@@ -51,8 +52,8 @@ Analyze the PRD complexity (features, integrations, edge cases) and recommend a 
 ### Question rules
 
 - Reference specific sections or statements from the PRD
-- One question per turn
-- Don't suggest the "right" answer
+- Batch up to 3 bounded, **independent** questions per `AskUserQuestion` call (the tool supports 4 max). Fall back to one-at-a-time only when a question depends on the answer to another
+- When there's a clear best answer, mark that option "(Recommended)" and include a one-line rationale — don't make the user guess what you'd pick
 - Provide selectable options when the answer space is bounded
 - Acknowledge previous answers when building on them
 
@@ -69,6 +70,7 @@ After all questions:
    - Refine vague language with concrete acceptance criteria
    - Add resolved ambiguities where they belong in the document
    - Add a `## Clarifications` section at the end listing key decisions made during this session
+   - **Every resolved clarification must change the requirements themselves** — a new/edited row in the Functional Requirements table or a new/edited acceptance criterion. A bullet in `## Clarifications` alone is not enough; downstream skills read the requirements, not the changelog
 2. Summarize what changed for the user
 3. List remaining ambiguities that weren't resolved (if any)
 4. Use the `AskUserQuestion` tool to present next step options:
@@ -88,10 +90,3 @@ If context was cleaned mid-pipeline:
 2. Check the `## Clarifications` section at the end of the PRD for what's already been resolved
 3. Continue from where you left off — don't repeat questions already answered
 
-## Context Management
-
-After completing, report context usage:
-
-> "{Summary}. Context usage: **{X}%**"
-
-Don't recommend cleaning — just show the percentage.

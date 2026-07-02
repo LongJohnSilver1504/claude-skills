@@ -1,6 +1,6 @@
 # Refactoring UI — Principles Reference
 
-The 8 chapters of the book condensed into actionable rules. Each rule has a short name (use it in audit findings), the principle, the failure mode it prevents, and how to fix it.
+The book condensed into actionable rules. Each rule has a short name (use it in audit findings), the principle, the failure mode it prevents, and how to fix it.
 
 ## Table of contents
 
@@ -10,8 +10,9 @@ The 8 chapters of the book condensed into actionable rules. Each rule has a shor
 4. [Designing Text](#4-designing-text)
 5. [Working with Color](#5-working-with-color)
 6. [Creating Depth](#6-creating-depth)
-7. [Working with Images](#7-working-with-images)
 8. [Finishing Touches](#8-finishing-touches)
+
+> Chapter 7 (Working with Images — stock photos, favicons, screenshots) is intentionally omitted: it doesn't apply to this app. Its one relevant rule — user-uploaded images get fixed containers with `object-fit: cover` — lives in rule 3.7. Chapter 8's numbering is kept so rule citations stay stable.
 
 ---
 
@@ -43,7 +44,7 @@ A limitless palette is a paralyzing curse. Pre-define small systems (8-10 shades
 Don't carry the entire hierarchy with font size — it leads to oversized primary text and unreadable secondary text. Use font **weight** and **color** to do the same work at more reasonable sizes. Stick to ~2 weights (e.g. 400/500 and 600/700) and ~3 colors (dark / grey / lighter grey) for hierarchy. **Avoid font weights under 400 for UI text** — they only work at large headline sizes.
 
 ### 2.3 Don't use grey text on colored backgrounds
-Grey-on-white works because it reduces contrast. On colored backgrounds, grey looks dirty. Reducing white opacity (e.g. `rgba(255,255,255,0.7)`) looks washed out and lets the background bleed through text. **Fix:** hand-pick a new color with the **same hue** as the background, then adjust saturation and lightness until the contrast feels right.
+Grey-on-white works because it reduces contrast. On colored backgrounds, grey looks dirty. Reducing white opacity (e.g. `rgba(255,255,255,0.7)`) looks washed out and lets the background bleed through text. **Fix:** the text needs the **same hue** as the background at a different lightness — use the surface's paired token from `globals.css` (e.g. `text-warning-foreground` on `bg-warning`, `text-info-foreground` on `bg-info`). If no paired token fits, add a new token per `color-usage.md` — never hand-pick an inline value or reach for a raw palette class.
 
 ### 2.4 Emphasize by de-emphasizing
 When the primary element doesn't pop, don't keep adding to it — tone down its competition. Active nav item won't stand out? Soften the inactive items. Sidebar competing with main content? Remove its background color. **Apply by:** before adding emphasis, ask "what could I subtract from the competition instead?"
@@ -92,6 +93,9 @@ Don't define `headline = 2.5em` and call it done. The relationship between headl
 ### 3.6 Avoid ambiguous spacing
 When elements are grouped without a visible separator (border, background), spacing has to do the grouping. **Space around a group must be larger than space within the group.** Common failures: label–input pairs where margin-below-label equals margin-below-input (the form looks like a list of unconnected elements); bulleted lists where line-height of one bullet equals gap between bullets.
 
+### 3.7 User images get fixed containers
+Users will give you whatever aspect ratio they have. Don't let user-uploaded images (truck photos, plate captures, avatars) dictate your layout — force them into a fixed container with `object-fit: cover` (or `background-size: cover`). For images whose background might match your UI background, use a subtle **inner box-shadow** instead of a border; borders clash with image colors, shadows don't.
+
 ---
 
 ## 4. Designing Text
@@ -136,8 +140,8 @@ The "blue underlined" treatment is for links inside paragraphs of non-link text.
 
 ## 5. Working with Color
 
-### 5.1 Ditch hex for HSL
-Hex/RGB hide the relationship between colors. HSL exposes hue, saturation, and lightness — the dimensions the eye actually perceives. Two colors with the same hue but different lightness look related in HSL and unrelated in hex. **Use HSL (or OKLCH, which is even better perceptually) when defining a palette.** Note: HSL ≠ HSB; design tools often use HSB but browsers use HSL.
+### 5.1 Perceptual color spaces, applied through tokens
+Hex/RGB hide the relationship between colors. HSL — and OKLCH, which is even better perceptually — expose hue, saturation/chroma, and lightness: the dimensions the eye actually perceives. In this project that thinking is already done: the palette lives in `src/styles/globals.css` as OKLCH tokens. **In component code, never define a color** — use an existing semantic token with the hue you need, or add a new token to `globals.css` (light + dark values) per `color-usage.md`.
 
 ### 5.2 You need more colors than you think
 Five-color palettes from generators don't build real interfaces. You need:
@@ -145,26 +149,21 @@ Five-color palettes from generators don't build real interfaces. You need:
 - **Primary color(s): 5–10 shades each.** One, sometimes two.
 - **Accent colors: 5–10 shades each.** For semantic states (red destructive, yellow warning, green positive) and for highlighting.
 
-A complex UI can need 50+ named colors. This is normal.
+A complex UI can need 50+ named colors. This is normal — that's why `globals.css` carries semantic, state, and feature-specific tokens rather than a tiny palette.
 
 ### 5.3 Define your shades up front
-Don't use `lighten()` / `darken()` CSS functions at the call site — you end up with 35 nearly identical blues. Define fixed shades once. Recipe:
-1. Pick a base (the "default" — often a button background).
-2. Pick the darkest (often for text on that color) and lightest (often for tinted backgrounds).
-3. Fill in the middle: pick the value halfway between base and darkest (call it 700), and halfway between base and lightest (300). Then fill 800, 600, 400, 200.
-
-Use a numeric scale (`50, 100, 200, ..., 900`) so the name encodes the lightness.
+Don't derive colors at the call site (`lighten()`, `color-mix()`, opacity stacking) — you end up with 35 nearly identical blues. Every shade is defined once, as a named token in `globals.css`. When a design needs a shade that doesn't exist, that's a signal to **add a token** (with light and dark OKLCH values, exposed via `@theme inline`) per `color-usage.md` — not to improvise a value or grab the nearest raw palette class in the component.
 
 ### 5.4 Don't let lightness kill your saturation
-In HSL, saturation has less visual effect at extreme lightness values. To prevent very light or very dark shades from looking washed out, **bump saturation as lightness moves away from 50%.** Additionally, "lightness" in HSL doesn't match perceived brightness — yellow looks lighter than blue at the same HSL lightness. You can lighten a color by rotating its hue toward the nearest bright hue (60° yellow, 180° cyan, 300° magenta) and darken by rotating toward the nearest dark hue (0° red, 120° green, 240° blue). Limit hue rotation to ~20–30° or it stops feeling like the same color.
+In OKLCH/HSL, saturation has less visual effect at extreme lightness values. When **defining new tokens** in `globals.css`, bump chroma as lightness moves away from the middle so very light or very dark shades don't look washed out. Also: "lightness" doesn't match perceived brightness across hues — yellow looks lighter than blue at the same lightness value. A shade can be visually lightened by rotating hue toward the nearest bright hue (yellow, cyan, magenta) or darkened toward the nearest dark hue (red, green, blue); limit rotation to ~20–30° or it stops feeling like the same color. This is token-authoring guidance — it never happens inline in component code.
 
 ### 5.5 Greys don't have to be grey
-True 0%-saturation grey is sterile. Real-feeling greys are slightly saturated. **Cool greys:** add blue saturation. **Warm greys:** add yellow/orange saturation. Keep saturation consistent (or slightly increasing) across the scale so the temperature stays uniform.
+True 0%-saturation grey is sterile. Real-feeling greys are slightly saturated. **Cool greys:** add blue saturation. **Warm greys:** add yellow/orange saturation. Keep saturation consistent (or slightly increasing) across the scale so the temperature stays uniform. (The project's neutral tokens already carry a slight cool cast — another reason to use them instead of `text-gray-*`.)
 
 ### 5.6 Accessible doesn't have to mean ugly
 WCAG asks for **4.5:1 contrast for normal text, 3:1 for large text (~18px+).** Two tricks when this is hard with color:
-- **Flip the contrast:** instead of white-on-dark-color (which forces a very dark color), use dark-color-on-light-color (the same family, just inverted).
-- **Rotate the hue:** if you need a secondary text color on a dark colored panel and lightness alone won't get you to 4.5:1 without going near-white, rotate hue toward a brighter color (cyan, magenta, yellow).
+- **Flip the contrast:** instead of white-on-dark-color (which forces a very dark color), use dark-color-on-light-color (the same family, just inverted). In token terms: swap which of the pair (`--x` / `--x-foreground`) is the surface and which is the text.
+- **Rotate the hue:** when authoring a token that must pass contrast on a dark colored panel and lightness alone won't get to 4.5:1 without going near-white, rotate hue toward a brighter color (cyan, magenta, yellow) in the token definition.
 
 ### 5.7 Don't rely on color alone
 Color-blind users (~8% of men) can't always tell red from green. Always communicate state with a second channel:
@@ -180,7 +179,7 @@ Color-blind users (~8% of men) can't always tell red from green. Always communic
 Light comes from above. This single rule explains everything else:
 - **Raised elements:** top edge is lighter (catches light), bottom is darker (in shadow). Shadow falls below the element.
 - **Inset elements:** the inverse — top is darker (the lip above blocks light), bottom is lighter.
-- Use a **picked lighter color** for the top edge, not white-with-opacity (opacity desaturates the underlying color and looks dull).
+- Use a **lighter same-hue token** for the top edge, not white-with-opacity (opacity desaturates the underlying color and looks dull).
 - Shadow blur should be small for sharp edges — look at a real wall outlet's shadow for reference.
 
 ### 6.2 Use shadows to convey elevation
@@ -215,30 +214,6 @@ The most effective depth cue: have elements cross boundaries.
 - Controls that overlap the content they control (e.g. carousel arrows on top of the image).
 
 For overlapping images that would clash, add an "invisible border" matching the background color — creates a small gap between layers.
-
----
-
-## 7. Working with Images
-
-### 7.1 Use good photos
-Bad photos sink an otherwise good design. Options: hire a photographer, buy stock, use a free curated source (Unsplash, Pexels). Don't ship with placeholder images planning to "swap them later." It never happens.
-
-### 7.2 Text needs consistent contrast
-A photo has bright and dark regions; no single text color works across both. Fixes (often combined):
-- **Semi-transparent overlay:** black overlay (helps light text), white overlay (helps dark text).
-- **Lower image contrast:** flattens the bright/dark range. Adjust brightness afterward.
-- **Colorize the image:** desaturate it and multiply-blend a single color. Bonus: it now matches the brand palette.
-- **Text shadow as glow:** large blur radius, no offset — a soft halo behind text. Preserves more of the photo's energy than overlays do.
-
-### 7.3 Everything has an intended size
-- **Don't scale up small icons.** A 16px icon at 64px looks chunky and detail-less. Either use larger icons drawn for that size, or wrap the small icon in a circle/square shape that fills the space.
-- **Don't scale down screenshots.** 16px text becomes 4px text. Either show a partial screenshot, screenshot a smaller breakpoint, or draw a simplified diagram.
-- **Don't scale down icons either.** Detail collapses. Redraw a favicon for 16×16; don't shrink your logo.
-
-### 7.4 Beware user-uploaded content
-Users will give you whatever aspect ratio they have. Don't let user images dictate your layout.
-- Force user images into a fixed container with `object-fit: cover` (or `background-size: cover`).
-- For images whose background might match your UI background, use a subtle **inner box-shadow** instead of a border. Borders clash with image colors; shadows don't.
 
 ---
 

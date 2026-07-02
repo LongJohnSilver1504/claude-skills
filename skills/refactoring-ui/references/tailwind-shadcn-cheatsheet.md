@@ -2,6 +2,8 @@
 
 Concrete mappings from the book's principles to the classes and components you'll actually write.
 
+**Viewport:** this app is mobile-only. Every page renders inside `AppContainer` (~350–400px wide). Never use `sm:`/`md:`/`lg:` breakpoint prefixes — there is exactly one layout. Width capping (rule 3.3) is already handled by `AppContainer`; inside it, think in vertical rhythm, not columns.
+
 ## Spacing (rule 3.2)
 
 Tailwind's default scale already follows the "no two values closer than 25%" rule. Use it directly. Avoid arbitrary spacing values (`mt-[18px]`).
@@ -23,7 +25,7 @@ Use built-in size tokens. Default body should be `text-base` (16px).
 
 | Role | Class | Notes |
 |---|---|---|
-| Page hero headline | `text-4xl md:text-5xl font-bold tracking-tight` | tight tracking on big text (rule 4.8) |
+| Page hero headline | `text-3xl font-bold tracking-tight` | tight tracking on big text (rule 4.8); mobile ratios are closer (rule 3.5), so hero ≠ huge |
 | Section heading | `text-2xl font-semibold` | usually NOT bigger |
 | Subsection / card title | `text-lg font-semibold` | |
 | Body | `text-base` | leading-relaxed for paragraphs |
@@ -35,13 +37,13 @@ Use built-in size tokens. Default body should be `text-base` (16px).
 - Body paragraphs: `leading-relaxed` (1.625) or `leading-loose` (2) for wide content
 - UI labels / short text: default `leading-normal` is fine
 
-**Line length (rule 4.3):** cap paragraph width with `max-w-prose` (~65 chars) or `max-w-2xl` (672px). Body inside wider containers — wrap the paragraph, not the container.
+**Line length (rule 4.3):** at ~350px, `text-base` lines land around 40–50 characters — already in range. No line-length capping needed; if text feels cramped, the fix is padding, not width.
 
 **Never use `font-thin`, `font-extralight`, `font-light` for UI text** (rule 2.2). `font-normal` (400) is the lightest. Two-weight system: `font-normal` + `font-semibold` covers most UI.
 
 ## Color & text hierarchy (rules 2.2, 2.3, 5.2, 5.6)
 
-shadcn/ui's tokens already encode hierarchy. Use them:
+All colors come from the semantic tokens in `src/styles/globals.css` — never raw palette classes (`text-gray-500`, `bg-blue-100`); a hook blocks them. The tokens already encode hierarchy:
 
 | Need | Token | Tailwind class |
 |---|---|---|
@@ -50,12 +52,11 @@ shadcn/ui's tokens already encode hierarchy. Use them:
 | Disabled / very subtle | mix muted with opacity | `text-muted-foreground/70` |
 | Brand / primary action | `--primary` | `text-primary` `bg-primary` |
 | Destructive | `--destructive` | `text-destructive` |
+| Success / warning / info | `--success` `--warning` `--info` | `text-success` `bg-warning` `text-info` |
 
-**Rule 2.3 (grey on colored bg):** never use raw `text-gray-400` on `bg-blue-600`. Two correct approaches in Tailwind:
-1. Use a same-hue lighter shade: `text-blue-100` or `text-blue-200` on `bg-blue-600`.
-2. Use Tailwind v4's color mixing: `text-white/80` works visually but desaturates. Hand-pick when possible.
+**Rule 2.3 (grey on colored bg):** never put grey text (`text-muted-foreground`) on a colored surface. Colored surfaces come as token **pairs** with a same-hue readable counterpart — use the pair: `text-warning-foreground` on `bg-warning`, `text-success-foreground` on `bg-success`, `text-destructive-foreground` on `bg-destructive`, `text-primary-foreground` on `bg-primary`. If a colored panel needs a text shade that no existing pair covers, add a new same-hue token to `globals.css` per `color-usage.md` — don't approximate with opacity (`text-white/80` desaturates) and never with a raw palette class.
 
-For colored panels in shadcn, define them as themed surfaces — e.g. a `--info-foreground` token on `--info` background — rather than dropping greys onto colored regions.
+For new kinds of colored panels, define them as themed surfaces — a `--x` / `--x-foreground` token pair — rather than dropping greys onto colored regions.
 
 ## Buttons & button hierarchy (rule 2.8)
 
@@ -71,6 +72,8 @@ Use shadcn `<Button>` variants by **role**, not by visual preference:
 **Anti-pattern:** three `<Button>` (default variant) side by side. One should be `default`, others `outline` / `ghost`.
 
 **Destructive-but-not-primary:** "Delete account" in a settings page should be `variant="ghost" className="text-destructive"`, not big and red. Save the loud destructive button for the confirmation modal.
+
+**Touch targets:** every interactive element needs ≥ 44×44px (`min-h-11`, `size-11` for icon buttons) — mobile-only app, accessibility rule 1.
 
 ## Borders & separation (rule 8.5)
 
@@ -139,7 +142,7 @@ Don't just show "No items." Pattern:
 <div className="flex flex-col items-center justify-center py-16 text-center">
   <Icon className="size-12 text-muted-foreground mb-4" />
   <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
-  <p className="text-muted-foreground max-w-sm mb-6">
+  <p className="text-muted-foreground mb-6">
     Create your first invoice to start tracking payments.
   </p>
   <Button>Create invoice</Button>
@@ -147,19 +150,6 @@ Don't just show "No items." Pattern:
 ```
 
 Also: hide the filter/sort/tab UI that does nothing until there's content.
-
-## Width constraints (rules 3.3, 4.3)
-
-Don't go full-width by default. Cap content widths:
-
-| Content type | Class |
-|---|---|
-| Long-form article | `max-w-prose` (~65ch) |
-| Form, settings panel | `max-w-md` or `max-w-lg` |
-| Dashboard / app shell | `max-w-7xl` |
-| Marketing page section | `max-w-6xl` |
-
-Pair with `mx-auto` to center. The page nav can be full-width; the content inside doesn't have to be.
 
 ## Aligning mixed-size text (rule 4.4)
 
@@ -179,7 +169,7 @@ When the same horizontal row has different font sizes, use baseline alignment:
 Right-align numeric columns and use tabular figures:
 
 ```tsx
-<td className="text-right font-variant-numeric-tabular-nums tabular-nums">
+<td className="text-right tabular-nums">
   $1,249.00
 </td>
 ```
@@ -188,4 +178,4 @@ Right-align numeric columns and use tabular figures:
 
 ## Dark mode
 
-shadcn tokens (`--foreground`, `--muted-foreground`, `--primary`, etc.) handle dark mode automatically when the theme is set up. If you find yourself writing `dark:text-gray-X` everywhere, you're probably bypassing tokens — fix the theme instead.
+The semantic tokens (`--foreground`, `--muted-foreground`, `--primary`, `--warning`, etc.) carry both light and dark values in `globals.css`, so dark mode is automatic. If you find yourself writing `dark:` overrides in a component, you're bypassing tokens — fix or add the token instead.

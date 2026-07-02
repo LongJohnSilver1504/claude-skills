@@ -265,7 +265,7 @@ describe('{feature}.service', () => {
 
 ### 4. API Layer (MSW)
 
-Use MSW to mock HTTP at the network level. The server is set up **per test file** — there is no global MSW server (see [references/msw-setup.md](references/msw-setup.md)).
+Use MSW to mock HTTP at the network level. The server is set up **per test file** — there is no global MSW server (see [references/msw-setup.md](references/msw-setup.md)). Handlers return wire shapes — use DTO factories (see Shared Test Factories below) rather than inline literals for anything non-trivial. Adapter tests then assert on the **mapped domain output**, exercising the full validate→map boundary (`rules/api-boundary.md`).
 
 ```tsx
 import { setupServer } from 'msw/node'
@@ -363,11 +363,39 @@ await waitFor(() => {
 
 ## Shared Test Factories
 
-When a domain type (e.g., `Reservation`) is used across many test files, create a **shared test factory** instead of duplicating `makeReservation` in every test file. This avoids a cascade of updates when adding a new required field to the type.
+When a type is used across many test files, create a **shared test factory** instead of duplicating `makeReservation` in every test file. This avoids a cascade of updates when adding a new required field to the type.
 
-Factories live in `features/{feature}/testing/factories.ts` (location defined in `.claude/rules/testing.md`).
+There are **two levels of factory**, mirroring the API boundary (see `rules/api-boundary.md`):
 
-### Factory pattern
+| Factory level | Builds | Used by | Typing |
+|---|---|---|---|
+| **DTO factories** | Wire-format objects (what the backend sends) | MSW handlers, adapter/mapper tests | `satisfies z.input<typeof xDtoSchema>` |
+| **Domain factories** | Hand-authored domain types | Component, hook, and domain tests | `: X` (the domain type) |
+
+Both live in `features/{feature}/testing/factories.ts` (location defined in `.claude/rules/testing.md`); split DTO factories into `testing/dto-factories.ts` when the file grows large.
+
+**DTO factories are a detection layer.** Declaring `satisfies z.input<typeof xDtoSchema>` means any change to the wire schema makes the mocks fail to compile — contract drift surfaces at build time instead of when a user hits it:
+
+```typescript
+// features/stays/testing/factories.ts
+import { z } from 'zod'
+import { stayDetailDtoSchema } from '../api/stays.dto'
+
+export const createStayDetailDto = (
+  overrides: Partial<z.input<typeof stayDetailDtoSchema>> = {}
+) =>
+  ({
+    id: 1,
+    status: 'active',
+    cab_plate: 'ABC-1234',
+    // ... every field the backend sends, wire names and all ...
+    ...overrides,
+  }) satisfies z.input<typeof stayDetailDtoSchema>
+```
+
+> The DTO-import ban in `rules/api-boundary.md` targets app code (hooks/components); `testing/` factories are the exception — they must import the dto schema to stay typed against it.
+
+### Factory pattern (domain)
 
 ```typescript
 // features/reservation-details/testing/factories.ts
@@ -412,23 +440,42 @@ it('detects unpaid invoice', () => {
 
 ### When to create a factory
 
-- The domain type has **5+ required fields** AND
+- The type has **5+ required fields** AND
 - It appears in **3+ test files**
 
-If a type is only tested in 1-2 files, a local `makeX` helper is fine.
+If a type is only tested in 1-2 files, a local `makeX` helper is fine. (Thresholds apply to both DTO and domain factories.)
 
-### API response factories
+### DTO factories feed MSW
 
-For API layer tests, create a separate factory for the raw API response shape:
+MSW handlers simulate the backend, so they return **DTO-factory output (wire shapes), never domain objects**. If a handler returns a domain object, the test bypasses the validate→map boundary and proves nothing about it:
 
 ```typescript
-export const createApiResponse = (overrides: Record<string, unknown> = {}) => ({
-  id: 1,
-  status: 'checked in',
-  // ... raw API shape ...
-  ...overrides,
+// features/{feature}/testing/handlers.ts
+http.get('*/stays/:id', ({ params }) =>
+  HttpResponse.json(createStayDetailDto({ id: Number(params.id) }))  // wire shape
+)
+```
+
+## Mapper Tests
+
+Mappers (`api/{feature}.mapper.ts`) are pure functions — give them direct unit tests. Call `toX(dtoFactory())` and assert field mapping, nullable normalization (`?? null` / defaults), and envelope flattening:
+
+```typescript
+import { toStay } from './stays.mapper'
+import { createStayDetailDto } from '../testing/factories'
+
+it('maps wire names and normalizes nullables', () => {
+  const stay = toStay(createStayDetailDto({ cab_plate: null }))
+  expect(stay.plate).toBeNull()
+  expect(stay.id).toBe(1)
 })
 ```
+
+These are the cheapest tests in the codebase — no rendering, no network, no providers. **Always write them.**
+
+## Contract Smoke Test (Optional)
+
+The layers above catch drift at compile/test time against *mocked* data. The proactive layer is a CI/cron script that runs the feature's dto schemas against **real staging responses** — schema failures mean the backend changed before any user saw it. See the detection-layers table in `rules/api-boundary.md`; add it once a stable authed staging env exists.
 
 ## Checklist
 
@@ -437,7 +484,9 @@ export const createApiResponse = (overrides: Record<string, unknown> = {}) => ({
 [ ] Component tests: render + userEvent + screen assertions
 [ ] Provider tests: renderHook for public API hooks only
 [ ] Domain tests: pure function input/output
-[ ] API tests: MSW (or mocked client) + schema validation
+[ ] Mapper tests: toX(dtoFactory()) asserts mapping + normalization
+[ ] API tests: MSW handlers return DTO-factory output; assert mapped domain result
+[ ] DTO factories declare `satisfies z.input<typeof xDtoSchema>`
 [ ] NO hook-level tests for hooks that power components
 ```
 

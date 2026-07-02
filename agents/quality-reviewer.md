@@ -21,6 +21,7 @@ Reading checklist (plus any other rule files present in the directory):
 - `react-components.md`
 - `tanstack-query.md`
 - `error-handling.md`
+- `api-boundary.md`
 - `form-patterns.md`
 - `centralized-links.md`
 - `color-usage.md`
@@ -35,7 +36,7 @@ Reading checklist (plus any other rule files present in the directory):
 3. For each file, check every convention that applies:
    - Is this a component? Check component-hook-separation, react-components, layout-ownership, accessibility, color-usage
    - Is this a hook? Check component-hook-separation, tanstack-query, error-handling
-   - Is this an API adapter? Check error-handling, centralized-links
+   - Is this an API adapter? Check api-boundary, error-handling, centralized-links
    - Is this a form? Check form-patterns
 4. Tag each finding by severity
 5. Determine overall status
@@ -49,6 +50,7 @@ Reading checklist (plus any other rule files present in the directory):
 - Missing `as const` on a constant object
 - Import ordering issues
 - Missing TypeScript type annotation where convention requires one
+- Import of `api/*.dto` or `api/*.mapper` outside `api/` (also blocked by a PreToolUse hook — flag if present in existing code)
 
 **ARCHITECTURAL** — Changes behavior, structure, or design decisions:
 - `useState`, `useEffect`, `useCallback`, `useMemo`, `useRouter`, or `useTranslation` called directly in a component body
@@ -59,6 +61,7 @@ Reading checklist (plus any other rule files present in the directory):
 - `toast.error()` instead of `useNotification().showError()`
 - `register()` instead of `Controller` in forms
 - Missing Zod validation at API boundary (no `parseResponse`)
+- Domain types re-exported from `api/` schemas instead of hand-authored (api-boundary.md)
 - Missing `onError` in a mutation
 - External spacing classes (`mt-*`, `mb-*`, `mx-*`) on a component's root element
 - Raw Tailwind color classes (`text-red-500`, `bg-blue-200`) instead of semantic tokens

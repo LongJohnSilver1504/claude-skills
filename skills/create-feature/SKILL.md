@@ -18,6 +18,7 @@ For shared infrastructure (providers, hooks, layouts, i18n, config), use **creat
 | Layer | Rule file |
 |-------|-----------|
 | Where code lives, import direction | `project-structure.md` |
+| Wire DTOs, mappers, domain-type ownership | `api-boundary.md` |
 | API adapters, `AppError`, `handleApiError`, `parseResponse` | `error-handling.md` |
 | Query keys, `useQuery`/`useMutation`, invalidation | `tanstack-query.md` |
 | Forms (`zodResolver` + `Controller` + `Field`) | `form-patterns.md` |
@@ -30,7 +31,11 @@ For shared infrastructure (providers, hooks, layouts, i18n, config), use **creat
 
 Small deltas not covered by the rules are listed in [references/shared-conventions.md](references/shared-conventions.md).
 
-**Living example:** the merged `stays` feature — read its `api/`, `domain/`, `queries/`, `hooks/`, and sub-feature directories when a template leaves you unsure.
+**Living example:** the merged `stays` feature — read its `api/`, `domain/`, `queries/`, `hooks/`, and sub-feature directories when a template leaves you unsure. **Exception:** stays predates the API-boundary rule (it re-exports schema types as domain) — for dto/mapper structure follow `api-boundary.md` and this skill's templates, not stays; stays remains the reference for adapter/error/query mechanics.
+
+## Why the DTO + Mapper Boundary
+
+The `api/` layer is an **Anti-Corruption Layer** (DDD), implemented as **DTO + Mapper** following **"parse, don't validate"**: the wire format is validated once (`parseResponse(dtoSchema, ...)`), mapped once (`toX(dto)` / `buildXBody(input)`), and the rest of the app only ever sees hand-authored domain types. Full rule: `.claude/rules/api-boundary.md` — this skill carries only the scaffold order and templates.
 
 ## Before You Begin
 
@@ -50,10 +55,11 @@ Create in `{features-root}/{feature-name}/`:
 ```
 {feature-name}/
 ├── api/
-│   ├── {feature}.api.ts          # HTTP adapter (endpoints const + .catch(handleApiError) + parseResponse)
-│   └── {feature}.schemas.ts      # Zod response schemas with .transform() + inferred types
+│   ├── {feature}.dto.ts          # Zod wire schemas (strict by default) — ONLY file that knows the backend shape
+│   ├── {feature}.mapper.ts       # toX(dto) / buildXBody(input) — pure mapping functions
+│   └── {feature}.api.ts          # HTTP adapter (endpoints const + .catch(handleApiError) + parseResponse → mapper)
 ├── domain/
-│   ├── {feature}.types.ts        # Re-exports types from ../api/{feature}.schemas
+│   ├── {feature}.types.ts        # Hand-authored domain types (frontend-owned — never re-export DTO infers)
 │   ├── {feature}.service.ts      # Pure business logic functions
 │   └── {feature}.errors.ts       # Domain error classes (optional)
 ├── queries/
@@ -123,15 +129,17 @@ Only when **all three** are met: (1) it has its own API endpoints and response t
 
 ```
 Feature: {name}
-[ ] 1. API Layer          — Zod response schemas (validated against real API), adapter
-[ ] 2. Domain Layer       — types (re-exports from schemas), service, errors
-[ ] 3. Queries Layer      — query key factory
-[ ] 4. Store Layer        — Zustand (skip if no UI state needed)
-[ ] 5. Hooks Layer        — queries, component hooks, mutations, form
-[ ] 6. Components Layer   — card, list, form, page compositor
-[ ] 7. Public Exports     — index.ts
-[ ] 8. Translations       — public/locales/{en,es}/{namespace}.json
-[ ] 9. Tests              — MSW handlers + per-layer tests (see frontend-testing)
+[ ] 1. Wire DTOs          — api/{feature}.dto.ts (strict Zod wire schemas, validated against real API)
+[ ] 2. Mappers            — api/{feature}.mapper.ts (toX(dto) / buildXBody(input) pure functions)
+[ ] 3. API Adapter        — api/{feature}.api.ts (parseResponse(dto) → mapper)
+[ ] 4. Domain Layer       — hand-authored types (written alongside mappers — mappers return them), service, errors
+[ ] 5. Queries Layer      — query key factory
+[ ] 6. Store Layer        — Zustand (skip if no UI state needed)
+[ ] 7. Hooks Layer        — queries, component hooks, mutations, form
+[ ] 8. Components Layer   — card, list, form, page compositor
+[ ] 9. Public Exports     — index.ts
+[ ] 10. Translations      — public/locales/{en,es}/{namespace}.json
+[ ] 11. Tests             — MSW handlers + per-layer tests (see frontend-testing)
 ```
 
 ## Layer Dependencies
@@ -145,6 +153,8 @@ Feature: {name}
 | `hooks/` | `queries/`, `api/`, `domain/`, `store/` | Components |
 | `components/` | `hooks/`, `domain/`, `store/`, `@/{app}/ui/` | `api/` directly |
 
+Files outside `api/` must never import from `api/*.dto` or `api/*.mapper` (a PreToolUse hook blocks this) — hooks and components get their types from `domain/` only.
+
 ## Feature-Specific Anti-Patterns
 
 - **Don't make API calls in components** — go through hooks which wrap queries/mutations
@@ -152,6 +162,8 @@ Feature: {name}
 - **Don't import other features' internals** — use their `index.ts` exports
 - **Don't put UI state in TanStack Query** — use Zustand
 - **Don't put a `queryOptions` layer between keys and hooks** — hooks call `useQuery` directly with keys from the factory
+- **Don't re-export wire types as domain types** — `domain/{feature}.types.ts` is hand-authored (`api-boundary.md`)
+- **Don't let a form submit the wire body directly** — forms produce domain input; `buildXBody` in the mapper owns the wire shape
 
 Everything else (logic in components, hardcoded routes/colors, raw try/catch in adapters, `toast.error()`, legacy imports) is covered by the rule files listed above.
 

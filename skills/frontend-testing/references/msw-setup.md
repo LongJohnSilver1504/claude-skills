@@ -54,6 +54,8 @@ Prefer `onUnhandledRequest: 'error'` — an unhandled request means a missing ha
 
 ## Handler Patterns
 
+Handlers simulate the backend, so they must return **wire-format shapes (DTOs), never domain objects** — build them with the feature's DTO factories (`testing/factories.ts`, typed `satisfies z.input<typeof xDtoSchema>`) rather than untyped literals.
+
 ### Basic GET
 
 ```tsx

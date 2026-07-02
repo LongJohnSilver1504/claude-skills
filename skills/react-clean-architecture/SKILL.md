@@ -135,6 +135,8 @@ Prefer early returns over nested conditionals: handle faulty/loading states firs
 
 ## Trust Boundary Validation
 
+This pattern has a name: the **Anti-Corruption Layer** (DDD), implemented as **DTO + Mapper**, following **"Parse, don't validate"** (Alexis King). Validate the wire format at the boundary (`parseResponse(dtoSchema, data)`), map it to a frontend-owned domain model (`toX(dto)`), and the rest of the app never doubts the data — backend changes stop at `api/`. The full rule (file layout, import restrictions, detection layers) lives in `rules/api-boundary.md`.
+
 ### Validate at the Edge
 
 Validate data where it enters your application, not where it's used.
@@ -157,7 +159,8 @@ function usePrompt() {
 // ✅ Validation in transport layer
 export function getActivePrompt() {
   const { data } = await client.get('/prompts/active')
-  return promptSchema.parse(data)  // Zod validates here
+  const dto = promptDtoSchema.parse(data)  // 1. validate the wire format
+  return toPrompt(dto)                     // 2. map to the domain model
 }
 ```
 
@@ -293,6 +296,7 @@ See [references/anti-patterns.md](references/anti-patterns.md) for detailed exam
 - **Component Knows Too Much** -- mixing state, fetching, transforms, and business logic
 - **Shallow Abstraction** -- wrappers that add no value vs deep modules
 - **Validation in Wrong Place** -- scattered checks vs single boundary validation
+- **Domain Re-Exporting Wire Types** -- `z.infer` of a DTO schema passed off as the domain model
 
 ---
 

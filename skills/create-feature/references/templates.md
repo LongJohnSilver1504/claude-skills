@@ -4,7 +4,7 @@
 > **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
 
 
-Complete code templates for each layer in a feature module, modeled on the shipped `stays` feature.
+Complete code templates for each layer in a feature module, modeled on the shipped `stays` feature. **Exception:** stays predates the API-boundary rule — for dto/mapper structure follow `api-boundary.md` and the templates below, not stays.
 
 Replace `{feature}` with the feature name (lowercase) and `{Feature}` with PascalCase.
 
@@ -12,6 +12,7 @@ Replace `{feature}` with the feature name (lowercase) and `{Feature}` with Pasca
 
 **Conventions are not restated here.** The templates comply with the project rules; when in doubt the rule file wins:
 
+- DTO + mapper boundary, strict wire schemas, domain-type ownership → `.claude/rules/api-boundary.md`
 - Error flow, `handleApiError`, `parseResponse`, `AppError` → `.claude/rules/error-handling.md`
 - Query keys, invalidation, provider defaults → `.claude/rules/tanstack-query.md`
 - Forms (`zodResolver` + `Controller` + `Field`) → `.claude/rules/form-patterns.md`
@@ -22,91 +23,131 @@ Replace `{feature}` with the feature name (lowercase) and `{Feature}` with Pasca
 
 ---
 
-## Step 1: API Layer
+## Step 1: API Boundary (DTO → Mapper → Adapter)
 
-### 1.1 Schemas (`api/{feature}.schemas.ts`)
+The wire format lives ONLY in `api/{feature}.dto.ts`; pure mappers translate it to/from the hand-authored domain model (see `api-boundary.md`). Files outside `api/` never import `*.dto` or `*.mapper` (hook-enforced).
 
-Zod response schemas with `.transform()` for field renaming, type coercion, and defaults. Inferred types are exported from this file — they ARE the domain types.
+### 1.1 Wire DTOs (`api/{feature}.dto.ts`)
+
+Zod schemas of exactly what the backend sends/receives — **strict by default**: every field required unless the *verified* contract says otherwise; each `.optional()`/`.nullable()` carries a one-line justification comment. No `.transform()` — renaming/normalizing is the mapper's job. DTO types (`z.infer`) are **internal to `api/`**.
 
 ```tsx
 import { z } from 'zod'
 
-// Enums (validated at parse time)
-export const {feature}StatusSchema = z.enum(['active', 'inactive', 'pending'])
+// Wire enums — exactly the strings the backend sends
+export const {feature}StatusDtoSchema = z.enum(['active', 'inactive', 'pending'])
 
-// Response schema with transforms
-export const {feature}ResponseSchema = z
-  .object({
-    id: z.number(),
-    status: {feature}StatusSchema,
-    // Use .optional().default() for fields the backend may omit
-    name: z.string().optional().default(''),
-    // Use .nullable() for fields that can be null
-    description: z.string().nullable(),
-    // Use .transform() for field renaming or type coercion
-    user_id: z.number().nullable().optional().default(null),
-    created_at: z.string(),
-    updated_at: z.string(),
-  })
-  .transform(({ user_id, ...rest }) => ({
-    ...rest,
-    ownerId: user_id, // rename field
-  }))
-
-// Request schemas (for form validation — no transforms needed)
-export const create{Feature}Schema = z.object({
-  status: {feature}StatusSchema.optional().default('pending'),
+// Wire schema — strict by default
+export const {feature}DtoSchema = z.object({
+  id: z.number(),
+  status: {feature}StatusDtoSchema,
+  name: z.string(),
+  description: z.string().nullable(), // backend sends null until owner fills it in
+  user_id: z.number().nullable(), // null for guest-created {feature}s
+  created_at: z.string(),
+  updated_at: z.string(),
 })
 
-export const update{Feature}Schema = create{Feature}Schema.partial()
+// Request body wire shapes
+export const create{Feature}BodyDtoSchema = z.object({
+  status: {feature}StatusDtoSchema,
+})
+export const update{Feature}BodyDtoSchema = create{Feature}BodyDtoSchema.partial()
 
-// Export inferred types — these ARE the domain types
-export type {Feature} = z.infer<typeof {feature}ResponseSchema>
-export type {Feature}Status = z.infer<typeof {feature}StatusSchema>
-export type Create{Feature}Request = z.infer<typeof create{Feature}Schema>
-export type Update{Feature}Request = z.infer<typeof update{Feature}Schema>
+// DTO types — INTERNAL to api/: only .dto.ts / .mapper.ts / .api.ts may import these
+export type {Feature}Dto = z.infer<typeof {feature}DtoSchema>
+export type Create{Feature}BodyDto = z.infer<typeof create{Feature}BodyDtoSchema>
+export type Update{Feature}BodyDto = z.infer<typeof update{Feature}BodyDtoSchema>
 ```
 
-**Paginated lists** use the backend's `Page<T>` envelope. There is no shared `paginatedResponseSchema` helper — define the envelope in the schema file (pattern from `stays.schemas.ts`):
+**Paginated lists** use the backend's `Page<T>` envelope. There is no shared `paginatedResponseSchema` helper — define the envelope in the dto file:
 
 ```tsx
 // Page<T> envelope — mirrors the backend `buildPage` shape.
-const pageSchema = <T extends z.ZodTypeAny>(item: T) =>
+const pageDtoSchema = <T extends z.ZodTypeAny>(item: T) =>
   z
     .object({
       count: z.number(),
-      hasMore: z.boolean().optional(),
-      page: z.number().optional(),
-      limit: z.number().optional(),
+      hasMore: z.boolean().optional(), // buildPage omits it on non-paginated endpoints
+      page: z.number().optional(), // present only when the request was paginated
+      limit: z.number().optional(), // present only when the request was paginated
       results: z.array(item),
     })
     .passthrough()
 
-export const {feature}sListResponseSchema = pageSchema({feature}ResponseSchema)
-export type {Feature}sPage = z.infer<typeof {feature}sListResponseSchema>
+export const {feature}sPageDtoSchema = pageDtoSchema({feature}DtoSchema)
+export type {Feature}sPageDto = z.infer<typeof {feature}sPageDtoSchema>
 ```
 
-> Raw API types + separate mapper files are NOT needed — the schema's `.transform()` handles validation and mapping in one step via `parseResponse()`.
+> **Never trust legacy types.** Validate the dto schema against a real API response before writing it down.
 
-> **Never trust legacy types.** Validate the schema against a real API response before writing it down.
+### 1.2 Mappers (`api/{feature}.mapper.ts`)
 
-### 1.2 API Adapter (`api/{feature}.api.ts`)
+Pure functions — no fetching, no side effects, trivially testable. `toX(dto): X` for responses, `buildXBody(input): XDto` for request bodies. Normalization scope: names, nullables (`?? null` / defaults), envelope flattening, string unions. Dates stay ISO strings; money stays in backend units (see `api-boundary.md`).
 
-Endpoint paths in a centralized `const` object; `.catch((error) => handleApiError(error, [...]))` + `parseResponse` — never try/catch (see `error-handling.md`).
+```tsx
+import type {
+  {Feature}Dto,
+  {Feature}sPageDto,
+  Create{Feature}BodyDto,
+  Update{Feature}BodyDto,
+} from './{feature}.dto'
+import type {
+  {Feature},
+  {Feature}sPage,
+  Create{Feature}Input,
+  Update{Feature}Input,
+} from '../domain/{feature}.types'
+
+// Response mappers — even near-identity mappers are required: they are the
+// stable rename point when the backend changes.
+export const to{Feature} = (dto: {Feature}Dto): {Feature} => ({
+  id: dto.id,
+  status: dto.status,
+  name: dto.name,
+  description: dto.description,
+  ownerId: dto.user_id, // rename: snake_case wire → domain
+  createdAt: dto.created_at,
+  updatedAt: dto.updated_at,
+})
+
+// Page<T> envelope mapping — flatten/normalize, map each item
+export const to{Feature}sPage = (dto: {Feature}sPageDto): {Feature}sPage => ({
+  count: dto.count,
+  hasMore: dto.hasMore ?? false,
+  items: dto.results.map(to{Feature}),
+})
+
+// Request mappers — the form/domain input is never the wire body itself
+export const buildCreate{Feature}Body = (input: Create{Feature}Input): Create{Feature}BodyDto => ({
+  status: input.status,
+})
+
+export const buildUpdate{Feature}Body = (input: Update{Feature}Input): Update{Feature}BodyDto => ({
+  ...(input.status !== undefined && { status: input.status }),
+})
+```
+
+### 1.3 API Adapter (`api/{feature}.api.ts`)
+
+Endpoint paths in a centralized `const` object; `.catch((error) => handleApiError(error, [...]))` — never try/catch (see `error-handling.md`). Every consumed response is `parseResponse(dtoSchema, response.data)` → `toX(dto)`; adapter methods return **domain types only**.
 
 ```tsx
 import { client, handleApiError, parseResponse } from '@/{app}/shared/api'
 import { buildUrl } from '@/{app}/shared/links'
+import { {feature}DtoSchema, {feature}sPageDtoSchema } from './{feature}.dto'
 import {
-  {feature}ResponseSchema,
-  {feature}sListResponseSchema,
-} from './{feature}.schemas'
+  to{Feature},
+  to{Feature}sPage,
+  buildCreate{Feature}Body,
+  buildUpdate{Feature}Body,
+} from './{feature}.mapper'
 import type {
   {Feature},
   {Feature}sPage,
-  Create{Feature}Request,
-  Update{Feature}Request,
-} from './{feature}.schemas'
+  Create{Feature}Input,
+  Update{Feature}Input,
+} from '../domain/{feature}.types'
 
 const {feature}Endpoints = {
   list: '/{feature}s',
@@ -123,7 +164,7 @@ export const {feature}Api = {
         })
       )
       .catch((error) => handleApiError(error, []))
-    return parseResponse({feature}sListResponseSchema, response.data)
+    return to{Feature}sPage(parseResponse({feature}sPageDtoSchema, response.data))
   },
 
   getById: async (id: number): Promise<{Feature}> => {
@@ -134,24 +175,25 @@ export const {feature}Api = {
           { status: 404, code: '{FEATURE}_NOT_FOUND', message: '{Feature} not found' },
         ])
       )
-    return parseResponse({feature}ResponseSchema, response.data)
+    return to{Feature}(parseResponse({feature}DtoSchema, response.data))
   },
 
-  create: async (data: Create{Feature}Request): Promise<{Feature}> => {
+  create: async (input: Create{Feature}Input): Promise<{Feature}> => {
     const response = await client
-      .post({feature}Endpoints.list, data)
+      .post({feature}Endpoints.list, buildCreate{Feature}Body(input)) // reverse map
       .catch((error) => handleApiError(error, []))
-    return parseResponse({feature}ResponseSchema, response.data)
+    return to{Feature}(parseResponse({feature}DtoSchema, response.data))
   },
 
-  update: async (id: number, data: Update{Feature}Request): Promise<{Feature}> => {
+  update: async (id: number, input: Update{Feature}Input): Promise<{Feature}> => {
     const response = await client
-      .patch({feature}Endpoints.detail(id), data)
+      .patch({feature}Endpoints.detail(id), buildUpdate{Feature}Body(input))
       .catch((error) => handleApiError(error, []))
-    return parseResponse({feature}ResponseSchema, response.data)
+    return to{Feature}(parseResponse({feature}DtoSchema, response.data))
   },
 
   delete: async (id: number): Promise<void> => {
+    // 204 — no body: verify status only, skip parse/map
     await client
       .delete({feature}Endpoints.detail(id))
       .catch((error) => handleApiError(error, []))
@@ -165,14 +207,33 @@ export const {feature}Api = {
 
 ### 2.1 Domain Types (`domain/{feature}.types.ts`)
 
-Re-export types inferred from the Zod response schemas.
+**Hand-authored and frontend-owned** — never re-export `z.infer` of a DTO schema as a domain type (see `api-boundary.md`). Written alongside the mappers (mappers return them).
 
 ```tsx
-export type {
-  {Feature},
-  {Feature}Status,
-  {Feature}sPage,
-} from '../api/{feature}.schemas'
+export type {Feature}Status = 'active' | 'inactive' | 'pending'
+
+export type {Feature} = {
+  id: number
+  status: {Feature}Status
+  name: string
+  description: string | null
+  ownerId: number | null
+  createdAt: string // ISO string — format at presentation time
+  updatedAt: string // ISO string
+}
+
+export type {Feature}sPage = {
+  count: number
+  hasMore: boolean
+  items: {Feature}[]
+}
+
+// Mutation inputs — mapped to wire bodies by buildXBody in api/{feature}.mapper.ts
+export type Create{Feature}Input = {
+  status: {Feature}Status
+}
+
+export type Update{Feature}Input = Partial<Create{Feature}Input>
 ```
 
 ### 2.2 Domain Service (`domain/{feature}.service.ts`)
@@ -334,7 +395,7 @@ export const use{Feature}List = (): Use{Feature}ListReturn => {
   const { data, isPending, isError, error, refetch } = use{Feature}sQuery()
 
   return {
-    {feature}s: data?.results ?? [],
+    {feature}s: data?.items ?? [],
     isPending,
     isError,
     errorMessage: error?.message ?? t('{feature}.list.error'),
@@ -418,7 +479,10 @@ export const useDelete{Feature} = () => {
 
 Form conventions live in `form-patterns.md`; error-code switching in `error-handling.md`. Pages Router: `useRouter` from `next/router`, routes from the `links` object.
 
+The form schema lives **in the hook** (user-facing messages) and produces the **domain input** (`Create{Feature}Input`) — never the wire body; `buildCreate{Feature}Body` in the mapper owns the wire shape (see `api-boundary.md`).
+
 ```tsx
+import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/router'
@@ -430,10 +494,16 @@ import { tryCatch } from '@/{app}/shared/utils'
 import { links } from '@/{app}/shared/links'
 import { {feature}Api } from '../api/{feature}.api'
 import { {feature}Keys } from '../queries/{feature}.keys'
-import { create{Feature}Schema, type Create{Feature}Request } from '../api/{feature}.schemas'
+
+// Form schema — hook-local, user-facing messages; shape matches Create{Feature}Input
+const create{Feature}FormSchema = z.object({
+  status: z.enum(['active', 'inactive', 'pending']),
+})
+
+type Create{Feature}FormValues = z.infer<typeof create{Feature}FormSchema>
 
 export type Use{Feature}FormReturn = {
-  form: ReturnType<typeof useForm<Create{Feature}Request>>
+  form: ReturnType<typeof useForm<Create{Feature}FormValues>>
   onSubmit: () => void
   isSubmitting: boolean
   labels: {
@@ -449,14 +519,15 @@ export const useCreate{Feature}Form = (): Use{Feature}FormReturn => {
   const queryClient = useQueryClient()
   const { showError } = useNotification()
 
-  const form = useForm<Create{Feature}Request>({
-    resolver: zodResolver(create{Feature}Schema),
+  const form = useForm<Create{Feature}FormValues>({
+    resolver: zodResolver(create{Feature}FormSchema),
     defaultValues: {
       // sensible defaults for each field
     },
   })
 
   const onSubmit = form.handleSubmit(async (values) => {
+    // values satisfy Create{Feature}Input — the adapter's buildCreate{Feature}Body maps to the wire
     const { error } = await tryCatch({feature}Api.create(values))
     if (error) {
       showError(
@@ -713,7 +784,7 @@ Generate only keys the feature actually uses — don't create keys speculatively
 
 ## Step 9: MSW Handlers (for tests)
 
-Mock the same shapes the schemas expect — list endpoints return the `Page<T>` envelope. Co-locate with the feature's `testing/` utilities (see `testing.md` and `frontend-testing`).
+Mock the **wire shape** from `{feature}.dto.ts` — list endpoints return the `Page<T>` envelope. Build mock objects via typed DTO factories declaring `satisfies z.input<typeof {feature}DtoSchema>` so schema changes make mocks fail to compile (see `api-boundary.md` detection layers). Co-locate with the feature's `testing/` utilities (see `testing.md` and `frontend-testing`).
 
 ```tsx
 import { http, HttpResponse } from 'msw'
@@ -725,14 +796,14 @@ export const {feature}Handlers = [
       hasMore: false,
       page: 1,
       limit: 10,
-      results: [/* mock {feature} objects matching the RAW API shape (pre-transform) */],
+      results: [/* mock {feature} objects matching the WIRE shape from {feature}.dto.ts */],
     })
   }),
 
   http.get('*/{feature}s/:id', ({ params }) => {
     return HttpResponse.json({
       id: Number(params.id),
-      // ... raw API shape
+      // ... wire shape ({feature}.dto.ts)
     })
   }),
 

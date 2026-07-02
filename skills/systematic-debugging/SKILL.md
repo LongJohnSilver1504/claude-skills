@@ -46,9 +46,9 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 - These are pure functions — if the bug is here, it's the easiest to verify and fix
 
 ### Layer 2: API / Mappers
-- Files: `features/{feature}/api/*.ts`, `*.schemas.ts`
-- Test: Check response shapes, Zod parsing, error mapping
-- Common bugs: wrong field mapping, missing null handling, schema mismatch
+- Files: `features/{feature}/api/*.ts` — `*.dto.ts` (wire schemas), `*.mapper.ts` (dto→domain), `*.api.ts` (adapter); older features may still use `*.schemas.ts`
+- Test: Check response shapes, Zod parsing, mapper output, error mapping
+- Common bugs: wrong field mapping, missing null handling, schema mismatch, mapper drops/renames a field the UI needs (check `toX` against the dto)
 
 ### Layer 3: Hooks (business logic)
 - Files: `features/{feature}/hooks/use-*.ts`

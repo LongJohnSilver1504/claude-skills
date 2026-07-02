@@ -65,6 +65,7 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 - Add assertions or logging at layer boundaries
 - Binary search: if the data is correct at layer 2 but wrong at layer 3, the bug is in layer 3
 - Each check should take 1-2 minutes — don't spend 10 minutes on one layer
+- For errors surfacing deep in a call stack (bad value from far away): [references/root-cause-tracing.md](references/root-cause-tracing.md)
 
 **Exit criteria:** Bug is localized to a specific file and function. You can say: "The bug is in `{file}:{function}` because `{reason}`."
 
@@ -102,12 +103,15 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 2. **Apply the fix:**
    - Minimal change — fix the root cause, don't refactor surrounding code
    - If the fix requires touching multiple files, list them all before starting
+   - After the root-cause fix, consider hardening the other layers the bad value passed through: [references/defense-in-depth.md](references/defense-in-depth.md)
+   - If the bug is a flaky/async test (arbitrary timeouts, intermittent failures), fix it with condition-based waiting, never longer sleeps: [references/condition-based-waiting.md](references/condition-based-waiting.md)
 
 3. **Run the test:** `pnpm vitest run {test-file}`
    - Confirm the new test passes
    - Confirm existing tests still pass
 
-4. **Run the feature tests:** `pnpm vitest run src/features/{feature}/`
+4. **Run the feature tests:** `pnpm vitest run {feature-dir}` — the feature's directory under the features root defined in `.claude/rules/project-structure.md`
+   - If the glob matches 0 test files, that is a FAIL, not a pass — fix the path
    - No regressions in the feature
 
 5. **Run the build:** `pnpm build`
@@ -131,6 +135,7 @@ After each phase, briefly report what you found:
 - **Minimal fixes.** Fix the root cause. Don't refactor, don't "improve" nearby code.
 - **Always verify.** Don't declare victory until the test confirms the fix.
 - If Phase 2 takes more than 3 isolation attempts at the same layer, step back and try a different layer.
+- **If 3 fixes for the same bug have failed, stop patching.** The problem is not the code — it's your understanding of the architecture. Re-state what you believe the design is, verify each belief against the code, and question whether the current structure can support the fix at all. Escalate to the user if the answer is "it can't".
 - If the bug involves runtime state you can't reproduce in tests (e.g., specific API responses, browser-specific behavior), tell the user and ask for guidance.
 
 ## Anti-Patterns

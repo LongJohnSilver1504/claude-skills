@@ -1,7 +1,7 @@
 {
   "name": "claude-skills",
-  "description": "Feature development pipeline — 20 skills from idea to merged PR: brainstorming, PRD, UX spec, implementation planning, autonomous execution, testing, finalization, and docs.",
-  "version": "2.0.0",
+  "description": "Feature development pipeline — 21 skills from idea to merged PR: brainstorming, PRD, UX spec, implementation planning, autonomous execution, testing, finalization, and docs.",
+  "version": "2.1.0",
   "author": {
     "name": "Daher"
   },

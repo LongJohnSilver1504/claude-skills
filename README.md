@@ -1,6 +1,6 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 20 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 21 skills that take you from a rough idea to a merged PR.
 
 ## What This Is
 
@@ -104,6 +104,7 @@ execute-tasks (orchestrator)
 |-------|-------------|
 | `/execute-tasks` | Execute an implementation plan using autonomous subagents with review gates |
 | `/create-feature` | Scaffold a domain feature module (vertical slicing, hexagonal architecture) |
+| `/modify-feature` | Extend or refactor EXISTING feature code — add code to a shipped feature, or restructure with zero behavior change (characterization tests first) |
 | `/create-infrastructure` | Scaffold shared infrastructure (providers, hooks, layouts, i18n) |
 | `/frontend-testing` | Write tests using Vitest, React Testing Library, and MSW v2 |
 | `/create-devtool` | Create a dev-only DevTool debug panel that surfaces store state, query status, and API payloads |

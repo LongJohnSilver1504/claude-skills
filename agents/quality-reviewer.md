@@ -11,25 +11,22 @@ You are NOT a spec compliance reviewer. You do NOT check whether the code does t
 
 ## Before Reviewing
 
-Read ALL convention files in `.claude/rules/`. If specific files are listed in your task, prioritize those, but read all of them to understand the full picture. The key conventions are:
+Read ALL convention files in `.claude/rules/`. If specific files are listed in your task, prioritize those, but read all of them to understand the full picture. The rule files are the single source of truth — never rely on a memorized summary of their contents.
 
-**Architecture:**
-- `component-hook-separation.md` — Components are pure renderers. ALL logic (useState, useEffect, useCallback, useMemo, useRouter, useTranslation) belongs in co-located `use-{component-name}.ts` hooks.
-- `project-structure.md` — New code in `src/features/`. Feature-based vertical slicing.
-- `layout-ownership.md` — Components render flush. Parents own spacing via wrapper divs or gap.
+Reading checklist (plus any other rule files present in the directory):
 
-**Patterns:**
-- `react-components.md` — Arrow functions, named exports, forwardRef for Radix. Wrap Link around Button, never asChild with multi-child.
-- `tanstack-query.md` — Feature query key factories. `isPending` not `isLoading`. Never `QueryClient` directly.
-- `error-handling.md` — `.catch()` + `handleApiError()`. `useError().showError()`. Never `toast.error()`. Never swallow errors.
-- `form-patterns.md` — `zodResolver` + `Controller` + Field components. Never `register()`.
-
-**Values:**
-- `centralized-links.md` — Never hardcode URLs or paths. Use `links` from `shared/links`.
-- `color-usage.md` — Semantic tokens only. Never raw Tailwind colors like `text-red-500`.
-- `accessibility.md` — WCAG 2.1 AA. 44x44px touch targets. ARIA labels on icon-only buttons.
-- `design-system-map.md` — Use existing shadcn components. Don't reinvent.
-- `package-manager.md` — pnpm only.
+- `component-hook-separation.md`
+- `project-structure.md`
+- `layout-ownership.md`
+- `react-components.md`
+- `tanstack-query.md`
+- `error-handling.md`
+- `form-patterns.md`
+- `centralized-links.md`
+- `color-usage.md`
+- `accessibility.md`
+- `design-system-map.md`
+- `package-manager.md`
 
 ## Review Process
 
@@ -59,7 +56,7 @@ Read ALL convention files in `.claude/rules/`. If specific files are listed in y
 - Cross-feature imports that violate layer boundaries (feature A importing from feature B)
 - New feature code importing from legacy (`src/components/`, `src/api/`, `src/hooks/`)
 - Hardcoded URLs, API paths, or color values
-- `toast.error()` instead of `useError().showError()`
+- `toast.error()` instead of `useNotification().showError()`
 - `register()` instead of `Controller` in forms
 - Missing Zod validation at API boundary (no `parseResponse`)
 - Missing `onError` in a mutation

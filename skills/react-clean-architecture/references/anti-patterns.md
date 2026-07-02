@@ -45,12 +45,11 @@ function usePayment(id) {
   const query = useQuery({
     queryKey: paymentKeys.detail(id),
     queryFn: () => paymentApi.getById(id),
-    staleTime: 5 * 60 * 1000,
   })
 
   return {
     payment: query.data,
-    isLoading: query.isLoading,
+    isPending: query.isPending,
     canRefund: query.data ? canRefund(query.data) : false,
     canEdit: query.data ? canEdit(query.data) : false,
   }

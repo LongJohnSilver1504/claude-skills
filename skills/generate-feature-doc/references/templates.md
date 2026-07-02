@@ -1,5 +1,9 @@
 # Feature Documentation — Section Templates
 
+> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
+> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
+
+
 Complete markdown templates for each section of the generated documentation.
 Replace `{feature}` with the feature name (lowercase) and `{Feature}` with PascalCase.
 
@@ -66,7 +70,7 @@ features/{feature}/
 | Layer | Purpose | Dependencies |
 |-------|---------|--------------|
 | domain/ | Pure types, business logic | None (pure TS) |
-| api/ | HTTP calls, Zod schemas, mapper | domain/ |
+| api/ | HTTP calls, Zod schemas | domain/ |
 | queries/ | Query configuration | api/, domain/ |
 | store/ | UI state management | domain/ |
 | hooks/ | React data access | queries/, store/ |
@@ -102,7 +106,6 @@ features/{feature}/
 |------|---------|
 | `api/{feature}.schemas.ts` | Zod schemas (trust boundary) |
 | `api/{feature}.api.ts` | HTTP adapter with all API calls |
-| `api/{feature}.mapper.ts` | Raw → Domain data transformation |
 | `api/{feature}.types.ts` | Raw API response types |
 | `domain/{feature}.types.ts` | Pure TypeScript types |
 | `domain/{feature}.service.ts` | Pure business logic functions |
@@ -198,15 +201,15 @@ Create/edit form using Controller + Field pattern.
 ## Usage Examples
 
 ### Basic Usage
-import { {Feature}sView } from '@/features/{feature}'
+import { {Feature}sView } from '@/{app}/features/{feature}'
 <{Feature}sView />
 
 ### Using Hooks Directly
-import { use{Feature}s } from '@/features/{feature}'
-const { data, isLoading } = use{Feature}s({})
+import { use{Feature}s } from '@/{app}/features/{feature}'
+const { data, isPending } = use{Feature}s({})
 
 ### Creating a New Item
-import { useCreate{Feature} } from '@/features/{feature}'
+import { useCreate{Feature} } from '@/{app}/features/{feature}'
 const { mutate, isPending } = useCreate{Feature}()
 mutate({ name: 'New Item' })
 ```
@@ -217,13 +220,14 @@ mutate({ name: 'New Item' })
 ## Testing
 
 ### Test Files Location
-features/{feature}/domain/__tests__/{feature}.service.test.ts
-features/{feature}/api/__tests__/{feature}.api.test.ts
-features/{feature}/hooks/__tests__/use-{feature}s.test.ts
-features/{feature}/components/__tests__/{feature}s-view.test.tsx
+Tests are co-located next to their source files — no __tests__/ directories:
+features/{feature}/domain/{feature}.service.test.ts
+features/{feature}/api/{feature}.api.test.ts
+features/{feature}/hooks/use-{feature}s.test.ts
+features/{feature}/components/{feature}s-view.test.tsx
 
 ### Running Tests
-pnpm test features/{feature}
+pnpm vitest run {feature-dir}
 
 ### Test Coverage
 | Layer | Coverage |

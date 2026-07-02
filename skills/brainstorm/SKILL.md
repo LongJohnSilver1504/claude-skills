@@ -27,7 +27,7 @@ Count how many of these apply to the user's idea:
 
 **Grill mode** is triggered independently of complexity signals (see below).
 
-## Quick Mode (5-10 min)
+## Quick Mode
 
 1. Ask 3-5 targeted questions, **one at a time**
 2. After each answer, decide if the next question is still needed or if a different question is more valuable
@@ -36,19 +36,18 @@ Count how many of these apply to the user's idea:
 5. Save `DESIGN.md`
 6. Hand off to `generate-prd`
 
-## Deep Mode (15-30 min)
+## Deep Mode
 
 1. Ask 8-12 questions, **one at a time**, adapting based on answers
-2. After gathering enough context (~5 questions), propose 2-3 alternative approaches
-3. For each approach, discuss:
+2. After gathering enough context (~5 questions), **ground in the codebase (required)**: Grep/Read the feature area the idea touches — existing components, hooks, API adapters, domain types — before proposing any approach
+3. Propose 2-3 alternative approaches. For each approach, cite the specific existing files/patterns it reuses or conflicts with, and discuss:
    - How it fits the existing architecture
    - Complexity and maintenance cost
    - User experience impact
    - Cross-feature implications
-4. May reference existing code to ground the alternatives (use Grep/Read to show relevant patterns)
-5. Help the user pick an approach through discussion
-6. Save `DESIGN.md`
-7. Hand off to `generate-prd`
+4. Help the user pick an approach through discussion
+5. Save `DESIGN.md`
+6. Hand off to `generate-prd`
 
 ## Grill Mode (stress-test a formed plan)
 
@@ -59,15 +58,16 @@ Count how many of these apply to the user's idea:
 
 **Claude's role:** Devil's advocate. You are not exploring — you are **challenging**. Walk down each branch of the decision tree, resolving dependencies between decisions one by one.
 
-1. Identify all decisions in the user's plan (architecture, UX, data flow, edge cases, trade-offs)
-2. For each decision, **ask one challenging question at a time**:
+1. **Ground in the codebase (required)**: before challenging anything, Grep/Read the feature area the plan touches, and cite the specific files/patterns the plan reuses or conflicts with
+2. Identify all decisions in the user's plan (architecture, UX, data flow, edge cases, trade-offs)
+3. For each decision, **ask one challenging question at a time**:
    - "You chose X — why not Y?" or "What happens when Z?"
    - **Provide your recommended answer** with each question — the user can agree, disagree, or refine
    - **If a question can be answered by reading the codebase**, read the code instead of asking — then present what you found and whether it supports or contradicts the plan
-3. Adapt based on answers — if the user's reasoning is solid, move on; if it's weak, dig deeper into that branch
-4. After all branches are resolved, summarize what held up and what changed
-5. Save `DESIGN.md` (stress-tested version)
-6. Hand off to `generate-prd`
+4. Adapt based on answers — if the user's reasoning is solid, move on; if it's weak, dig deeper into that branch
+5. After all branches are resolved, summarize what held up and what changed
+6. Save `DESIGN.md` (stress-tested version)
+7. Hand off to `generate-prd`
 
 **Question style for Grill mode:**
 - Adversarial, not exploratory: "What breaks if...?" not "What about...?"
@@ -113,6 +113,8 @@ Save to `.claude/pipeline/{feature}/DESIGN.md`:
 ## Key Decisions
 1. {Decision that should carry into the PRD}
 2. {Decision that should carry into the PRD}
+
+**Existing code reused:** {Required — the specific files/patterns the chosen approach reuses or builds on, e.g. `features/stays/hooks/use-stay-detail.ts`, the `Page<T>` envelope schema. If genuinely greenfield, say so and why.}
 
 ## Open Questions
 {Anything unresolved that the PRD should address, or "None"}

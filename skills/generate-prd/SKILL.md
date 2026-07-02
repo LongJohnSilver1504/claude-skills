@@ -3,15 +3,22 @@ name: generate-prd
 description: Convert a feature idea into a structured, builder-ready PRD. Use when planning a feature, creating specs, writing requirements, or when user mentions PRD, feature spec, requirements document, product spec, or "what should I build". Also use when the user has a vague idea and needs it sharpened into something buildable.
 ---
 
+> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
+> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
 # Feature PRD Generator
 
 Turn a feature idea into a document clear enough that a builder (human or AI) can start coding without guessing.
 
 ## Input
 
-The user provides a feature description — possibly vague or incomplete. Infer missing details, label assumptions explicitly, and optimize for production scale without overengineering.
+**First, check `.claude/pipeline/{feature}/DESIGN.md`.** If it exists (produced by `brainstorm`), read it before anything else:
 
-If the input is extremely vague, ask **one** clarifying question max, then proceed with assumptions.
+- Its **Key Decisions** are constraints — the PRD must honor them, not relitigate them
+- Its **Open Questions** become either explicit PRD assumptions or questions to defer to `prd-clarifier`
+
+Then take the user's feature description — possibly vague or incomplete. Infer missing details, label assumptions explicitly, and optimize for production scale without overengineering.
+
+If the input is extremely vague, ask **one** clarifying question max, then proceed with assumptions. Deeper ambiguity → suggest `brainstorm` (raw idea) or `prd-clarifier` (existing PRD) instead of asking more questions here.
 
 ## Output
 
@@ -80,9 +87,19 @@ Make implicit assumptions explicit so nothing is left to interpretation.
 
 **Error handling**: What happens when input is invalid, the system fails, or the user does nothing. Keep it minimal — just enough to not break.
 
+### Contract Reality Check (before writing Data Flow)
+
+Unverified API contracts are the pipeline's most recurrent bug source. Before writing section 7, verify **every** claimed API endpoint and response shape against reality:
+
+1. Real code (existing API adapters, Zod schemas in `api/{feature}.schemas.ts`)
+2. MSW mocks that mirror the backend
+3. Backend docs (e.g., `docs/lpr/backend-requirements.md`) or a live response
+
+Mark each contract in the PRD as **VERIFIED** (cite the file/source) or **UNVERIFIED** (state what was assumed). Never present an assumed endpoint or response shape as fact — UNVERIFIED contracts must be surfaced to `prd-clarifier` or checked against the backend before implementation.
+
 ### 7. Data Flow
 
-**Sources**: Where data comes from (user input, API, static/mocked, generated).
+**Sources**: Where data comes from (user input, API, static/mocked, generated). Mark each API source VERIFIED/UNVERIFIED per the Contract Reality Check above.
 
 **Processing**: High-level logic only. Use the format: Input → transform → output.
 
@@ -96,7 +113,7 @@ Co-locate PRDs next to the code they describe:
 
 | Scope | Location |
 |-------|----------|
-| Feature | `src/features/{feature}/PRD.md` |
+| Feature | `{features-root}/{feature}/PRD.md` |
 | Shared module | `src/shared/{module}/PRD.md` |
 | Project-wide (rare) | `PRD.md` at repo root |
 
@@ -117,7 +134,7 @@ Once you have generated the complete PRD (sections 1-7), proceed to the Next Ste
 
 If context was cleaned mid-pipeline, restore state before proceeding:
 
-1. **Read DECISIONS.md** in the feature folder for accumulated context
+1. **Read the feature's pipeline artifacts** (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, PROGRESS.md — whichever exist) for accumulated context
 2. **Read the relevant artifact** for this skill's input:
    - The feature folder in `src/features/{feature}/` for existing PRD drafts
 3. **Continue from where you left off** — don't restart the skill from scratch
@@ -134,10 +151,3 @@ Options to present:
 
 Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
 
-## Context Management
-
-After completing this skill's work, report the **context usage percentage** so the user can decide whether to clean context:
-
-> "{Skill output summary}. Context usage: **{X}%**"
-
-Do NOT recommend cleaning context — just show the percentage. The user will decide.

@@ -1,67 +1,35 @@
-# Shared Architecture Conventions
+# Shared Conventions — Deltas Only
 
-Conventions shared by create-feature and create-infrastructure skills. Both skills reference this file instead of duplicating.
+> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
+> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
 
-## Hook/Component Separation
 
-Components are pure renderers. ALL logic lives in co-located hooks.
+Architecture conventions (hook/component separation, error handling, forms, queries, links, colors, layout, Zustand) live in the project's `.claude/rules/` — read those files; do not look for them here. This file lists only the small deltas the rules don't cover.
 
-**Hook file contains ALL:** `useState`, `useEffect`, `useCallback`, `useMemo`, `useRouter`, `useTranslation`, event handlers, mutations, business logic, computed values.
+## i18n JSON shape
 
-**Component file contains ONLY:** JSX rendering, styling via className, calling hooks, conditional rendering based on hook return values.
+next-i18next resolves **nested JSON objects**, not flat dot-notation keys:
 
-```tsx
-// hooks/use-{name}.ts — ALL logic
-export const use{Name} = (): Use{Name}Return => {
-  const { t } = useTranslation('{namespace}')
-  const router = useRouter()
-  // ... all state, effects, handlers
-  return { translations, data, handlers }
-}
-
-// components/{name}.tsx — UI rendering ONLY
-export const {Name} = () => {
-  const { translations, data, handlers } = use{Name}()
-  return <div>...</div>
-}
+```json
+// ✅ { "expiredDialog": { "title": "Session Expired" } }
+// ❌ { "expiredDialog.title": "Session Expired" }
 ```
 
-## Component Conventions
+Always create both locale files: `public/locales/en/{namespace}.json` and `public/locales/es/{namespace}.json`. Key naming: `{feature}.{section}.{element}`.
 
-- Arrow function components with named exports (never function declarations, never default exports)
-- Props type defined as `{ComponentName}Props` directly above the component
-- Use `forwardRef` when wrapping a DOM element (React 18 requirement)
-- Use CVA (`class-variance-authority`) for variant styling instead of manual `cn()` conditionals
-
-## Translation Pattern
-
-- Never use `useTranslation` directly in components — include it in the hook
-- Return a `translations` object from the hook with all user-facing strings
-- Use nested JSON objects, not flat dot-notation keys
-- Key naming: `{feature}.{section}.{element}`
-- Always create both EN and ES files
-
-## Imports
+## Import quick-reference (`{app}` per the project's `.claude/rules/project-structure.md`)
 
 | Import | From |
 |--------|------|
-| `client`, `isAxiosError` | `@/shared/api` |
-| `AppError` | `@/shared/errors` |
-| `tryCatch` | `@/shared/utils` |
-| `useError` | `@/shared/providers` |
-| `links` | `@/shared/links` |
-| `clsxm` | `@/utils/clsxm` |
-| shadcn components | `@/ui/{component}` |
+| `client`, `handleApiError`, `parseResponse` | `@/{app}/shared/api` |
+| `AppError` | `@/{app}/shared/errors` |
+| `tryCatch` | `@/{app}/shared/utils` |
+| `useNotification` | `@/{app}/shared/providers` |
+| `links`, `buildUrl` | `@/{app}/shared/links` |
+| `cn` | `@/utils/clsxm` |
+| shadcn components | `@/{app}/ui/{component}` |
+| Custom UI (AppContainer, navbar, …) | `@/{app}/ui/custom/{component}` |
 | Icons | `lucide-react` |
-| `useTranslation` | `next-i18next` (only in hooks) |
-| Centralized routes | `@/shared/links` |
-| Providers | `@/shared/providers/{provider}` |
+| `useTranslation` | `next-i18next` (only in hooks — never in components) |
 
-## Shared Anti-Patterns
-
-- **Don't put logic in component files** — ALL logic goes in hooks
-- **Don't hardcode routes** — use `links` from `shared/links`
-- **Don't import from legacy** — new feature code must not import from `src/components/`, `src/api/`, `src/hooks/`
-- **Don't use function declarations** — arrow function components with named exports
-- **Don't use `toast.error()` directly** — use `useError().showError()`
-- **Don't inline i18n strings** — all user-facing text comes from translation files
+In another project, resolve the roots from that project's `.claude/rules/project-structure.md`.

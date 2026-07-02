@@ -1,8 +1,10 @@
 ---
 name: frontend-testing
-description: Write tests for TruckBays features using Vitest, React Testing Library, and MSW v2. Use when writing tests, adding test coverage, or setting up testing infrastructure.
+description: Write tests for feature modules using Vitest, React Testing Library, and MSW v2. Use when writing tests, adding test coverage, or setting up testing infrastructure.
 ---
 
+> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
+> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
 # Frontend Testing
 
 Write tests that give confidence your app works — not tests that verify implementation details.
@@ -54,14 +56,42 @@ For hooks that power a component (`useNavbar`, `useBackHeader`, `useLanguageSele
 | **MSW v2** | API mocking at the network level |
 | **jsdom** | Browser environment simulation |
 
+## Test-First Workflow
+
+Build features as **vertical slices** with a red-green loop — one test, one piece of implementation, repeat.
+
+### Anti-pattern: horizontal slices
+
+Do NOT write all the tests first and then all the implementation. Tests written in bulk verify *imagined* behavior — they end up asserting on the shape of things (data structures, signatures) instead of user-facing behavior, pass when behavior breaks, and fail when it's fine.
+
+```
+WRONG (horizontal):            RIGHT (vertical, tracer bullets):
+  RED:   test1..test5            RED→GREEN: test1→impl1
+  GREEN: impl1..impl5            RED→GREEN: test2→impl2
+                                 RED→GREEN: test3→impl3
+```
+
+### Tracer bullet first
+
+Start with ONE test that proves the path end-to-end — component renders → hook fires → MSW handler answers → UI shows the result — then write the minimal code to pass it. Each subsequent test responds to what the previous cycle taught you: because you just wrote the code, you know exactly which behavior matters and how to verify it.
+
+### The loop
+
+1. **RED** — write the next failing test and **watch it fail**:
+   `pnpm vitest run {features-root}/{feature}` (or `pnpm test:watch` while looping)
+2. **GREEN** — write the *minimal* code that passes. No speculative features, no code for tests you haven't written yet.
+3. **REFACTOR** — clean up with tests green. Never refactor while RED.
+
+Mock only at system boundaries: HTTP via MSW handlers (see [references/msw-setup.md](references/msw-setup.md)), `next/router`, time. Never mock your own modules just to force a test green — see [references/testing-anti-patterns.md](references/testing-anti-patterns.md).
+
+### Regression tests must fail first
+
+A bug-fix test only counts if you have verified it fails without the fix. If it passes before the fix lands, it isn't testing the bug.
+
 ## Test File Conventions
 
-- **Tests are co-located next to their source file** — no `__tests__/` directories.
-  - `components/navbar.tsx` → `components/navbar.test.tsx`
-  - `providers/auth-provider.tsx` → `providers/auth-provider.test.tsx`
-  - `domain/{feature}.service.ts` → `domain/{feature}.service.test.ts`
-  - `api/{feature}.api.ts` → `api/{feature}.api.test.ts`
-- Test files use `.test.ts` or `.test.tsx` suffix
+Co-location (tests live next to their source file, never in separate test directories), runner config, test commands, and per-feature helper locations are defined in the project rule — see `.claude/rules/testing.md`. Beyond the rule:
+
 - One describe block per module, nested describes for scenarios
 - Follow AAA pattern: Arrange, Act, Assert
 
@@ -134,11 +164,23 @@ screen.getByTestId('user-avatar')
 This is where most tests should live. Render the component, interact as a user would, assert on visible output.
 
 ```tsx
-import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+// vi.mock is HOISTED to the top of the file — declare it at module level,
+// never inside an `it` block. Module-scope mock fns are safe to reference
+// because the factory's returned functions read them at render time.
+const mockPush = vi.fn()
+
+vi.mock('next/router', () => ({
+  useRouter: () => ({ push: mockPush, isReady: true, query: {} }),
+}))
+
 describe('Navbar', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('opens the menu when hamburger is clicked', async () => {
     render(<Navbar />)
 
@@ -157,15 +199,33 @@ describe('Navbar', () => {
   })
 
   it('navigates to home when logo is clicked', async () => {
-    const mockPush = vi.fn()
-    vi.mock('next/router', () => ({ useRouter: () => ({ push: mockPush }) }))
-
     render(<Navbar />)
 
     await userEvent.click(screen.getByRole('link', { name: /home/i }))
 
     expect(mockPush).toHaveBeenCalledWith('/')
   })
+})
+```
+
+When a test needs a *different* router shape (e.g., populated `query`), keep the mock's mutable pieces at module scope and reset them in `beforeEach` — the same pattern the project's existing tests use:
+
+```tsx
+const mockPush = vi.fn().mockResolvedValue(undefined)
+const mockQuery: Record<string, string> = {}
+
+vi.mock('next/router', () => ({
+  useRouter: () => ({ isReady: true, query: mockQuery, push: mockPush }),
+}))
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  Object.keys(mockQuery).forEach((key) => delete mockQuery[key])
+})
+
+it('preselects the reservation from the URL', () => {
+  mockQuery.reservationId = '42'
+  // ...
 })
 ```
 
@@ -184,8 +244,7 @@ describe('useAuth', () => {
     localStorage.setItem('user', JSON.stringify(validUser))
     const { result } = renderHook(() => useAuth(), { wrapper })
 
-    await waitFor(() => expect(result.current.isLoading).toBe(false))
-    expect(result.current.isAuthenticated).toBe(true)
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true))
   })
 })
 ```
@@ -206,14 +265,14 @@ describe('{feature}.service', () => {
 
 ### 4. API Layer (MSW)
 
-Use MSW to mock HTTP at the network level.
+Use MSW to mock HTTP at the network level. The server is set up **per test file** — there is no global MSW server (see [references/msw-setup.md](references/msw-setup.md)).
 
 ```tsx
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
 
 const server = setupServer()
-beforeAll(() => server.listen())
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => server.resetHandlers())
 afterAll(() => server.close())
 
@@ -300,18 +359,13 @@ await waitFor(() => {
 
 - For test utilities, wrapper patterns, and rendering helpers, see [references/test-utilities.md](references/test-utilities.md)
 - For MSW v2 setup, handler patterns, and network mocking, see [references/msw-setup.md](references/msw-setup.md)
+- For the ways tests rot into false confidence (testing mocks, test-only production code, mocking without understanding), see [references/testing-anti-patterns.md](references/testing-anti-patterns.md)
 
 ## Shared Test Factories
 
 When a domain type (e.g., `Reservation`) is used across many test files, create a **shared test factory** instead of duplicating `makeReservation` in every test file. This avoids a cascade of updates when adding a new required field to the type.
 
-### Where to put it
-
-```
-features/{feature}/
-  testing/
-    factories.ts          # Shared test factories for this feature
-```
+Factories live in `features/{feature}/testing/factories.ts` (location defined in `.claude/rules/testing.md`).
 
 ### Factory pattern
 
@@ -379,21 +433,19 @@ export const createApiResponse = (overrides: Record<string, unknown> = {}) => ({
 ## Checklist
 
 ```
-[ ] vitest.config.ts configured with jsdom, path aliases, setup file
-[ ] vitest.setup.ts imports @testing-library/jest-dom
+[ ] Test-first: every test was seen RED before its implementation landed
 [ ] Component tests: render + userEvent + screen assertions
 [ ] Provider tests: renderHook for public API hooks only
 [ ] Domain tests: pure function input/output
-[ ] API tests: MSW + mapper validation
+[ ] API tests: MSW (or mocked client) + schema validation
 [ ] NO hook-level tests for hooks that power components
-[ ] package.json scripts: test, test:watch, test:coverage
 ```
 
 ## Resume After Context Cleanup
 
 If context was cleaned mid-pipeline, restore state before proceeding:
 
-1. **Read DECISIONS.md** in the feature folder for accumulated context
+1. **Read the feature's pipeline artifacts** (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, PROGRESS.md — whichever exist) for accumulated context
 2. **Read the relevant artifact** for this skill's input:
    - The feature code and any existing test files in the feature folder
 3. **Continue from where you left off** — don't restart the skill from scratch
@@ -409,10 +461,3 @@ Options to present:
 
 Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
 
-## Context Management
-
-After completing this skill's work, report the **context usage percentage** so the user can decide whether to clean context:
-
-> "{Skill output summary}. Context usage: **{X}%**"
-
-Do NOT recommend cleaning context — just show the percentage. The user will decide.

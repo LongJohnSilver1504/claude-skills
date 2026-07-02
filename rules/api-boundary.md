@@ -59,6 +59,10 @@ export const staysApi = {
 }
 ```
 
+## Verifying a contract
+
+If the project documents a local backend checkout in its CLAUDE.md, a contract claim is VERIFIED when you've read the controller/DTO that produces it **at the latest integration ref** — protocol: `git -C <backend> fetch origin <branch>` (never touches the working tree) + `git show origin/<branch>:<path>` / `git grep <pattern> origin/<branch>`. Cite the verified commit. Never pull/checkout the user's backend working tree, and never ask the user to relay questions the code can answer. No documented checkout → mark UNVERIFIED and surface it.
+
 ## Detection Layers (find out BEFORE the user does)
 
 Runtime validation catches drift, but at the worst moment — when a user hits it. Layer these on top:

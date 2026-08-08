@@ -1,12 +1,14 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 22 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 23 skills that take you from a rough idea to a merged PR.
+
+**First run:** after installing, open your project and run `/setup-daher-skills`. It detects your stack (package manager, structure, base branch), seeds the convention rules and `docs/agents/project-conventions.md`, and wires your CLAUDE.md — every other skill reads those files. Skills that need missing config stop with `Run /setup-daher-skills first — missing <file>`.
 
 ## What This Is
 
 Claude Skills is a composable skill library that turns Claude Code into a structured development partner. Instead of ad-hoc prompting, each skill enforces a specific workflow — brainstorming before coding, specs before implementation, tests before shipping.
 
-The skills connect into an **8-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX (with embedded test matrix), planning implementation, autonomous execution with subagents, finalization, and documentation — with optional branches for prototyping and issue farming.
+The skills connect into an **8-step pipeline** that covers the full lifecycle of a feature: exploring ideas, writing requirements, designing UX (with embedded test matrix), planning implementation, autonomous execution with subagents, finalization, and documentation — with an optional prototyping branch.
 
 **Core principles:**
 - **Design before code** — No implementation without approved specs
@@ -27,7 +29,7 @@ brainstorm(0) --> generate-prd(1) --> prd-clarifier(2) --> prd-to-ux(3)
                             generate-feature-doc(7) <-- finish-feature(6)
 ```
 
-**Optional branches:** `/prototype` — flesh out a design before committing to it (branch off during brainstorm or UX design). `/to-issues` — convert the implementation plan into tracker issues instead of executing locally.
+**Optional branch:** `/prototype` — flesh out a design before committing to it (branch off during brainstorm or UX design).
 
 | Phase | Steps | Mode |
 |-------|-------|------|
@@ -47,7 +49,7 @@ Each skill produces an artifact that the next skill consumes:
 | 1 | `/generate-prd` | `PRD.md` (requirements doc) | `/prd-clarifier` |
 | 2 | `/prd-clarifier` | Refined PRD (clarifications merged into `PRD.md`) | `/prd-to-ux` |
 | 3 | `/prd-to-ux` | `UX-spec.md` (9 passes inc. test matrix) | `/plan-implementation` |
-| 4 | `/plan-implementation` | Implementation plan (ordered deliverables) | `/execute-tasks` (or `/to-issues`) |
+| 4 | `/plan-implementation` | Implementation plan (ordered deliverables) | `/execute-tasks` |
 | 5 | `/execute-tasks` | Working code + tests (built by agents) | `/finish-feature` |
 | 6 | `/finish-feature` | Commit / PR / merge | `/generate-feature-doc` |
 | 7 | `/generate-feature-doc` | `README.md` for the feature | — |
@@ -85,6 +87,12 @@ execute-tasks (orchestrator)
 - **ARCHITECTURAL findings** — reported to you for a decision (fix or accept)
 
 ## Skill Catalog
+
+### Setup
+
+| Skill | What it does |
+|-------|-------------|
+| `/setup-daher-skills` | One-time per-project setup — detects the stack, seeds `.claude/rules/` + `docs/agents/project-conventions.md`, wires CLAUDE.md, optional permissions allowlist and Iron-Law verify gate |
 
 ### Explore & Plan
 
@@ -197,9 +205,9 @@ The `agents/` directory contains the 6 subagents that `/execute-tasks` dispatche
 
 Install them globally (once) so every project can run `/execute-tasks` — see the symlink loop in [Installation](#manual-clone--symlink). Alternatively, copy them per-project into `.claude/agents/`.
 
-## Rules (Example Project Conventions)
+## Rules (Seed Templates for Project Conventions)
 
-The `rules/` directory contains 16 example `.claude/rules/` files from a production React/Next.js project. Several skills reference these patterns. Copy the ones relevant to your stack into your project's `.claude/rules/` directory.
+The `rules/` directory contains 16 `.claude/rules/` seed files distilled from a production React/Next.js project. `/setup-daher-skills` copies the subset relevant to your stack into your project's `.claude/rules/` — skills and agents read them from there at run time.
 
 | Rule | What it covers |
 |------|---------------|
@@ -221,10 +229,20 @@ The `rules/` directory contains 16 example `.claude/rules/` files from a product
 | `zustand-patterns.md` | Avoid store-object in dependency arrays, use selectors |
 
 ```bash
-# Copy rules you want to your project
+# Manual alternative to /setup-daher-skills — copy rules yourself
 cp ~/claude-skills/rules/component-hook-separation.md .claude/rules/
 cp ~/claude-skills/rules/error-handling.md .claude/rules/
 ```
+
+## Hooks (Deterministic Guardrails)
+
+Instructions are advisory; hooks are deterministic. The plugin ships three (`hooks/hooks.json`):
+
+| Hook | Event | What it does |
+|------|-------|--------------|
+| `check-build-before-commit` | PreToolUse (Bash) | Blocks `git commit` when build output is stale relative to source changes |
+| `block-raw-palette` | PreToolUse (Write/Edit) | Blocks raw Tailwind palette classes in `.tsx`/`.jsx` — only in projects that carry `.claude/rules/color-usage.md` |
+| `iron-law-stop` | Stop | Blocks ending a turn with modified source files until the project's verify command passes — **opt-in**, active only when `.claude/iron-law.json` exists (seeded by `/setup-daher-skills`) |
 
 ## Upstream Skills
 

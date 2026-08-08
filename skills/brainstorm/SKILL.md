@@ -120,6 +120,8 @@ Save to `.claude/pipeline/{feature}/DESIGN.md`:
 {Anything unresolved that the PRD should address, or "None"}
 ```
 
+**Done when:** `DESIGN.md` exists at `.claude/pipeline/{feature}/DESIGN.md` with every section filled — including the required "Existing code reused" line.
+
 ## Transition
 
 After saving `DESIGN.md`, present the next step using AskUserQuestion:

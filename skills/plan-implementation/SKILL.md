@@ -1,6 +1,6 @@
 ---
 name: plan-implementation
-description: Bridge design artifacts (PRD, UX spec with embedded test matrix) into a structured implementation plan. Classifies deliverables as domain features or shared infrastructure, extracts specs, orders by dependencies, and detects shared patterns. Use after prd-to-ux, when planning feature scaffolding, or when user says "implementation plan", "what to build first", "plan the features".
+description: Bridge design artifacts (PRD, UX spec with embedded test matrix) into a structured implementation plan. Classifies deliverables as domain features or shared infrastructure, extracts specs, orders by dependencies, and detects shared patterns. Use when a PRD/UX spec is ready to become a build plan — after prd-to-ux, when planning feature scaffolding, or when user says "implementation plan", "what to build first", "plan the features".
 ---
 
 # Plan Implementation
@@ -109,7 +109,9 @@ If you cannot make a spec item concrete, it needs to be broken down further or c
 
 ### Step 5: Write the Plan
 
-Save as `{prd-basename}-implementation-plan.md` in the same directory as the source PRD. Include: source document paths, feature summary table, classification table, shared infrastructure, implementation order, and all spec blocks.
+Save as `{prd-basename}-implementation-plan.md` in the same directory as the source PRD, following [references/PLAN-FORMAT.md](references/PLAN-FORMAT.md) (source paths, summary table, classification, shared infrastructure, ordered spec blocks).
+
+**Done when:** the plan file exists and every item in the Validation Checklist below is checked.
 
 ## Validation Checklist
 
@@ -126,31 +128,15 @@ Save as `{prd-basename}-implementation-plan.md` in the same directory as the sou
 
 ## Resume After Context Cleanup
 
-If context was cleaned mid-pipeline, restore state before proceeding:
-
-1. **Read the feature's pipeline artifacts** (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, PROGRESS.md — whichever exist) for accumulated context
-2. **Read the relevant artifact** for this skill's input:
-   - The PRD and UX spec files
-3. **Continue from where you left off** — don't restart the skill from scratch
+Read the feature's existing artifacts (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, the implementation plan, PROGRESS.md — whichever exist), then this skill's own input, and continue from where they leave off — never restart from scratch.
 
 ## Next Step
 
-After completing this skill, use the `AskUserQuestion` tool to present the next step options. Include a summary of what was completed in the question text.
+Use the `AskUserQuestion` tool for the transition (never numbered text options), with a one-line summary of what was completed. Options:
 
-Options to present:
-
-- **execute-tasks** (primary, default) — execute the full plan with autonomous subagents. This is the skill that consumes the plan produced here.
-- **Manual scaffolding** — scaffold a single deliverable by hand instead of running the pipeline: `/create-feature` for one domain feature, `/create-infrastructure` for one infrastructure deliverable
+- **execute-tasks** (primary, default) — invoke `/execute-tasks` with the path to the implementation plan. Recommend starting a fresh session first (`/clear`) — the plan IS the context.
+- **Manual scaffolding** — only when the user explicitly wants one deliverable by hand: `/create-feature` (domain feature) or `/create-infrastructure` (infrastructure deliverable) with the spec
 - **Something else** — do something different
-
-**Skill routing:**
-
-- Primary path: invoke `/execute-tasks` with the path to the implementation plan
-- Manual scaffolding alternatives (only when the user explicitly wants to build one deliverable by hand):
-  - Domain feature: invoke `/create-feature` with the feature spec
-  - Infrastructure deliverable: invoke `/create-infrastructure` with the deliverable spec
-
-Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
 
 
 ## Related Skills

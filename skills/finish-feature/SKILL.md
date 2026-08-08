@@ -13,37 +13,27 @@ Verify the feature is ready, then help the user decide what to do with it.
 
 Run these checks in order:
 
-1. **Feature tests:**
-   ```bash
-   pnpm vitest run {feature-dir}
-   ```
-   `{feature-dir}` is the feature's directory under the features root defined in `.claude/rules/project-structure.md`.
+1. **Feature tests:** the project's test command scoped to the feature (from `docs/agents/project-conventions.md`; e.g. `pnpm vitest run {feature-dir}`, where `{feature-dir}` comes from `.claude/rules/project-structure.md`).
    **If the glob matches 0 test files, treat verification as FAILED** — the path is wrong or tests are missing; never report a vacuous pass.
    Report: X tests passed, Y failed
 
-2. **Build:**
-   ```bash
-   pnpm build
-   ```
-   Report: success or failure with error summary
+2. **Build:** the project's build command (e.g. `pnpm build`). Report: success or failure with error summary
 
-3. **Uncommitted changes:**
-   ```bash
-   git status
-   ```
-   Report: X files modified, Y untracked
+3. **Uncommitted changes:** `git status`. Report: X files modified, Y untracked
 
 If tests or build fail, report the failures and ask the user:
 - **Fix the issues** — investigate and fix
 - **Continue anyway** — proceed to Step 2 despite failures
 - **Stop** — abort finalization
 
+**Done when:** you have fresh test output, fresh build output, and a `git status` snapshot from THIS session — or an explicit user decision to continue despite failures.
+
 ### Step 1.5: Browser Smoke-Walk (UI features — mandatory gate)
 
 "Tests green" has repeatedly NOT meant "flow works" — session mining found ~35+ manual QA rounds where the human caught redirect bugs, runtime schema crashes, and viewport breaks that the unit suite structurally cannot see. If the feature has visual components or user flows, walk it in a real browser BEFORE offering commit/PR:
 
 1. Start the dev server in the background (the project's dev command; reuse it if already running).
-2. Walk the CHANGED flow only — ≤15 steps, at the project's real viewport (mobile-only projects: use the Playwright MCP's device emulation if configured, e.g. `--device "iPhone 15"`; otherwise the built-in `/verify` skill). Derive the steps from the UX spec's flow matrix when one exists.
+2. Walk the CHANGED flow only — ≤15 steps, at the project's real viewport (from `docs/agents/project-conventions.md`; mobile-only projects: use the Playwright MCP's device emulation if configured, e.g. `--device "iPhone 15"`, or whatever browser tooling the session has). Derive the steps from the UX spec's flow matrix when one exists.
 3. At each key state: screenshot, and check the console/network panel for errors (uncaught exceptions, 4xx/5xx, literal `undefined` in query params, Zod VALIDATION_ERRORs).
 4. Report pass/fail per step with the screenshots. A failed step blocks the commit/PR offer — fix first (or the user explicitly waives).
 
@@ -54,6 +44,8 @@ If tests or build fail, report the failures and ask the user:
 
 Skip only for pure-logic, infrastructure, or docs-only changes — say so explicitly ("smoke-walk skipped: no UI surface"). Keep walks under ~15 steps; longer flows degrade browser-agent reliability — split or fall back to manual QA for the tail.
 
+**Done when:** every step of the walked flow has a screenshot + pass/fail, or the report says "smoke-walk skipped: no UI surface".
+
 ### Step 2: Read Branch Context
 
 Look for PROGRESS.md files to determine the base branch:
@@ -61,7 +53,7 @@ Look for PROGRESS.md files to determine the base branch:
 1. Check for `PROGRESS.md` in the feature directory (under the features root per `.claude/rules/project-structure.md`)
 2. Read the `**Base Branch**` field if it exists
 3. If found, use it as the target for PR creation and merge operations
-4. If not found, use the project's documented PR base (check CLAUDE.md — e.g. TruckBays targets `develop`, never `main`); only ask the user when no convention is documented, and offer to record the answer in CLAUDE.md
+4. If not found, use the base/integration branch from `docs/agents/project-conventions.md`; only ask the user when no convention is documented, and offer to record the answer there
 
 Also check `.claude/pipeline/{feature}/` for any pipeline artifacts.
 

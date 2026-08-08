@@ -1,7 +1,6 @@
 # Refactoring UI — Audit Checklist
 
-> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
-> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
+> **Project config:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md`; project values (package manager, commands, base branch, error surface) come from `docs/agents/project-conventions.md`. Resolve both before writing any file — never assume. If a needed file is missing, stop: "Run `/setup-daher-skills` first — missing `<file>`."
 
 
 Run this checklist when reviewing a component or screen. For each chapter, scan for the failure modes listed. Cite the specific rule (e.g. "2.3 grey on color") in findings so the user can look up the underlying principle in `principles.md`.
@@ -93,7 +92,7 @@ This is where most fixable issues live. Spend time here.
 
 These come from `.claude/rules/` in the app repo, not the book. Cite them as P1/P2/P3. All three default to 🔴 Critical — they're enforced conventions, not taste.
 
-- [ ] **P1 Raw Tailwind palette classes** — any `text-red-500`, `bg-blue-200`, `border-gray-300`, `text-slate-400`, etc.? Every color must be a semantic token; map to the replacement in the token table in `.claude/rules/color-usage.md` (e.g. `text-red-500` → `text-destructive`, `text-gray-500` → `text-muted-foreground`, `bg-green-500` → `bg-success`). A PreToolUse hook blocks these in `{app}/`.
+- [ ] **P1 Raw Tailwind palette classes** — any `text-red-500`, `bg-blue-200`, `border-gray-300`, `text-slate-400`, etc.? Every color must be a semantic token; map to the replacement in the token table in `.claude/rules/color-usage.md` (e.g. `text-red-500` → `text-destructive`, `text-gray-500` → `text-muted-foreground`, `bg-green-500` → `bg-success`). The plugin's `block-raw-palette` hook blocks these on Write/Edit when the project has `color-usage.md`.
 - [ ] **P2 External spacing on the component root** — does the component's root element carry `mt-*`, `mb-*`, `mx-*`, `my-*`, `pt-*`, `pb-*`, or `px-*` that positions it relative to siblings? Components must render flush; the parent layout owns inter-component spacing (`.claude/rules/layout-ownership.md`). Internal padding on inner elements is fine.
 - [ ] **P3 Touch targets under 44×44px** — any interactive element (button, link, icon button, checkbox) smaller than 44×44px? Mobile-only app; accessibility rule 1 in `.claude/rules/accessibility.md` requires a 44px minimum (e.g. `min-h-11 min-w-11`, or padding that reaches it).
 

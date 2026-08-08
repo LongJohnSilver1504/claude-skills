@@ -299,7 +299,7 @@ Fetch the design context using Figma MCP tool before finalizing. Compare against
 - Color is evenly distributed — no clear dominant
 - No animation beyond browser defaults
 
-**Motion setup (only when the `motion` package is justified):** See [references/output-template.md](references/output-template.md) for motion code examples.
+**Motion setup (only when the `motion` package is justified):** See [references/UX-SPEC-FORMAT.md](references/UX-SPEC-FORMAT.md) for motion code examples.
 
 ---
 
@@ -374,15 +374,16 @@ Derive testable scenarios from Passes 3, 5, 6, and 7. This matrix becomes the in
 
 ## THEN: Visual Specifications
 
-Only after all 9 passes, create: screen layouts, component specifications, interaction specifications. Single mobile viewport — no responsive breakpoints. The 9 passes inform every visual decision.
+Only after all 9 passes, create: screen layouts, component specifications, interaction specifications. Viewport policy comes from `docs/agents/project-conventions.md` (default: single mobile viewport, no responsive breakpoints). The 9 passes inform every visual decision.
+
+**Done when:** the spec file contains all 9 `## Pass` sections plus the visual specifications (grep the file for "Pass 9" before reporting done).
 
 ## Output Template
 
-See [references/output-template.md](references/output-template.md) for the complete markdown template with all 9 pass sections pre-formatted.
+See [references/UX-SPEC-FORMAT.md](references/UX-SPEC-FORMAT.md) for the complete markdown template with all 9 pass sections pre-formatted.
 
 ## Related Skills
 
-- **shadcn-ui**: Component patterns, form validation, accessibility
-- **tailwindcss-fundamentals-v4**: OKLCH colors, fluid typography, custom utilities
+- **refactoring-ui**: Visual hierarchy, spacing, color, and component-level design quality
 - **react-clean-architecture**: Layer separation, component responsibilities
 - **create-feature**: Scaffolding features after UX spec is complete

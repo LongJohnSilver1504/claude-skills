@@ -43,7 +43,7 @@ Use built-in size tokens. Default body should be `text-base` (16px).
 
 ## Color & text hierarchy (rules 2.2, 2.3, 5.2, 5.6)
 
-All colors come from the semantic tokens in `src/styles/globals.css` — never raw palette classes (`text-gray-500`, `bg-blue-100`); a hook blocks them. The tokens already encode hierarchy:
+All colors come from the project's semantic tokens (theme CSS, e.g. `globals.css`) — never raw palette classes (`text-gray-500`, `bg-blue-100`). The tokens already encode hierarchy:
 
 | Need | Token | Tailwind class |
 |---|---|---|

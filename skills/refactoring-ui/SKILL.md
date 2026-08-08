@@ -7,7 +7,7 @@ description: Apply the design principles from Refactoring UI by Wathan & Schoger
 
 One skill, two workflows. **Build** — generate new UI with the principles baked in. **Audit** — review existing UI against the principle set. Pick the workflow that matches the ask; a "make this look better" request usually means Audit first, then Build the fixes.
 
-Both workflows are mobile-only: every screen renders inside `AppContainer` (~350–400px wide). No `sm:`/`md:`/`lg:` breakpoint prefixes, ever. All colors are semantic tokens from `src/styles/globals.css` — raw Tailwind palette classes (`text-blue-100`, `bg-red-500`) are blocked by a hook.
+Both workflows default to mobile-only: every screen renders inside the project's viewport container (e.g. `AppContainer`, ~350–400px wide), with no `sm:`/`md:`/`lg:` breakpoint prefixes. The container name and allowed-breakpoints policy come from `docs/agents/project-conventions.md` (seeded by `/setup-daher-skills`) — mobile-only is the default when unset. All colors are semantic tokens from the project's theme CSS — never raw Tailwind palette classes (`text-blue-100`, `bg-red-500`); the plugin's `block-raw-palette` hook blocks them in projects that carry `.claude/rules/color-usage.md`.
 
 ## Build workflow
 
@@ -153,7 +153,7 @@ After reading the references, the audit reads:
 
 ```
 🔴 Critical (3)
-- P1 `text-gray-400` is a raw palette class — blocked by the color hook. Use a semantic token.
+- P1 `text-gray-400` is a raw palette class — violates `color-usage.md`. Use a semantic token.
 - 2.8 All three buttons use solid styling. Only "Save changes" should be the primary; "Cancel" → outline variant, "Delete account" → ghost or destructive-link styling.
 - 2.3 Grey text on the `bg-info` panel reads as washed-out. Use the panel's paired token (`text-info-foreground`), or add a same-hue token per color-usage.md.
 

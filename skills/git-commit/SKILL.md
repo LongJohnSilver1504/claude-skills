@@ -62,7 +62,7 @@ Per user preference, do NOT add `Co-Authored-By` lines.
 
 ### Step 0: Build Freshness
 
-Ensure a successful `pnpm build` ran within the last 30 minutes — the `check-build-before-commit.js` hook blocks commits otherwise. If not (or unsure), run `pnpm build` first and confirm it succeeds before proceeding. One fresh build covers all split commits in the same session.
+Ensure a successful build ran since the last source change — the plugin's `check-build-before-commit` hook blocks `git commit` when the build output is stale relative to source files. If stale (or unsure), run the project's build command (from `docs/agents/project-conventions.md`; e.g. `pnpm build`) and confirm it succeeds before proceeding. One fresh build covers all split commits in the same session.
 
 ### Step 1: Analyze and Group Changes
 
@@ -164,4 +164,4 @@ feat: Create shared links
 
 ## PR Base
 
-When a PR follows the commit, the base is the project's documented integration branch (check CLAUDE.md — e.g. `develop`), never assumed to be `main`.
+When a PR follows the commit, the base is the project's base/integration branch from `docs/agents/project-conventions.md`, never assumed to be `main`.

@@ -9,7 +9,7 @@ How the 3-layer model lands in a feature folder (see the `create-feature` skill 
   - `{feature}.mapper.ts` — pure functions: `toX(dto)` for responses, `buildXBody(input)` for request bodies
   - `{feature}.api.ts` — HTTP adapter: `client` + `handleApiError` + `parseResponse(dtoSchema)` → mapper
 
-Adapter methods validate then map: `toX(parseResponse(xDtoSchema, response.data))`. Files outside `api/` never import from `*.dto.ts` — hooks and components import types from `domain/` only (hook-enforced). This supersedes the earlier "schemas-only" convention where domain types were re-exported `z.infer` types.
+Adapter methods validate then map: `toX(parseResponse(xDtoSchema, response.data))`. Files outside `api/` never import from `*.dto.ts` — hooks and components import types from `domain/` only (enforced by the `api-boundary` rule; projects may add their own PreToolUse hook). This supersedes the earlier "schemas-only" convention where domain types were re-exported `z.infer` types.
 
 ## Principle to Implementation Mapping
 

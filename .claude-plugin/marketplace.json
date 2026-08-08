@@ -1,0 +1,14 @@
+{
+  "name": "claude-skills",
+  "description": "Daher's feature development pipeline for Claude Code — idea to merged PR.",
+  "owner": {
+    "name": "Daher"
+  },
+  "plugins": [
+    {
+      "name": "claude-skills",
+      "source": "./",
+      "description": "Feature development pipeline — 23 skills from idea to merged PR: project setup, brainstorming, PRD, UX spec, implementation planning, autonomous execution, testing, finalization, and docs."
+    }
+  ]
+}

@@ -3,8 +3,7 @@ name: generate-feature-doc
 description: Generate feature documentation after implementation by analyzing code changes. Use when documenting completed features, writing technical docs, creating developer guides, or when user wants to document what was built.
 ---
 
-> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
-> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
+> **Project config:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md`; project values (package manager, commands, base branch, error surface) come from `docs/agents/project-conventions.md`. Resolve both before writing any file — never assume. If a needed file is missing, stop: "Run `/setup-daher-skills` first — missing `<file>`."
 # Generate Feature Documentation
 
 ## Overview
@@ -160,21 +159,12 @@ After completing documentation generation and artifact cleanup, invoke the `git-
 
 ## Resume After Context Cleanup
 
-If context was cleaned mid-pipeline, restore state before proceeding:
-
-1. **Read the feature's pipeline artifacts** (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, PROGRESS.md — whichever exist) for accumulated context
-2. **Read the relevant artifact** for this skill's input:
-   - The feature code in the feature directory (under the features root per `.claude/rules/project-structure.md`) and any existing README.md draft
-3. **Continue from where you left off** — don't restart the skill from scratch
+Read the feature's existing artifacts (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, the implementation plan, PROGRESS.md — whichever exist), then the feature code and any existing README.md draft, and continue from where they leave off — never restart from scratch.
 
 ## Next Step
 
-After the commit, use the `AskUserQuestion` tool to present the next step options. Include a summary of what was completed in the question text.
-
-Options to present:
+Use the `AskUserQuestion` tool for the transition (never numbered text options), with a one-line summary of what was completed. Options:
 
 - **finish-feature** — finalize, commit, or create PR
 - **Something else** — do something different
-
-Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
 

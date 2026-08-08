@@ -2,6 +2,7 @@
 name: code-reviewer
 description: |
   Use this agent to review a complete feature's code holistically after all deliverables are implemented. Reads all .claude/rules/ conventions, checks the full diff for cross-deliverable concerns (naming consistency, duplication, integration gaps), and produces a structured report. Dispatched by execute-tasks after all deliverables pass per-deliverable reviews. Examples: <example>Context: execute-tasks has completed all deliverables and per-deliverable reviews passed. user: "Run holistic code review for the reservations feature" assistant: "Dispatching the code-reviewer agent with all changed files and convention rules" <commentary>The code reviewer checks the FULL feature diff, catching cross-deliverable issues that per-deliverable quality-reviewer cannot see.</commentary></example>
+tools: Read, Grep, Glob, Bash
 model: inherit
 ---
 
@@ -78,6 +79,7 @@ Tag each finding:
 - Read the actual code — never trust summaries or reports from other agents
 - Check EVERY file in the diff, not just a sample
 - Only report issues you can point to with file path and line number
-- Do not suggest improvements beyond what conventions require — no "nice to have" feedback
+- Do not suggest improvements beyond what conventions require — no "nice to have" feedback. Flag only issues that affect correctness or the stated requirements; being asked to review does not mean findings must exist — a clean PASS is a valid, complete answer
+- Your report is consumed by an orchestrator with limited context: findings only, `file:line` for each, no narration of your process. Keep the whole report under 120 lines
 - Do not check spec compliance — that's the spec-reviewer's job
 - Do not check test quality — that's the test-reviewer's job

@@ -1,10 +1,11 @@
 {
   "name": "claude-skills",
-  "description": "Feature development pipeline — 22 skills from idea to merged PR: brainstorming, PRD, UX spec, implementation planning, autonomous execution, testing, finalization, and docs.",
-  "version": "2.2.0",
+  "description": "Feature development pipeline — 23 skills from idea to merged PR: project setup, brainstorming, PRD, UX spec, implementation planning, autonomous execution, testing, finalization, and docs.",
+  "version": "3.0.0",
   "author": {
     "name": "Daher"
   },
+  "hooks": "./hooks/hooks.json",
   "homepage": "https://github.com/LongJohnSilver1504/claude-skills",
   "repository": "https://github.com/LongJohnSilver1504/claude-skills",
   "license": "MIT",

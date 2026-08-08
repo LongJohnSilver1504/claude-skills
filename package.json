@@ -1,8 +1,13 @@
 {
   "name": "claude-skills",
-  "version": "1.0.0",
-  "description": "Feature development pipeline for Claude Code — 29 skills from idea to merged PR",
+  "version": "3.0.0",
+  "description": "Feature development pipeline for Claude Code — 23 skills from idea to merged PR",
   "repository": "github:LongJohnSilver1504/claude-skills",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "scripts": {
+    "validate": "node scripts/validate-skills.mjs",
+    "sync-version": "node scripts/sync-version.mjs",
+    "sync-version:check": "node scripts/sync-version.mjs --check"
+  }
 }

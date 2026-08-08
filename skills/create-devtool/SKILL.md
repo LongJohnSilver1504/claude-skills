@@ -1,10 +1,9 @@
 ---
 name: create-devtool
-description: Create a DevTool debug panel for a page or feature. Scaffolds the component + hook that surfaces store state, query status, API payloads, and a JSON snapshot — all behind the dev-only wrench button.
+description: Scaffold a dev-only DevTool debug panel (component + hook) for a page or feature. Use when the user says "create a devtool", "debug panel", "inspect store state", or wants to see query status, API payloads, or computed state for a page during development. NOT for production UI (create-feature), fixing bugs (systematic-debugging), or shared app plumbing (create-infrastructure).
 ---
 
-> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
-> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
+> **Project config:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md`; project values (package manager, commands, base branch, error surface) come from `docs/agents/project-conventions.md`. Resolve both before writing any file — never assume. If a needed file is missing, stop: "Run `/setup-daher-skills` first — missing `<file>`."
 # Create DevTool
 
 Scaffold a DevTool debug panel for a page or wizard flow. The panel surfaces internal state that's invisible from the UI: store values, query statuses, computed payloads, errors, and a full JSON snapshot for copy-paste bug reports.
@@ -346,7 +345,7 @@ Before reporting done:
 - [ ] Snapshot tab includes all state needed for a bug report
 - [ ] Component is placed in the page, after all visible content
 - [ ] Barrel export exists (`devtool/index.ts` or inline export)
-- [ ] `pnpm build` passes (no type errors)
+- [ ] The project's build passes (no type errors)
 - [ ] Tested: wrench button appears, panel opens, data renders
 
 ## Examples in Codebase

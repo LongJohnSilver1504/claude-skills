@@ -3,8 +3,7 @@ name: generate-prd
 description: Convert a feature idea into a structured, builder-ready PRD. Use when planning a feature, creating specs, writing requirements, or when user mentions PRD, feature spec, requirements document, product spec, or "what should I build". Also use when the user has a vague idea and needs it sharpened into something buildable.
 ---
 
-> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
-> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
+> **Project config:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md`; project values (package manager, commands, base branch, error surface) come from `docs/agents/project-conventions.md`. Resolve both before writing any file — never assume. If a needed file is missing, stop: "Run `/setup-daher-skills` first — missing `<file>`."
 # Feature PRD Generator
 
 Turn a feature idea into a document clear enough that a builder (human or AI) can start coding without guessing.
@@ -22,70 +21,9 @@ If the input is extremely vague, ask **one** clarifying question max, then proce
 
 ## Output
 
-Generate a PRD with sections 1–7 below. Write in concise, builder-friendly language. No enterprise ceremony.
+Generate a PRD with sections 1–7 as specified in [references/PRD-FORMAT.md](references/PRD-FORMAT.md) — read it before writing. Concise, builder-friendly language; no enterprise ceremony.
 
----
-
-### 1. Problem Statement
-
-> [User] struggles to [do X] because [reason], resulting in [impact].
-
-Pick the single most important problem. If multiple exist, note the others as "Related problems" in one line.
-
-### 2. Success Criteria
-
-What must work for this to be considered done:
-
-- **Demo goal**: what outcome the demo clearly communicates
-- **Acceptance criteria**: 2–4 testable statements (use "Given/When/Then" or plain assertions)
-- **Non-goals**: what is intentionally out of scope
-
-### 3. Target User
-
-One primary user role. Include:
-
-- Role and context
-- Skill level
-- Key constraint (time, knowledge, access)
-
-No personas or demographics.
-
-### 4. Core Use Case (Happy Path)
-
-The single most important end-to-end flow:
-
-- **Start condition**: what's true before the flow begins
-- **Steps**: numbered sequence of user actions and system responses
-- **End condition**: what's true when it succeeds
-
-If this flow works, the feature works.
-
-### 5. Functional Requirements
-
-Only what the system must do. Use this table:
-
-| ID | Requirement | Priority | Notes |
-|----|-------------|----------|-------|
-
-Rules:
-
-- Phrase as capabilities, not implementation ("supports X", not "use library Y")
-- Priority: P0 (must-have) or P1 (important). No P2s — those belong in a backlog, not a PRD
-- Keep the list tight — if it's longer than 10 rows, you're over-scoping
-
-### 6. UX Decisions
-
-Make implicit assumptions explicit so nothing is left to interpretation.
-
-**Entry point**: How the user starts and what they see first.
-
-**Inputs**: What the user provides (if anything).
-
-**Outputs**: What the user receives and in what form.
-
-**States**: How the system communicates loading, success, failure, partial results, and empty states.
-
-**Error handling**: What happens when input is invalid, the system fails, or the user does nothing. Keep it minimal — just enough to not break.
+**Done when:** every section 1–7 exists, every requirement is testable, and no section says "TBD".
 
 ### Contract Reality Check (before writing Data Flow)
 
@@ -132,22 +70,13 @@ Once you have generated the complete PRD (sections 1-7), proceed to the Next Ste
 
 ## Resume After Context Cleanup
 
-If context was cleaned mid-pipeline, restore state before proceeding:
-
-1. **Read the feature's pipeline artifacts** (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, PROGRESS.md — whichever exist) for accumulated context
-2. **Read the relevant artifact** for this skill's input:
-   - The feature folder in `src/features/{feature}/` for existing PRD drafts
-3. **Continue from where you left off** — don't restart the skill from scratch
+Read the feature's existing artifacts (`.claude/pipeline/{feature}/` and the feature folder: DESIGN.md, PRD.md, UX-spec.md, the implementation plan, PROGRESS.md — whichever exist), then this skill's own input, and continue from where they leave off — never restart from scratch.
 
 ## Next Step
 
-After completing this skill, use the `AskUserQuestion` tool to present the next step options. Include a summary of what was completed in the question text.
-
-Options to present:
+Use the `AskUserQuestion` tool for the transition (never numbered text options), with a one-line summary of what was completed. Options:
 
 - **prd-clarifier** — refine requirements through structured questions
 - **prd-to-ux** — skip clarification, go straight to UX spec
 - **Something else** — do something different
-
-Do NOT present numbered text options and ask the user to "type a number." Always use the `AskUserQuestion` tool for skill transitions.
 

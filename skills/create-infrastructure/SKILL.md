@@ -1,6 +1,6 @@
 ---
 name: create-infrastructure
-description: Scaffold shared infrastructure projects — providers, hooks, layout components, i18n, config/theme. Use when the project builds reusable plumbing in shared/, or when user says "scaffold shared", "create provider", "setup layout".
+description: Scaffold shared infrastructure — providers, hooks, layout components, i18n, config/theme. Use when the project builds reusable plumbing in shared/, or when user says "scaffold shared", "create provider", "setup layout". NOT for domain features with entities and endpoints (create-feature) or extending existing shared code (modify-feature).
 ---
 
 # Create Infrastructure
@@ -88,7 +88,7 @@ Infrastructure: {project-name}
 [ ] 3. Providers           — context + provider + hook per provider
 [ ] 4. i18n translations   — EN/ES JSON files per namespace
 [ ] 5. Hooks               — shared hooks (may depend on providers, i18n, links)
-[ ] 6. shadcn installs     — pnpm dlx shadcn@latest add {components}
+[ ] 6. shadcn installs     — {pm} dlx shadcn@latest add {components} (project package manager)
 [ ] 7. Layout components   — UI building blocks (may depend on hooks + shadcn)
 [ ] 8. Layout shells       — compose layout components
 [ ] 9. Test page           — proof of concept wiring everything together

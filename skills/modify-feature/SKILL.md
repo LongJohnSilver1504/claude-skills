@@ -3,8 +3,7 @@ name: modify-feature
 description: Extend or refactor EXISTING feature code with discipline. Use when adding code to a feature that already ships (a new hook, component, endpoint, or section inside an existing module), when restructuring components without changing behavior (extract a hook, split a fat component, promote to shared, absorb duplication, migrate to current conventions), or when the user says "refactor", "extract", "move this to shared", "add X to the Y feature", "clean this component up". NOT for building a new feature from scratch (create-feature), shared plumbing (create-infrastructure), visual-only polish (refactoring-ui), bug fixes (systematic-debugging), or behavior changes (those are features — route to the pipeline).
 ---
 
-> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
-> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
+> **Project config:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md`; project values (package manager, commands, base branch, error surface) come from `docs/agents/project-conventions.md`. Resolve both before writing any file — never assume. If a needed file is missing, stop: "Run `/setup-daher-skills` first — missing `<file>`."
 
 # Modify Feature
 

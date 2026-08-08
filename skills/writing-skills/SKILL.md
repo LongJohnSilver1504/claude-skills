@@ -1,6 +1,6 @@
 ---
 name: writing-skills
-description: Use when creating new skills, editing existing skills, or verifying skills work before deployment
+description: Author and maintain Claude Code skills that trigger reliably and actually change behavior. Use when creating a new skill, editing an existing SKILL.md or its description, deciding what moves to references/, or verifying a skill works before deployment ("write a skill", "improve this skill", "why doesn't this skill trigger"). NOT for authoring project convention rules in .claude/rules/ or agent definitions in agents/.
 ---
 
 # Writing Skills

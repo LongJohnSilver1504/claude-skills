@@ -106,15 +106,15 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
    - After the root-cause fix, consider hardening the other layers the bad value passed through: [references/defense-in-depth.md](references/defense-in-depth.md)
    - If the bug is a flaky/async test (arbitrary timeouts, intermittent failures), fix it with condition-based waiting, never longer sleeps: [references/condition-based-waiting.md](references/condition-based-waiting.md)
 
-3. **Run the test:** `pnpm vitest run {test-file}`
+3. **Run the test:** the project's test command (e.g. `pnpm vitest run {test-file}`)
    - Confirm the new test passes
    - Confirm existing tests still pass
 
-4. **Run the feature tests:** `pnpm vitest run {feature-dir}` — the feature's directory under the features root defined in `.claude/rules/project-structure.md`
+4. **Run the feature tests:** the project's test command scoped to the feature (e.g. `pnpm vitest run {feature-dir}`) — the feature's directory under the features root defined in `.claude/rules/project-structure.md`
    - If the glob matches 0 test files, that is a FAIL, not a pass — fix the path
    - No regressions in the feature
 
-5. **Run the build:** `pnpm build`
+5. **Run the build:** the project's build command (e.g. `pnpm build`)
    - No type errors introduced
 
 **Exit criteria:** New test passes, existing tests pass, build passes.

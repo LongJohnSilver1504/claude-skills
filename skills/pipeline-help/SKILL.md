@@ -11,17 +11,18 @@ Interactive guide for the feature development pipeline. Explains each stage, wha
 
 > **Maintenance:** Regenerate this file whenever any pipeline skill's routing changes.
 
+**First run check:** if `docs/agents/project-conventions.md` does not exist in this project, recommend running `/setup-daher-skills` before anything else — every pipeline skill reads the files it seeds and stops when they're missing.
+
 ## The Pipeline
 
 ```
 brainstorm → generate-prd → prd-clarifier → prd-to-ux → plan-implementation → execute-tasks → finish-feature → generate-feature-doc
-     │                                           │               │
-     └──────────── prototype (optional) ────────┘               └── to-issues (optional, instead of execute-tasks)
+     │                                           │
+     └──────────── prototype (optional) ────────┘
 ```
 
-**Optional branches:**
+**Optional branch:**
 - `/prototype` — flesh out a design before committing to it (throwaway terminal app for state/logic questions, or several UI variations on one route). Branch off during brainstorm or UX design, then return to the pipeline.
-- `/to-issues` — convert the implementation plan into tracker issues instead of executing locally. Replaces `execute-tasks` when the work will be picked up asynchronously.
 
 ## Pipeline Stages
 
@@ -32,7 +33,7 @@ brainstorm → generate-prd → prd-clarifier → prd-to-ux → plan-implementat
 | 3 | `/prd-clarifier` | PRD | Clarified PRD (clarifications merged into `PRD.md`) | Yes — if PRD is clear |
 | 4 | `/prd-to-ux` | PRD | `UX-spec.md` (9 passes inc. test matrix) | No |
 | 5 | `/plan-implementation` | All specs | Implementation plan | No |
-| 6 | `/execute-tasks` | Plan | Working code (subagents + review gates) | Yes — use `/to-issues` to farm out instead |
+| 6 | `/execute-tasks` | Plan | Working code (subagents + review gates) | Yes — if the work is implemented outside the pipeline (then audit with `/audit-branch`) |
 | 7 | `/finish-feature` | Code + tests | Tests/build run, commit / PR / discard | No |
 | 8 | `/generate-feature-doc` | Feature code | `README.md` + artifact cleanup | Yes — for small features |
 
@@ -67,6 +68,14 @@ Cleaned up after the pipeline completes:
 - `PRD-*.md`
 - `*-implementation-plan.md`
 - `*-test-plan.md`
+
+## Context Boundaries (when to /clear)
+
+The artifact chain exists so context can be dropped between phases — each skill reads the previous skill's artifact, not the conversation:
+
+- **Between `/plan-implementation` and `/execute-tasks`**: start a fresh session (`/clear`). The plan IS the context; a fresh session executes with clean context focused entirely on implementation.
+- **After two failed corrections on the same problem**: `/clear` and write a better prompt. A fresh start with a sharper ask almost always beats a long session carrying accumulated failed attempts.
+- **Design phases (0–4) benefit from continuity** — keep the session while iterating on the PRD/UX spec; the conversation holds the user's reasoning.
 
 ## Resuming After Context Cleanup
 

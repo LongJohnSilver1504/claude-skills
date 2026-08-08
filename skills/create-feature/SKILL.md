@@ -1,10 +1,9 @@
 ---
 name: create-feature
-description: Scaffold a new domain feature module following vertical slicing and hexagonal architecture. Use when the user wants to create, add, implement, or scaffold a new feature with entities, API endpoints, and CRUD operations.
+description: Scaffold a NEW domain feature module following vertical slicing and hexagonal architecture (DTO+mapper API boundary, query keys, hooks, pure-renderer components). Use when the user wants to create, add, implement, or scaffold a new feature with entities, API endpoints, and CRUD operations ("create a feature", "new module", "scaffold X"). NOT for extending or refactoring a feature that already exists (modify-feature), shared plumbing like providers/layouts/i18n (create-infrastructure), or dev-only debug panels (create-devtool).
 ---
 
-> **Path convention:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md` (some projects use `src/new-app/`, others `src/` directly). Resolve it from the rule before writing any file — never assume.
-> **If `project-structure.md` does not exist:** stop and ask the user (AskUserQuestion) to define the structure before scaffolding anything. For a **new project**, propose a sensible default (e.g., `src/features/` with `src/shared/` and `src/ui/`) as the recommended option; for an **existing project**, detect candidate roots from the actual tree (Glob for `features/`, `shared/`, `ui/`) and present them as options. Then offer to save the answer as `.claude/rules/project-structure.md` so no one has to ask again.
+> **Project config:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md`; project values (package manager, commands, base branch, error surface) come from `docs/agents/project-conventions.md`. Resolve both before writing any file — never assume. If a needed file is missing, stop: "Run `/setup-daher-skills` first — missing `<file>`."
 # Create Feature
 
 Scaffold a complete domain feature module following vertical slicing with hexagonal architecture. This skill handles features with **entities, API endpoints, and CRUD operations** that live under the features root defined in `.claude/rules/project-structure.md`.
@@ -153,7 +152,7 @@ Feature: {name}
 | `hooks/` | `queries/`, `api/`, `domain/`, `store/` | Components |
 | `components/` | `hooks/`, `domain/`, `store/`, `@/{app}/ui/` | `api/` directly |
 
-Files outside `api/` must never import from `api/*.dto` or `api/*.mapper` (a PreToolUse hook blocks this) — hooks and components get their types from `domain/` only.
+Files outside `api/` must never import from `api/*.dto` or `api/*.mapper` — hooks and components get their types from `domain/` only. (Projects may enforce this with their own PreToolUse hook; this plugin does not ship one.)
 
 ## Feature-Specific Anti-Patterns
 

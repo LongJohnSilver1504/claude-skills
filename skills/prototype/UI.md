@@ -39,7 +39,7 @@ Default to **3 variants**. More than 5 stops being radically different and start
 
 Write down the plan in one line, in the prototype's location or a top-of-file comment:
 
-> "Three variants of the settings page, switchable via `?variant=`, on the existing `/settings` route."
+> "Three variants of the settings page, switchable with `?variant=`, on the existing `/settings` route."
 
 This works whether the user is here to push back or not.
 

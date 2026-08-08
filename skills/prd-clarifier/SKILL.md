@@ -1,7 +1,6 @@
 ---
 name: prd-clarifier
-description: Refine a PRD through structured questions that uncover ambiguities, missing edge cases, and hidden assumptions. Use after generating a PRD, when requirements feel vague, when user says "review my PRD", "clarify requirements", "what am I missing", or wants to improve spec quality before building.
-
+description: Refine a PRD through structured questions that uncover ambiguities, missing edge cases, and hidden assumptions. Use when a PRD exists but needs sharpening — after generate-prd, when requirements feel vague, when user says "review my PRD", "clarify requirements", "what am I missing", or wants to improve spec quality before building.
 ---
 
 # PRD Clarifier
@@ -81,6 +80,8 @@ After all questions:
 Do NOT present numbered text options. Always use the `AskUserQuestion` tool for skill transitions.
 
 **Important:** PRD.md is now the single source of truth. Do not create a separate `*-clarification.md` file. All downstream steps (prd-to-ux, plan-implementation) read only the PRD.
+
+**Done when:** PRD.md contains the merged clarifications, a `## Clarifications` section, and every resolved item changed an actual requirement row or acceptance criterion (verify in the diff).
 
 ## Resume After Context Cleanup
 

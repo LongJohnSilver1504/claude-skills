@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# Node — this package declares no dependencies and is never published; a
+# node_modules/ here only ever comes from an accidental `npm install`.
+node_modules/
+
+# Editor/OS scratch
+*.swp
+.idea/

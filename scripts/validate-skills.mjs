@@ -203,6 +203,48 @@ if (!existsSync(join(root, '.claude-plugin/marketplace.json'))) {
     'Restore .claude-plugin/marketplace.json.')
 }
 
+// ---------- 4b. Every rule is in the catalog, and every referenced rule exists ----------
+// `rules/README.md` is what /setup-daher-skills offers, so a rule missing from it is
+// never seeded — and every skill saying "read `.claude/rules/<that>.md`" then points at
+// a file the project doesn't have. That silently killed `api-boundary.md`.
+const rulesDir = join(root, 'rules')
+const ruleFiles = readdirSync(rulesDir).filter((f) => f.endsWith('.md') && f !== 'README.md')
+const rulesReadmePath = join(rulesDir, 'README.md')
+const rulesReadme = readFileSync(rulesReadmePath, 'utf8')
+const catalogued = new Set([...rulesReadme.matchAll(/`([a-z0-9-]+\.md)`/g)].map((m) => m[1]))
+
+for (const f of ruleFiles) {
+  if (!catalogued.has(f)) {
+    fail(rulesReadmePath, null, `Rule \`${f}\` exists but is not in the catalog table.`,
+      `Add a row for \`${f}\` — /setup-daher-skills only offers what this table lists.`)
+  }
+}
+for (const f of catalogued) {
+  if (!ruleFiles.includes(f)) {
+    fail(rulesReadmePath, null, `Catalog lists \`${f}\` but no such file exists in rules/.`,
+      'Remove the row, or restore the rule file.')
+  }
+}
+for (const file of [...walkMd(skillsDir), ...walkMd(join(root, 'agents'))]) {
+  readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+    for (const m of line.matchAll(/(?:\.claude\/)?rules\/([a-z0-9-]+\.md)/g)) {
+      if (!ruleFiles.includes(m[1]) && m[1] !== 'README.md') {
+        fail(file, i + 1, `References rule \`${m[1]}\`, which does not exist in rules/.`,
+          'Fix the name, or add the rule file (and its catalog row).')
+      }
+    }
+  })
+}
+
+// The "N seed rules" claim in CLAUDE.md must match the seedable rule count.
+const claudeMdPath = join(root, 'CLAUDE.md')
+const claudeMd = readFileSync(claudeMdPath, 'utf8')
+const seedClaim = claudeMd.match(/(\d+)\s+seed rules/)
+if (seedClaim && Number(seedClaim[1]) !== ruleFiles.length) {
+  fail(claudeMdPath, null, `CLAUDE.md says "${seedClaim[1]} seed rules" but rules/ contains ${ruleFiles.length}.`,
+    `Update to "${ruleFiles.length} seed rules".`)
+}
+
 // ---------- 5. Reviewer agents must not carry Write/Edit ----------
 for (const agentFile of readdirSync(join(root, 'agents')).filter((f) => f.endsWith('.md'))) {
   const p = join(root, 'agents', agentFile)

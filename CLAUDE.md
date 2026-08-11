@@ -1,10 +1,11 @@
 # claude-skills — Maintainer Guide
 
-This repo is a Claude Code **plugin**: 26 skills, 6 agents, 3 hooks, and 16 seed rules forming a feature-development pipeline. Consumers install it and run `/setup-daher-skills` once per project.
+This repo is a Claude Code **plugin**: 26 skills, 6 agents, 3 hooks, and 17 seed rules forming a feature-development pipeline. Consumers install it and run `/setup-daher-skills` once per project.
 
 ## Invariants (checked by `node scripts/validate-skills.mjs` — run it after ANY change)
 
-1. **Counts stay in sync.** The number of `skills/*/SKILL.md` directories must match the "N skills" claim in README.md, package.json, and `.claude-plugin/plugin.json`.
+1. **Counts stay in sync.** The number of `skills/*/SKILL.md` directories must match the "N skills" claim in README.md, package.json, and `.claude-plugin/plugin.json`; the number of seedable `rules/*.md` must match the "N seed rules" claim above.
+   **Every rule is in the catalog.** `rules/README.md`'s table lists every `rules/*.md`, in both directions — it is what `/setup-daher-skills` offers, so a rule missing from it is never seeded and every skill instructing "read `.claude/rules/<that>.md`" breaks in a fresh project (this silently killed `api-boundary.md`).
 2. **One version, one source.** `package.json` is the version source of truth; `.claude-plugin/plugin.json` follows via `npm run sync-version`. CI runs `--check`.
 3. **No cross-skill file paths.** Skills and agents reference other skills by prose invocation ("run the `/x` skill") or agent `skills:` preload — never `skills/<other>/...` or `~/.claude/...` paths (they break on plugin installs).
 4. **Descriptions follow the invocation-mode formula.** Model-invoked: *what + "Use when \<triggers\>" (+ "NOT for" when skills compete)*. Manual-only: `disable-model-invocation: true` + one line. A skill referenced by another skill's transition (e.g. `git-commit`, `finish-feature`) must NOT be manual-only — the model has to be able to invoke it.

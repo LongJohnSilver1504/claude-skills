@@ -47,6 +47,7 @@ Guidelines:
 - [ ] One canonical copy of any shared reference — never duplicate guidance across skills; cross-reference by skill name instead
 - [ ] One excellent code example beats many mediocre ones in multiple languages
 - [ ] No `@` force-load links to other files (they consume context immediately); use plain paths or skill names
+- [ ] Skills that manage long-lived processes (dev servers, watchers, emulators, browsers) define ownership — reuse a healthy process, never kill one the session didn't start, read ports/URLs from real output — and end with a symptom→fix troubleshooting list
 
 ## Test Before Trusting
 
@@ -67,3 +68,4 @@ If the agent ignored or misapplied the skill, fix the description or the ambiguo
 | Same guidance pasted into multiple skills | Keep one canonical copy, cross-reference it |
 | Narrative "how I solved it once" storytelling | Distill into a reusable technique |
 | Deployed without testing | Run one subagent check first |
+| `Done when:` gate that self-attests ("you understand X") | Gate on a runnable check — a command plus its expected output |

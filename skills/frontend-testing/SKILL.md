@@ -77,7 +77,7 @@ Start with ONE test that proves the path end-to-end — component renders → ho
 ### The loop
 
 1. **RED** — write the next failing test and **watch it fail**:
-   `pnpm vitest run {features-root}/{feature}` (or `pnpm test:watch` while looping)
+   `pnpm vitest run {features-root}/{feature}` (or `pnpm test:watch` while looping — a long-lived process: stop it when the loop ends, and prefer `vitest run` in agent sessions)
 2. **GREEN** — write the *minimal* code that passes. No speculative features, no code for tests you haven't written yet.
 3. **REFACTOR** — clean up with tests green. Never refactor while RED.
 

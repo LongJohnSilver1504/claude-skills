@@ -1,6 +1,6 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 23 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 26 skills that take you from a rough idea to a merged PR.
 
 **First run:** after installing, open your project and run `/setup-daher-skills`. It detects your stack (package manager, structure, base branch), seeds the convention rules and `docs/agents/project-conventions.md`, and wires your CLAUDE.md — every other skill reads those files. Skills that need missing config stop with `Run /setup-daher-skills first — missing <file>`.
 
@@ -116,6 +116,16 @@ execute-tasks (orchestrator)
 | `/create-infrastructure` | Scaffold shared infrastructure (providers, hooks, layouts, i18n) |
 | `/frontend-testing` | Write tests using Vitest, React Testing Library, and MSW v2 |
 | `/create-devtool` | Create a dev-only DevTool debug panel that surfaces store state, query status, and API payloads |
+
+### Mobile
+
+Standalone runtime-verification skills for mobile targets (not part of the 8-step pipeline).
+
+| Skill | What it does |
+|-------|-------------|
+| `/test-mobile-app` | One focused end-to-end verification pass of a mobile change — platform selection, lightest valid launch path, bundler lifecycle, evidence-gated verification, scoped cleanup |
+| `/ios-simulator` | Operate the iOS Simulator with one pinned UDID — build/reuse decisions, semantic UI driving, deep links, screenshots, scoped logs |
+| `/android-emulator` | Operate Android emulators/devices through adb with one explicit serial — installs, deep links, `adb reverse`, uiautomator-based driving, screenshots, scoped logcat |
 
 ### Debug & Fix
 

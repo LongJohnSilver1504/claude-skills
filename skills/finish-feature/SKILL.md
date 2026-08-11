@@ -32,9 +32,9 @@ If tests or build fail, report the failures and ask the user:
 
 "Tests green" has repeatedly NOT meant "flow works" — session mining found ~35+ manual QA rounds where the human caught redirect bugs, runtime schema crashes, and viewport breaks that the unit suite structurally cannot see. If the feature has visual components or user flows, walk it in a real browser BEFORE offering commit/PR:
 
-1. Start the dev server in the background (the project's dev command; reuse it if already running).
+1. **Get a dev server — reuse before start.** If a dev server for THIS worktree is already running, probe it (the app responds, not an error page) and reuse it. Otherwise start the project's dev command (from `docs/agents/project-conventions.md`) in the background and **read the actual port/URL from its output** — never assume the default port. In parallel-worktree setups an occupied default port is usually a sibling worktree's server: **never kill a process this session didn't start**; start on a free port instead.
 2. Walk the CHANGED flow only — ≤15 steps, at the project's real viewport (from `docs/agents/project-conventions.md`; mobile-only projects: use the Playwright MCP's device emulation if configured, e.g. `--device "iPhone 15"`, or whatever browser tooling the session has). Derive the steps from the UX spec's flow matrix when one exists.
-3. At each key state: screenshot, and check the console/network panel for errors (uncaught exceptions, 4xx/5xx, literal `undefined` in query params, Zod VALIDATION_ERRORs).
+3. At each key state: screenshot, and check the console/network panel for errors (uncaught exceptions, 4xx/5xx, literal `undefined` in query params, Zod VALIDATION_ERRORs). A rendered page with a clean console is not yet a pass — confirm the concrete expected state of the step (real data loaded, the mutation visible), not an empty shell or disconnected state.
 4. Report pass/fail per step with the screenshots. A failed step blocks the commit/PR offer — fix first (or the user explicitly waives).
 
 **Authentication (how the walk gets a session — in this order, never improvise):**
@@ -43,6 +43,15 @@ If tests or build fail, report the failures and ask the user:
 3. **Never**: credentials or OTPs in the repo/skill, auth bypasses in production code, or guessing at login forms.
 
 Skip only for pure-logic, infrastructure, or docs-only changes — say so explicitly ("smoke-walk skipped: no UI surface"). Keep walks under ~15 steps; longer flows degrade browser-agent reliability — split or fall back to manual QA for the tail.
+
+**Keep the environment alive.** The lifecycle boundary is the user's iteration loop, not this turn: don't stop the dev server because the walk passed or the turn is ending — the user will likely iterate. Leave it running and include its URL in the report; stop it only in Cleanup below.
+
+**Troubleshooting the walk:**
+
+- **Default port occupied** → likely a sibling worktree's server; read the real port from your dev command's output, never kill the occupant.
+- **Old or unexpected UI** → confirm the browser points at THIS worktree's server (right port) before diagnosing the code.
+- **Blank page** → console + network first; distinguish "server down" from "app crashed on mount".
+- **Auth wall** → follow the Authentication order above; never improvise logins.
 
 **Done when:** every step of the walked flow has a screenshot + pass/fail, or the report says "smoke-walk skipped: no UI surface".
 
@@ -103,6 +112,7 @@ After committing or creating a PR:
 1. Clean up pipeline artifacts if they exist:
    - `.claude/pipeline/{feature}/DESIGN.md` (brainstorm output)
    - Any `*-implementation-plan.md` execution PROGRESS.md
+2. Stop the smoke-walk dev server **only if this session started it** — leave a reused or sibling-worktree server running.
 
 ## Rules
 

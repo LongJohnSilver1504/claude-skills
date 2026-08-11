@@ -9,6 +9,7 @@
 | Build command | {e.g. pnpm build} |
 | Test command | {e.g. pnpm vitest run} |
 | Lint command | {e.g. pnpm lint, or "none"} |
+| Dev command | {e.g. pnpm dev — read the actual port/URL from its output; never assume the default} |
 | New-code root (`{app}`) | {e.g. src/} |
 | Features root | {e.g. src/features/} |
 | Base/integration branch | {e.g. main — PRs target this, never assumed} |

@@ -32,7 +32,10 @@ const die = (msg, fix) => {
 }
 
 let step = 0
+/** An action: in a dry run it is described rather than performed. */
 const say = (msg) => console.log(`${dryRun ? '│ would' : '│'} ${msg}`)
+/** An observation about current state — true in both modes. */
+const note = (msg) => console.log(`│ ${msg}`)
 const phase = (title) => console.log(`\n${++step}. ${title}`)
 
 const run = (cmd, cmdArgs, { capture = false } = {}) =>
@@ -83,7 +86,7 @@ const behind = git('rev-list', '--count', 'HEAD..origin/main')
 if (behind !== '0') die(`Local main is ${behind} commit(s) behind origin/main.`, 'git pull, then re-run.')
 if (ahead !== '0') die(`Local main is ${ahead} commit(s) ahead of origin/main.`, 'Push them via a PR first.')
 if (git('tag', '--list', tag)) die(`Tag ${tag} already exists.`, 'Pick a different version.')
-say(`on main, clean, in sync with origin (HEAD ${git('rev-parse', '--short', 'HEAD')})`)
+note(`on main, clean, in sync with origin (HEAD ${git('rev-parse', '--short', 'HEAD')})`)
 
 // ---------- 2. Validate before touching anything ----------
 phase('Validate (pre-bump)')
@@ -105,7 +108,7 @@ const notes = (nextHeadingIdx === -1 ? afterHeading : afterHeading.slice(0, next
 if (!notes) {
   die('`## [Unreleased]` is empty — nothing to release.', 'Record what changed (and why) under it first.')
 }
-say(`${notes.split('\n').filter((l) => l.trim()).length} line(s) of notes found`)
+note(`${notes.split('\n').filter((l) => l.trim()).length} line(s) of notes found under [Unreleased]`)
 
 // ---------- 4-5. Bump + changelog ----------
 phase(`Bump package.json to ${nextVersion} and sync plugin.json`)

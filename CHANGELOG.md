@@ -6,6 +6,8 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+## 3.2.3 (2026-08-11)
+
 ### Added
 - **`.gitignore`** — the repo had none, so OS and npm scratch files showed up as untracked noise in every session. Covers `.DS_Store`, `node_modules/`, and editor scratch. Deliberately *not* `package-lock.json`: this package declares no dependencies today, but if that changes the lockfile should be committed, and ignoring it now would silently prevent that.
 

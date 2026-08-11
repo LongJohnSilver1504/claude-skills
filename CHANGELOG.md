@@ -6,6 +6,9 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+### Changed
+- **Corrected 3.2.0's account of the YAML frontmatter bug.** It stated as fact that the three skills "loaded with no name and no description and could never be model-invoked", and that `audit-branch` had been "dead since 2.2.0". That was inferred from `claude plugin validate`'s warning text, not observed: in practice those descriptions did load — Claude Code's runtime loader tolerates the form that the strict validator rejects. What is established is that the invalid frontmatter blocks releases (`claude plugin tag` refused) and is a latent bug worth fixing. The entry and the published 3.2.0 release notes now say only that.
+
 ## 3.2.2 (2026-08-11)
 
 ### Fixed
@@ -23,8 +26,8 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 ## 3.2.0 (2026-08-11)
 
 ### Fixed
-- **Three skills had frontmatter that didn't parse as YAML** (`audit-branch`, `android-emulator`, `ios-simulator`) — an unquoted `: ` inside the description ("NOT for: single-deliverable…", "verification: launching…") makes the parser read a nested mapping and drop the *entire* frontmatter, so those skills loaded with **no name and no description** and could never be model-invoked. `audit-branch` had been dead this way since 2.2.0. Descriptions rephrased with em dashes to stay plain scalars.
-- **The validator now catches that class**: an unquoted frontmatter value containing `": "` or `" #"` fails with the fix. The old check regex-matched `description:` and never verified the YAML parsed — which is why a silently metadata-less skill passed CI for two releases.
+- **Three skills had frontmatter that didn't parse as YAML** (`audit-branch`, `android-emulator`, `ios-simulator`) — an unquoted `: ` inside the description ("NOT for: single-deliverable…", "verification: launching…") makes a strict parser read a nested mapping and reject the frontmatter block. `claude plugin tag` refused to cut this release because of it, so the invalid form blocks shipping; Claude Code's runtime loader turned out to be more forgiving (those descriptions did load), so the practical impact was a latent bug rather than a dead skill. `audit-branch` carried the invalid form since 2.2.0. Descriptions rephrased with em dashes to stay plain scalars.
+- **The validator now catches that class**: an unquoted frontmatter value containing `": "` or `" #"` fails with the fix. The old check regex-matched `description:` and never verified the YAML parsed — which is why the invalid form passed CI for two releases.
 - **`claude plugin validate` was being called in the one form that skips skills.** `claude plugin validate . --strict` resolves to `marketplace.json` and exits 0 even when a SKILL.md is unparseable; `claude plugin validate .claude-plugin/plugin.json` validates the plugin and every skill. CI, the release script, and CLAUDE.md now run both (the plugin path without `--strict`, since the root CLAUDE.md is a maintainer guide rather than shipped context). Found because `claude plugin tag` runs the real validation and refused to tag.
 
 ### Added

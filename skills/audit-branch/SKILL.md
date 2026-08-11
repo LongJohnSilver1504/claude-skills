@@ -1,6 +1,6 @@
 ---
 name: audit-branch
-description: One-command holistic audit of a branch — conventions + design + tests + correctness in one pass, then triage, fix loop, and fresh verification. Also the shared review-loop primitive execute-tasks delegates its post-execution phase to (Pipeline Mode). Use when the user asks to review a branch or diff as a whole ("audit this branch", "revisa el código", "revisa si sigue mis reglas", "check conventions + design + tests", "resuélvelo todo"), or after work was done WITHOUT the execute-tasks pipeline and needs post-hoc review. NOT for: single-deliverable review during execute-tasks (the pipeline owns those gates per-deliverable), PR review of someone else's code (/review), or a quick correctness-only bug hunt (/code-review).
+description: One-command holistic audit of a branch — conventions + design + tests + correctness in one pass, then triage, fix loop, and fresh verification. Also the shared review-loop primitive execute-tasks delegates its post-execution phase to (Pipeline Mode). Use when the user asks to review a branch or diff as a whole ("audit this branch", "revisa el código", "revisa si sigue mis reglas", "check conventions + design + tests", "resuélvelo todo"), or after work was done WITHOUT the execute-tasks pipeline and needs post-hoc review. NOT for single-deliverable review during execute-tasks (the pipeline owns those gates per-deliverable), PR review of someone else's code (/review), or a quick correctness-only bug hunt (/code-review).
 ---
 
 # Audit Branch

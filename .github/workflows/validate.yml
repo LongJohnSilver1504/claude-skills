@@ -17,7 +17,11 @@ jobs:
         run: node scripts/validate-skills.mjs
       - name: Check version sync
         run: node scripts/sync-version.mjs --check
-      - name: Validate plugin manifest (strict)
+      - name: Validate plugin, skills, and marketplace manifest
+        # Two invocations: `.` resolves to the marketplace manifest and never
+        # inspects skills; the plugin.json path validates every SKILL.md
+        # (including whether its frontmatter actually parses as YAML).
         run: |
           npm install -g @anthropic-ai/claude-code
+          claude plugin validate .claude-plugin/plugin.json
           claude plugin validate . --strict

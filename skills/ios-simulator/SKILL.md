@@ -1,6 +1,6 @@
 ---
 name: ios-simulator
-description: Build, launch, inspect, and drive apps on the iOS Simulator with one pinned simulator identity — installs, deep links, semantic UI automation, screenshots, scoped logs. Use when a task needs an iOS Simulator (macOS + Xcode): launching or verifying an iOS build, driving iOS UI, capturing simulator screenshots or logs — "boot the simulator", "run it on iPhone", "tap through the flow on iOS". NOT for Android (android-emulator) or desktop apps and non-simulator windows (computer-use).
+description: Build, launch, inspect, and drive apps on the iOS Simulator with one pinned simulator identity — installs, deep links, semantic UI automation, screenshots, scoped logs. Use when a task needs an iOS Simulator on macOS with Xcode — launching or verifying an iOS build, driving iOS UI, capturing simulator screenshots or logs — "boot the simulator", "run it on iPhone", "tap through the flow on iOS". NOT for Android (android-emulator) or desktop apps and non-simulator windows (computer-use).
 ---
 
 # iOS Simulator

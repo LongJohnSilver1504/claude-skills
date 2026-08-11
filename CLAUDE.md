@@ -27,7 +27,16 @@ npm run release -- <patch|minor|major> --dry-run   # prints all 10 steps, change
 npm run release -- <patch|minor|major>
 ```
 
-`scripts/release.mjs` *is* the checklist: guards (on main, clean, in sync) → validators + `claude plugin validate --strict` → require `[Unreleased]` notes → bump + `sync-version` → cut the CHANGELOG section → **re-validate after the bump** → commit → `claude plugin tag --push` → push → `gh release create` with the section as notes.
+`scripts/release.mjs` *is* the checklist: guards (on main, clean, in sync) → validators + both plugin validations → require `[Unreleased]` notes → bump + `sync-version` → cut the CHANGELOG section → **re-validate after the bump** → commit → `claude plugin tag --push` → push → `gh release create` with the section as notes.
+
+**`claude plugin validate` takes two invocations, and only one of them looks at skills:**
+
+```bash
+claude plugin validate .claude-plugin/plugin.json   # plugin + every SKILL.md (no --strict: root CLAUDE.md warns)
+claude plugin validate . --strict                   # marketplace manifest only
+```
+
+`.` resolves to `marketplace.json` and exits 0 even when a skill's frontmatter doesn't parse — which is how a broken `audit-branch` description survived two releases.
 
 Don't hand-bump the version: the old manual checklist ran `--check` *before* the bump, so it validated the previous version and nothing re-checked afterwards.
 

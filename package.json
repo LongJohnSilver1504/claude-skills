@@ -1,6 +1,6 @@
 {
   "name": "claude-skills",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Feature development pipeline for Claude Code — 26 skills from idea to merged PR",
   "repository": "github:LongJohnSilver1504/claude-skills",
   "license": "MIT",

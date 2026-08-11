@@ -6,6 +6,10 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+### Fixed
+- **`create-feature` promised a hook that doesn't exist** — its templates said the DTO-import ban was "(hook-enforced)", but no hook in this plugin enforces it (the three wired hooks are `check-build-before-commit`, `block-raw-palette`, `iron-law-stop`). Invariant 9 exists because a false guarantee is worse than an honest convention: the reader stops checking. Now stated as rule-enforced, with a project hook as the way to make it mechanical.
+- **The validator now gates hook claims** — prose matching "hook-enforced" / "hook enforces|blocks|prevents" must name a hook that actually exists in `hooks/` *and* is wired in `hooks/hooks.json`.
+
 ## 3.2.1 (2026-08-11)
 
 ### Fixed

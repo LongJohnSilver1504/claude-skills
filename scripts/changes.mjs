@@ -56,8 +56,8 @@ heading(`CHANGELOG — ${to}`)
 const changelog = readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8')
 // Tolerates both `## 3.1.0 (2026-08-11)` and the older `## 2.0.0 (2026-07)`.
 const sectionRe = to === 'HEAD'
-  ? /^## \[Unreleased\]\s*$/m
-  : new RegExp(`^## ${to.replace(/\./g, '\\.')} \\(\\d{4}-\\d{2}(?:-\\d{2})?\\)\\s*$`, 'm')
+  ? /^## \[Unreleased\][ \t]*$/m
+  : new RegExp(`^## ${to.replace(/\./g, '\\.')} \\(\\d{4}-\\d{2}(?:-\\d{2})?\\)[ \\t]*$`, 'm')
 const start = changelog.match(sectionRe)
 if (!start) {
   console.log(`  (no CHANGELOG section found for ${to})`)

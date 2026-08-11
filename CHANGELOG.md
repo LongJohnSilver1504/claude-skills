@@ -7,6 +7,9 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 ## [Unreleased]
 
 ### Fixed
+- **`api-boundary.md` was a dead rule** — 12+ places across `create-feature`, `frontend-testing`, `modify-feature`, `react-clean-architecture`, `prd-clarifier`, and the `quality-reviewer` agent instruct the model to read `.claude/rules/api-boundary.md` ("Full rule: …"), but the rule was missing from `rules/README.md`'s catalog — the table `/setup-daher-skills` offers. So it was never seeded, and in every fresh project those instructions pointed at a file that didn't exist. Same failure species as the `audit-branch` frontmatter: silent, and invisible to CI.
+- **The validator now guards the rule catalog in both directions** — every `rules/*.md` must have a catalog row, every catalog row must have a file, every `rules/<x>.md` referenced by a skill or agent must exist, and CLAUDE.md's "N seed rules" claim must match the count (it said 16 for 17 rules).
+- **`pipeline-help` omitted 7 skills that exist** — `modify-feature`, `frontend-testing`, `systematic-debugging`, `create-devtool`, and the three mobile skills had no route anywhere in the router, which invariant 5 exists to prevent. Added an "Outside the Pipeline" table so asking "which skill do I use" can reach every skill.
 - **`release.mjs` glued the cut version heading to the first `###` subsection** — the `## [Unreleased]` matcher used `\s*$`, and `\s` matches newlines, so it swallowed the blank line after the heading (visible in 3.2.0's own entry). Both scripts now anchor with `[ \t]*$`.
 
 ## 3.2.0 (2026-08-11)

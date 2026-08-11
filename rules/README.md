@@ -21,6 +21,7 @@ Then customize them to match your project's conventions.
 | `verification-before-completion.md` | The Iron Law — no completion claims without fresh verification |
 | `project-structure.md` | Feature-based architecture, sub-feature pattern, tech stack reference |
 | `accessibility.md` | WCAG 2.1 AA standards, touch targets, contrast, ARIA |
+| `api-boundary.md` | Anti-Corruption Layer — wire DTOs, mappers, hand-authored domain types, import restrictions |
 | `centralized-links.md` | Route builders, API endpoint constants, no hardcoded URLs |
 | `color-usage.md` | Semantic theme tokens — no raw Tailwind colors |
 | `component-hook-separation.md` | Components as pure renderers, hooks own all logic and state |

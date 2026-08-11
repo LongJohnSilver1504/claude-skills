@@ -92,6 +92,21 @@ When you clean context mid-pipeline:
 
 You don't need a special command. Just invoke the next skill and it handles resume.
 
+## Outside the Pipeline
+
+These skills aren't stages — invoke them whenever the need shows up:
+
+| Need | Skill |
+|------|-------|
+| Add to or restructure a feature that already ships | `/modify-feature` |
+| Write or extend tests | `/frontend-testing` |
+| Find why something is broken | `/systematic-debugging` |
+| Build or audit UI visually | `/refactoring-ui` |
+| A dev-only debug panel for a page | `/create-devtool` |
+| Review a branch built without the pipeline | `/audit-branch` |
+| Verify a change on an iOS Simulator or Android Emulator | `/test-mobile-app` (drives `/ios-simulator` and `/android-emulator`) |
+| Commit, or finalize and open a PR | `/git-commit`, `/finish-feature` |
+
 ## Common Questions
 
 **Q: Do I need to run every stage?**

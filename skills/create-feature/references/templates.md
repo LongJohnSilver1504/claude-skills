@@ -24,7 +24,7 @@ Replace `{feature}` with the feature name (lowercase) and `{Feature}` with Pasca
 
 ## Step 1: API Boundary (DTO → Mapper → Adapter)
 
-The wire format lives ONLY in `api/{feature}.dto.ts`; pure mappers translate it to/from the hand-authored domain model (see `api-boundary.md`). Files outside `api/` never import `*.dto` or `*.mapper` (hook-enforced).
+The wire format lives ONLY in `api/{feature}.dto.ts`; pure mappers translate it to/from the hand-authored domain model (see `api-boundary.md`). Files outside `api/` never import `*.dto` or `*.mapper` (enforced by the `api-boundary` rule; add a project PreToolUse hook to make it mechanical).
 
 ### 1.1 Wire DTOs (`api/{feature}.dto.ts`)
 

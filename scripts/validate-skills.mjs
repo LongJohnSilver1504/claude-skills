@@ -245,6 +245,25 @@ if (seedClaim && Number(seedClaim[1]) !== ruleFiles.length) {
     `Update to "${ruleFiles.length} seed rules".`)
 }
 
+// ---------- 4c. A claimed hook must exist and be wired ----------
+// Instructions are advisory, hooks are deterministic — so "hook-enforced" prose that
+// names no real hook promises a guarantee the plugin does not provide.
+const hooksJsonPath = join(root, 'hooks/hooks.json')
+const hooksJson = existsSync(hooksJsonPath) ? readFileSync(hooksJsonPath, 'utf8') : ''
+const wiredHooks = readdirSync(join(root, 'hooks'))
+  .filter((f) => f.endsWith('.mjs') && hooksJson.includes(f))
+  .map((f) => f.replace(/\.mjs$/, ''))
+
+for (const file of [...walkMd(skillsDir), ...walkMd(join(root, 'agents'))]) {
+  readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+    if (!/hook-enforced|hooks? (?:blocks|enforces|prevents)/i.test(line)) return
+    if (!wiredHooks.some((h) => line.includes(h))) {
+      fail(file, i + 1, 'Claims a hook enforces something without naming a hook wired in hooks/hooks.json.',
+        `Name one of: ${wiredHooks.join(', ')} — or state that the rule is advisory and a project hook can enforce it.`)
+    }
+  })
+}
+
 // ---------- 5. Reviewer agents must not carry Write/Edit ----------
 for (const agentFile of readdirSync(join(root, 'agents')).filter((f) => f.endsWith('.md'))) {
   const p = join(root, 'agents', agentFile)

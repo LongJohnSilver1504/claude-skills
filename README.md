@@ -200,6 +200,50 @@ ln -sf ~/claude-skills/skills/git-commit ~/.claude/skills/git-commit
 ln -sf ~/claude-skills/skills/systematic-debugging ~/.claude/skills/systematic-debugging
 ```
 
+## Versions & Rollback
+
+Every release is tagged `claude-skills--vX.Y.Z` (the scheme `claude plugin tag` produces and validates) and has a CHANGELOG section explaining the *why*. Versions before 3.0.0 predate tagging and live only in the CHANGELOG.
+
+**See what changed between two versions:**
+
+```bash
+npm run changes -- 3.0.0 3.1.0   # CHANGELOG section, commits, files, skills added/removed
+npm run changes -- 3.1.0         # ...through HEAD
+```
+
+Or read the [GitHub Releases](https://github.com/LongJohnSilver1504/claude-skills/releases) — each carries its CHANGELOG section as the release notes.
+
+**Update to the latest version:**
+
+```bash
+claude plugin update claude-skills   # plugin installs (restart required to apply)
+git -C ~/claude-skills pull          # symlink installs
+```
+
+**Go back to an earlier version:**
+
+- *Symlink install* — check the tag out; the symlinks point at the working tree, so it takes effect immediately:
+  ```bash
+  git -C ~/claude-skills checkout claude-skills--v3.0.0   # detached HEAD
+  git -C ~/claude-skills switch main                      # back to latest
+  ```
+- *Plugin install* — `claude plugin` has **no downgrade command**, and the version-keyed cache under `~/.claude/plugins/cache/` isn't selectable (old versions are pruned after ~14 days). The supported rollback is forward: revert the bad change on `main` and ship a patch, then `claude plugin update claude-skills`.
+
+**Fix a version that broke something** — branch from its tag, so you're working from exactly what shipped:
+
+```bash
+git switch -c fix/3.1.1 claude-skills--v3.1.0
+# fix, open a PR, merge, then from main:
+npm run release -- patch
+```
+
+**Cut a release** (maintainers) — one command runs the whole checklist: validators, `[Unreleased]` notes check, version bump + manifest sync, re-validation, commit, tag, push, GitHub Release.
+
+```bash
+npm run release -- minor --dry-run   # print every step, change nothing
+npm run release -- minor             # for real
+```
+
 ## Agents (Required by `/execute-tasks`)
 
 The `agents/` directory contains the 6 subagents that `/execute-tasks` dispatches per deliverable. Without them, the autonomous build phase cannot run. They are project-agnostic — each reads conventions from the consuming project's `.claude/rules/` at dispatch time.

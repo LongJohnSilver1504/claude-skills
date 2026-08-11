@@ -6,6 +6,8 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+## 3.2.1 (2026-08-11)
+
 ### Fixed
 - **`api-boundary.md` was a dead rule** — 12+ places across `create-feature`, `frontend-testing`, `modify-feature`, `react-clean-architecture`, `prd-clarifier`, and the `quality-reviewer` agent instruct the model to read `.claude/rules/api-boundary.md` ("Full rule: …"), but the rule was missing from `rules/README.md`'s catalog — the table `/setup-daher-skills` offers. So it was never seeded, and in every fresh project those instructions pointed at a file that didn't exist. Same failure species as the `audit-branch` frontmatter: silent, and invisible to CI.
 - **The validator now guards the rule catalog in both directions** — every `rules/*.md` must have a catalog row, every catalog row must have a file, every `rules/<x>.md` referenced by a skill or agent must exist, and CLAUDE.md's "N seed rules" claim must match the count (it said 16 for 17 rules).

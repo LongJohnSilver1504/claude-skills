@@ -6,6 +6,7 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+## 3.2.0 (2026-08-11)
 ### Fixed
 - **Three skills had frontmatter that didn't parse as YAML** (`audit-branch`, `android-emulator`, `ios-simulator`) — an unquoted `: ` inside the description ("NOT for: single-deliverable…", "verification: launching…") makes the parser read a nested mapping and drop the *entire* frontmatter, so those skills loaded with **no name and no description** and could never be model-invoked. `audit-branch` had been dead this way since 2.2.0. Descriptions rephrased with em dashes to stay plain scalars.
 - **The validator now catches that class**: an unquoted frontmatter value containing `": "` or `" #"` fails with the fix. The old check regex-matched `description:` and never verified the YAML parsed — which is why a silently metadata-less skill passed CI for two releases.

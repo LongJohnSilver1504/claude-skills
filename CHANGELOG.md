@@ -6,7 +6,13 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+### Added
+- **`.gitignore`** — the repo had none, so OS and npm scratch files showed up as untracked noise in every session. Covers `.DS_Store`, `node_modules/`, and editor scratch. Deliberately *not* `package-lock.json`: this package declares no dependencies today, but if that changes the lockfile should be committed, and ignoring it now would silently prevent that.
+
 ### Changed
+- **The plugin install is documented first, and labelled recommended** — it was second behind "Clone + Symlink (Primary)", which is backwards now that releases are tagged: the plugin path is the one with pinned versions, `claude plugin update`, and a rollback story. The symlink path is documented as what it actually is — tracks `main`, no version pinning, and a stale clone silently serves old skills.
+- **README warns against running both installs for the same skills** — each loads independently, so duplicates cost context twice, and a stale clone next to a current plugin serves two versions of one skill under two names. (Found live: a `~/claude-skills` clone 18 commits behind was feeding `~/.claude/skills` while the plugin was current.)
+- **Upstream attribution for the mobile skills** — the Upstream Skills table now credits pingdotgg/t3code and, through it, OpenAI's `build-ios-apps`.
 - **Corrected 3.2.0's account of the YAML frontmatter bug.** It stated as fact that the three skills "loaded with no name and no description and could never be model-invoked", and that `audit-branch` had been "dead since 2.2.0". That was inferred from `claude plugin validate`'s warning text, not observed: in practice those descriptions did load — Claude Code's runtime loader tolerates the form that the strict validator rejects. What is established is that the invalid frontmatter blocks releases (`claude plugin tag` refused) and is a latent bug worth fixing. The entry and the published 3.2.0 release notes now say only that.
 
 ## 3.2.2 (2026-08-11)

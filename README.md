@@ -155,9 +155,23 @@ These skills provide domain knowledge and are typically invoked by other skills,
 
 ## Installation
 
-### Clone + Symlink (Primary)
+### As a Claude Code Plugin (recommended)
 
-The repo is designed to live at `~/claude-skills` with symlinks into `~/.claude/skills` and `~/.claude/agents`:
+```
+/plugin marketplace add LongJohnSilver1504/claude-skills
+/plugin install claude-skills
+```
+
+This is the path with real version management: installs are pinned to a released version, `claude plugin update claude-skills` moves you forward, and every version is tagged (see [Versions & Rollback](#versions--rollback)). Update with:
+
+```bash
+claude plugin marketplace update claude-skills   # refresh the marketplace clone first
+claude plugin update claude-skills               # restart to apply
+```
+
+### Clone + Symlink
+
+Prefer this when you want to edit the skills in place and have changes take effect immediately — it tracks a branch rather than a release, so you get whatever is on `main`:
 
 ```bash
 # Clone the repo
@@ -176,16 +190,9 @@ for agent in ~/claude-skills/agents/*.md; do
 done
 ```
 
-Because the skills are symlinked, a `git pull` in `~/claude-skills` updates every installed skill in place.
+Because the skills are symlinked, a `git pull` in `~/claude-skills` updates every installed skill in place. The flip side: nothing pins a version, so a stale clone silently serves old skills — check it with `git -C ~/claude-skills status -sb`.
 
-### As a Claude Code Plugin
-
-Inside Claude Code:
-
-```
-/plugin marketplace add LongJohnSilver1504/claude-skills
-/plugin install claude-skills
-```
+**Don't run both installs for the same skills.** Each one loads independently, so every duplicated skill is parsed twice and costs context twice; worse, a stale clone alongside a current plugin gives you two different versions of the same skill under two names (`/audit-branch` vs `/claude-skills:audit-branch`).
 
 ### Selective Installation
 
@@ -307,6 +314,7 @@ Some skills were adapted from external sources. To pull updates, check the origi
 | `/refactoring-ui` | [Refactoring UI by Wathan & Schoger](https://refactoringui.com) |
 | `/receiving-code-review` | [obra/superpowers](https://github.com/obra/superpowers) (adapted) |
 | `/writing-skills` | [obra/superpowers](https://github.com/obra/superpowers) (adapted) + [Anthropic skill authoring docs](https://docs.claude.com) |
+| `/test-mobile-app`, `/ios-simulator`, `/android-emulator` | Patterns distilled from [pingdotgg/t3code](https://github.com/pingdotgg/t3code) `.agents/skills`, itself partly adapted from OpenAI's [`build-ios-apps`](https://github.com/openai/plugins/tree/main/plugins/build-ios-apps) (MIT). Rewritten generically — no T3-specific commands, tooling, or stack assumptions carried over. |
 
 These skills are snapshots — they don't auto-update. When the upstream source changes, review it and update the skill content manually.
 

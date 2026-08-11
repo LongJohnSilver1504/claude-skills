@@ -103,7 +103,10 @@ run('claude', ['plugin', 'validate', '.', '--strict'])
 // ---------- 3. Require release notes ----------
 phase('Release notes')
 const changelog = readFileSync(changelogPath, 'utf8')
-const unreleasedRe = /^## \[Unreleased\]\s*$/m
+// `[ \t]*$`, not `\s*$`: `\s` matches newlines, so a greedy version swallows the
+// blank line after the heading and the cut version heading ends up glued to the
+// first `###` subsection.
+const unreleasedRe = /^## \[Unreleased\][ \t]*$/m
 const unreleasedMatch = changelog.match(unreleasedRe)
 if (!unreleasedMatch) {
   die('CHANGELOG.md has no `## [Unreleased]` section.', 'Add one under the preamble and record what changed.')

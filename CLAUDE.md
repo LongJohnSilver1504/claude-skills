@@ -1,6 +1,6 @@
 # claude-skills — Maintainer Guide
 
-This repo is a Claude Code **plugin**: 23 skills, 6 agents, 3 hooks, and 16 seed rules forming a feature-development pipeline. Consumers install it and run `/setup-daher-skills` once per project.
+This repo is a Claude Code **plugin**: 26 skills, 6 agents, 3 hooks, and 16 seed rules forming a feature-development pipeline. Consumers install it and run `/setup-daher-skills` once per project.
 
 ## Invariants (checked by `node scripts/validate-skills.mjs` — run it after ANY change)
 

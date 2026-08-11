@@ -2,6 +2,21 @@
 
 Each entry records the *why* behind the change, not just the what.
 
+## 3.1.0 (2026-08-11)
+
+Patterns mined from pingdotgg/t3code's `.agents/skills` (itself partly adapted from OpenAI's `build-ios-apps` plugin). Their four skills are T3-product-specific and not importable, but they exemplify environment-lifecycle discipline our set lacked entirely: zero dev-server lifecycle guidance, zero troubleshooting sections, zero worktree awareness (despite all work happening in parallel Orca worktrees), and an evidence rule that only pointed one way.
+
+### Added
+- **Mobile skill set** (`test-mobile-app`, `ios-simulator`, `android-emulator`) — generic runtime verification for mobile targets, distilled from t3code's skills with the product-specific parts removed. `test-mobile-app` owns the workflow (platform selection, lightest-valid-launch-path, bundler reuse, evidence-gated verification); the platform skills own the mechanics (pinned UDID/serial, semantic UI driving over coordinates, deep links, scoped logs, own-what-you-started cleanup). Not part of the 8-step pipeline.
+- **`.out-of-scope/agents-dir-portability.md`** — records the decision NOT to adopt the `.agents/skills` + `openai.yaml` multi-host convention (PRD non-goal A3; second metadata surface = drift risk).
+
+### Changed
+- **`finish-feature` smoke-walk learned environment lifecycle** — reuse a healthy dev server before starting one, read the real port from output (parallel worktrees shift ports), never kill a process the session didn't start, keep the server alive across turns while the user iterates (the lifecycle boundary is the iteration loop, not the turn), and a symptom→fix troubleshooting list. Rationale: the old text said only "reuse it if already running" with no health check, no port discipline, no retention.
+- **`verification-before-completion` closes the inverse evidence gap** — it guarded "tests green ≠ flow works" but not "rendered page ≠ flow works"; new mapping rows require the concrete expected state, and a server claim requires the port printed this session.
+- **`writing-skills` teaches the new patterns** — checklist item for skills that manage long-lived processes (ownership + troubleshooting section) and a Common Mistakes row against self-attested `Done when:` gates (runnable checks were already repo style, but the authoring skill never said so).
+- **`project-conventions.md` template gains a `Dev command` row** (and setup detection reads the `dev` script) — the smoke-walk needed a documented dev command; before, it was implied.
+- **`frontend-testing`** flags `test:watch` as a long-lived process to stop, preferring `vitest run` in agent sessions.
+
 ## 3.0.0 (2026-08-08)
 
 The "usable by people who aren't Daher" release. Until now the repo worked reliably only on its author's machine: skills referenced `.claude/rules/` files the plugin never installs, agents pointed at `~/.claude/skills/...` paths that don't resolve in a plugin install, and TruckBays conventions (pnpm, `AppContainer`, `develop` base branch) were hardcoded as if universal.

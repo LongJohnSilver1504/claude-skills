@@ -23,6 +23,8 @@ No completion claims without fresh verification evidence. If you have not run th
 | "Bug is fixed" | Test of original symptom passing |
 | "Agent completed successfully" | Read the actual changed files — do not trust the agent's self-report alone |
 | "No type errors" | `pnpm build` output (TypeScript runs during build) |
+| "Flow works" | Smoke-walk with a screenshot per step + clean console + the concrete expected state visible — a rendered page alone is not proof |
+| "Dev server is running" | A valid app response from the port printed in THIS session's server output — not the assumed default port |
 
 ## Red Flags
 

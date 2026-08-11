@@ -23,7 +23,7 @@ Gather every fact you can without asking:
 | Fact | How to detect |
 |------|---------------|
 | Package manager | Lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lockb` → bun, `package-lock.json` → npm |
-| Build / test / lint commands | `package.json` scripts (`build`, `test`, `lint`, `typecheck`) |
+| Build / test / lint / dev commands | `package.json` scripts (`build`, `test`, `lint`, `typecheck`, `dev`) |
 | New-code root (`{app}`) + features root | Glob for `src/features/`, `src/new-app/`, `app/`, `src/` |
 | Base / integration branch | `git remote show origin` (HEAD branch); check whether `develop` exists |
 | Error surface | Grep for `useNotification`, `toast.`, `sonner`, `notistack` in the app code |

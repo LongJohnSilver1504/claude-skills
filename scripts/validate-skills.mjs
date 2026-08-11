@@ -170,6 +170,17 @@ if (pkg.version !== plugin.version) {
   fail(join(root, 'package.json'), null, `Version mismatch: package.json=${pkg.version}, plugin.json=${plugin.version}.`,
     'Run `npm run sync-version` (package.json is the source of truth).')
 }
+
+// The current version must have a CHANGELOG entry — shipping a version whose
+// changes were never narrated is the failure this repo's release flow prevents.
+// Tolerates the older month-only date form (`## 2.0.0 (2026-07)`).
+const changelogPath = join(root, 'CHANGELOG.md')
+const changelog = readFileSync(changelogPath, 'utf8')
+const versionHeading = new RegExp(`^## ${pkg.version.replace(/\./g, '\\.')} \\(\\d{4}-\\d{2}(?:-\\d{2})?\\)\\s*$`, 'm')
+if (!versionHeading.test(changelog)) {
+  fail(changelogPath, null, `No CHANGELOG entry for the current version ${pkg.version}.`,
+    `Add a "## ${pkg.version} (YYYY-MM-DD)" section — or let \`npm run release\` cut it from [Unreleased].`)
+}
 if (!existsSync(join(root, '.claude-plugin/marketplace.json'))) {
   fail(join(root, '.claude-plugin'), null, 'marketplace.json is missing but the README documents `/plugin marketplace add`.',
     'Restore .claude-plugin/marketplace.json.')

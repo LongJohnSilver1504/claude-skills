@@ -2,6 +2,21 @@
 
 Each entry records the *why* behind the change, not just the what.
 
+Work in progress is recorded under `## [Unreleased]` as it lands; `npm run release` turns that section into the next version's entry.
+
+## [Unreleased]
+
+### Added
+- **`scripts/release.mjs`** (`npm run release -- <patch|minor|major>`, `--dry-run`) — one command replaces the manual release checklist, in an order that actually works: validate → require `[Unreleased]` notes → bump → re-validate → commit → tag → push → GitHub Release. The old checklist ran `sync-version --check` *before* the bump, so it validated the previous version and nothing re-checked afterwards.
+- **`scripts/changes.mjs`** (`npm run changes -- 3.0.0 [3.1.0]`) — answers "what changed between these two versions": the CHANGELOG section, the commits, the file stat, and which skills appeared or disappeared.
+- **Release tags** — every version now has a `claude-skills--vX.Y.Z` tag (the scheme `claude plugin tag` produces and validates), so `git diff` between versions and rollback to a known-good point are possible. `3.0.0` and `3.1.0` were tagged retroactively at their real commits; pre-3.0 stays untagged (no verifiable commit).
+- **`## [Unreleased]` buffer** in this file — the *why* gets written while the work is fresh instead of being reconstructed at release time.
+- **README "Versions & rollback"** — how to see what changed, update, roll back per install method, and fix a broken version. Documents the verified constraint that `claude plugin` has no downgrade: for plugin installs the supported rollback is forward (revert on `main`, ship a patch).
+
+### Changed
+- **`validate-skills.mjs` requires a CHANGELOG heading for the current version** — publishing a version whose changes were never narrated is exactly the failure this work exists to prevent.
+- **`CLAUDE.md` release checklist replaced by the script** plus an invariant: every released version has a tag and a CHANGELOG section.
+
 ## 3.1.0 (2026-08-11)
 
 Patterns mined from pingdotgg/t3code's `.agents/skills` (itself partly adapted from OpenAI's `build-ios-apps` plugin). Their four skills are T3-product-specific and not importable, but they exemplify environment-lifecycle discipline our set lacked entirely: zero dev-server lifecycle guidance, zero troubleshooting sections, zero worktree awareness (despite all work happening in parallel Orca worktrees), and an evidence rule that only pointed one way.

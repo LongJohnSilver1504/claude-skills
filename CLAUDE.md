@@ -16,13 +16,22 @@ This repo is a Claude Code **plugin**: 26 skills, 6 agents, 3 hooks, and 16 seed
 10. **No TruckBays values in generic content.** Project-specific values (package manager, base branch, error surface, viewport container) live in the seeded `docs/agents/project-conventions.md`; skills reference the file, with `pnpm`-style commands only as examples ("e.g. `pnpm build`").
 11. **Retired means deleted.** Removing a skill = delete the directory + remove every reference (README, pipeline-help, plugin counts) + CHANGELOG entry naming the replacement. No deprecated/ graveyard.
 12. **Rejected ideas live in `.out-of-scope/`.** One file per concept with the decision and the why — check it before proposing "new" ideas.
+13. **Every released version is recoverable.** It has a `claude-skills--vX.Y.Z` tag at the commit that shipped it and a `## X.Y.Z (date)` CHANGELOG section (validator enforces the section for the current version). Without both, "go back to the version before it broke" is guesswork.
 
-## Release checklist
+## Releases
 
-1. `node scripts/validate-skills.mjs` && `node scripts/sync-version.mjs --check`
-2. `claude plugin validate . --strict`
-3. CHANGELOG entry explaining the *why*, not just the what
-4. Bump `package.json` version → `npm run sync-version`
+Record what changed under `## [Unreleased]` in CHANGELOG.md **as the work lands** — while you still remember the why. Then, from `main` after your PR is merged:
+
+```bash
+npm run release -- <patch|minor|major> --dry-run   # prints all 10 steps, changes nothing
+npm run release -- <patch|minor|major>
+```
+
+`scripts/release.mjs` *is* the checklist: guards (on main, clean, in sync) → validators + `claude plugin validate --strict` → require `[Unreleased]` notes → bump + `sync-version` → cut the CHANGELOG section → **re-validate after the bump** → commit → `claude plugin tag --push` → push → `gh release create` with the section as notes.
+
+Don't hand-bump the version: the old manual checklist ran `--check` *before* the bump, so it validated the previous version and nothing re-checked afterwards.
+
+To see what changed between versions: `npm run changes -- 3.0.0 3.1.0`.
 
 ## Writing style for skills
 

@@ -1,6 +1,6 @@
 ---
 name: android-emulator
-description: Launch, install, drive, and capture Android apps on an emulator or attached device through adb with one explicit serial — installs, deep links, adb reverse networking, uiautomator-based semantic UI driving, screenshots, scoped logcat. Use when a task needs Android runtime verification: launching an APK or dev client, driving Android UI, wiring a local bundler/backend to the emulator, capturing screenshots or logs — "run it on Android", "test on the emulator", "adb". NOT for iOS (ios-simulator) or desktop apps (computer-use).
+description: Launch, install, drive, and capture Android apps on an emulator or attached device through adb with one explicit serial — installs, deep links, adb reverse networking, uiautomator-based semantic UI driving, screenshots, scoped logcat. Use when a task needs Android runtime verification — launching an APK or dev client, driving Android UI, wiring a local bundler/backend to the emulator, capturing screenshots or logs — "run it on Android", "test on the emulator", "adb". NOT for iOS (ios-simulator) or desktop apps (computer-use).
 ---
 
 # Android Emulator

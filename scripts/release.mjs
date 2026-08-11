@@ -89,9 +89,15 @@ if (git('tag', '--list', tag)) die(`Tag ${tag} already exists.`, 'Pick a differe
 note(`on main, clean, in sync with origin (HEAD ${git('rev-parse', '--short', 'HEAD')})`)
 
 // ---------- 2. Validate before touching anything ----------
+// Two invocations, deliberately: `.` resolves to the MARKETPLACE manifest and
+// never looks at skills (it exited 0 on a skill whose frontmatter didn't parse),
+// while the plugin.json path validates the plugin and every SKILL.md. The
+// plugin path runs without --strict because the root CLAUDE.md is a maintainer
+// guide, not shipped context, and --strict turns that warning into an error.
 phase('Validate (pre-bump)')
 run('node', ['scripts/validate-skills.mjs'])
 run('node', ['scripts/sync-version.mjs', '--check'])
+run('claude', ['plugin', 'validate', '.claude-plugin/plugin.json'])
 run('claude', ['plugin', 'validate', '.', '--strict'])
 
 // ---------- 3. Require release notes ----------

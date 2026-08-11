@@ -55,6 +55,23 @@ for (const name of skillNames) {
   if (blankIdx !== -1) {
     fail(file, blankIdx + 2, 'Blank line inside YAML frontmatter (can break parsing).', 'Delete the blank line.')
   }
+  // A plain (unquoted) YAML scalar may not contain ": " — the parser reads it as
+  // a nested mapping and the whole frontmatter fails, which loads the skill with
+  // EMPTY metadata (no name, no description) instead of erroring visibly. This
+  // silently killed `audit-branch` for two releases. Same for " #" (comment).
+  fm.forEach((line, i) => {
+    const kv = line.match(/^([A-Za-z][\w-]*):[ \t]+(.*)$/)
+    if (!kv) return
+    const value = kv[2].trim()
+    const quoted = /^(".*"|'.*')$/.test(value)
+    if (quoted || !value) return
+    if (/:\s/.test(value) || /\s#/.test(value)) {
+      const offender = /:\s/.test(value) ? '": " (colon-space)' : '" #" (comment marker)'
+      fail(file, i + 2, `Unquoted \`${kv[1]}:\` value contains ${offender} — YAML parsing fails and the skill loads with empty metadata.`,
+        'Rephrase with an em dash or comma (preferred, keeps it a plain scalar), or wrap the whole value in quotes.')
+    }
+  })
+
   const fmText = fm.join('\n')
   const nameMatch = fmText.match(/^name:\s*(\S+)\s*$/m)
   if (!nameMatch) {

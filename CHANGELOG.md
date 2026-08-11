@@ -6,6 +6,11 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+### Fixed
+- **Three skills had frontmatter that didn't parse as YAML** (`audit-branch`, `android-emulator`, `ios-simulator`) — an unquoted `: ` inside the description ("NOT for: single-deliverable…", "verification: launching…") makes the parser read a nested mapping and drop the *entire* frontmatter, so those skills loaded with **no name and no description** and could never be model-invoked. `audit-branch` had been dead this way since 2.2.0. Descriptions rephrased with em dashes to stay plain scalars.
+- **The validator now catches that class**: an unquoted frontmatter value containing `": "` or `" #"` fails with the fix. The old check regex-matched `description:` and never verified the YAML parsed — which is why a silently metadata-less skill passed CI for two releases.
+- **`claude plugin validate` was being called in the one form that skips skills.** `claude plugin validate . --strict` resolves to `marketplace.json` and exits 0 even when a SKILL.md is unparseable; `claude plugin validate .claude-plugin/plugin.json` validates the plugin and every skill. CI, the release script, and CLAUDE.md now run both (the plugin path without `--strict`, since the root CLAUDE.md is a maintainer guide rather than shipped context). Found because `claude plugin tag` runs the real validation and refused to tag.
+
 ### Added
 - **`scripts/release.mjs`** (`npm run release -- <patch|minor|major>`, `--dry-run`) — one command replaces the manual release checklist, in an order that actually works: validate → require `[Unreleased]` notes → bump → re-validate → commit → tag → push → GitHub Release. The old checklist ran `sync-version --check` *before* the bump, so it validated the previous version and nothing re-checked afterwards.
 - **`scripts/changes.mjs`** (`npm run changes -- 3.0.0 [3.1.0]`) — answers "what changed between these two versions": the CHANGELOG section, the commits, the file stat, and which skills appeared or disappeared.

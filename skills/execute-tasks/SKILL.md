@@ -80,6 +80,27 @@ If an implementer reports BLOCKED with a fast model, re-dispatch once with a mor
 
 For each deliverable in implementation order:
 
+Deliverables the plan marks independent **may** be implemented concurrently — fanning out
+several `implementer` agents at once is the whole reason a 29-deliverable feature finishes
+in an afternoon. What is not optional is the **join**:
+
+> **Every `implementer` that returns triggers its own Step 4 immediately, for its own
+> deliverable, without waiting for its siblings.** A deliverable is not complete until its
+> `Spec` / `Quality` / `Tests` columns in PROGRESS.md hold a real result. **Do not enter
+> Post-Execution while any row still shows `-` in a gate column.**
+
+This is stated as an invariant rather than a sequencing rule because the invariant is
+auditable after the fact and a rule about ordering is not. It is also the exact thing that
+broke: measured over four real runs, 78 deliverables produced 16 spec reviews. One run
+dispatched six implementers in 105 seconds and then, with six reports in flight and no
+defined join, degraded to a single reviewer covering six deliverables — and from there to
+no reviewers at all for 19 consecutive deliverables, leaving only the closing
+`audit-branch` pass. Nothing looked wrong at any point.
+
+So: fan out freely across independent deliverables, but track them individually. If you
+cannot say which gate result belongs to which deliverable, you have fanned out wider than
+you can join, and the fix is a narrower batch — not a skipped gate.
+
 ### Step 1: Prepare
 
 1. Parse the deliverable spec from the plan (full text block)
@@ -129,7 +150,14 @@ Agent tool:
 
 ### Step 4: Review Gates (parallel, one message)
 
-Dispatch ALL applicable reviewers **concurrently in a single message** — they are independent and read-only:
+**Every deliverable gets a spec review. There is no throughput reason that justifies
+skipping this, no batching one reviewer across several deliverables, and no deferring it
+to the closing `audit-branch` pass** — that pass looks for cross-deliverable consistency,
+not spec compliance, so a deliverable that misses this gate is never checked against its
+spec at all. If you are about to move on without dispatching these, you have left the
+loop.
+
+Dispatch ALL applicable reviewers for **this one deliverable** **concurrently in a single message** — they are independent and read-only:
 
 ```
 Agent tool (spec-reviewer):
@@ -195,7 +223,12 @@ After every 2-3 deliverables pass all reviews (and after any single large one), 
 
 Update PROGRESS.md (format: [references/PROGRESS-FORMAT.md](references/PROGRESS-FORMAT.md)) — deliverable statuses, concerns log, files changed. Move to the next deliverable.
 
-**Done when:** PROGRESS.md reflects this deliverable's final state before the next one starts.
+Write this row as soon as **this** deliverable's gates return, even if siblings from the
+same fan-out are still running. The table is the join ledger; filling it in batches at the
+end is how gate results get attributed to the wrong deliverable, or lost.
+
+**Done when:** this deliverable's row carries a real result in `Impl`, `Spec`, `Quality` and
+`Tests` — no `-` left behind.
 
 ## Build Verification
 
@@ -208,10 +241,22 @@ If the build fails, dispatch the `implementer` with the build errors as the task
 
 ## Post-Execution: Holistic Review
 
-After ALL deliverables are complete and the final build passes, run the **`audit-branch` skill in pipeline mode** — it owns the shared review loop (parallel reviewer fan-out, finding triage per `receiving-code-review`, implementer fix dispatch, fresh re-verification, iteration caps). Pass it:
+**Entry check first — read the PROGRESS.md deliverable table and confirm no row has `-` in
+`Spec`, `Quality` or `Tests`.** Any row that does never cleared its Step 4; give it its
+gates now, before this phase, or hand the gap to `audit-branch` explicitly (below). This
+phase looks for cross-deliverable concerns and *assumes* the per-deliverable gates ran — an
+unchecked deliverable arriving here is never checked against its spec by anything.
+
+Then, with all deliverables complete and the final build passing, run the **`audit-branch`
+skill in pipeline mode** — it owns the shared review loop (parallel reviewer fan-out,
+finding triage per `receiving-code-review`, implementer fix dispatch, fresh re-verification,
+iteration caps). Pass it:
 
 - The changed-file list and Base Branch from PROGRESS.md
-- Pipeline-mode reviewer set: `code-reviewer` (cross-deliverable concerns — per-deliverable conventions already passed their gates) + `/code-review` (correctness bugs) + `design-reviewer` (only if the feature has visual components)
+- Pipeline-mode reviewer set: `code-reviewer` (cross-deliverable concerns) + `/code-review` (correctness bugs) + `design-reviewer` (only if the feature has visual components)
+- **Any deliverable whose Step 4 gate did not run**, by name — pipeline mode drops
+  `quality-reviewer`/`test-reviewer` on the assumption those gates already passed, so it has
+  to be told when that is untrue
 
 When the loop finishes, record its results in PROGRESS.md (Post-Execution Review table) and return here — the commit/PR offer belongs to `finish-feature`, not the audit.
 
@@ -252,7 +297,10 @@ If the user says "resume" or "continue executing": find the most recent PROGRESS
 
 - Create a feature branch before execution starts; record branch + base branch in PROGRESS.md
 - Never modify the implementation plan — it's the source of truth
-- Never skip the spec review — every deliverable gets reviewed
+- Never skip the spec review — every deliverable gets reviewed (stated at Step 4 too, where
+  it is actually load-bearing; this list is read once and the loop is read many times)
+- Independent deliverables may be implemented concurrently, but each one joins to its own
+  Step 4 and its own PROGRESS.md row — no gate column may stay `-` (see Execution Loop)
 - Dispatch the per-deliverable reviewers in parallel, in one message
 - Update PROGRESS.md before moving to the next deliverable
 - Run build verification after the final deliverable and after shared-infra changes

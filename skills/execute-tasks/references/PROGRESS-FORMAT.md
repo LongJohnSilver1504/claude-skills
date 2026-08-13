@@ -52,3 +52,7 @@ review and finish-feature read this}
 - `**Base Branch**` is mandatory — `finish-feature` uses it for PR targets and `audit-branch` for diff scoping.
 - Update the table before moving to the next deliverable, never in batches.
 - The Files Changed list is append-only and complete — reviews are dispatched from it.
+- The `Spec`/`Quality`/`Tests` columns are the **review-gate join ledger**: when independent
+  deliverables are implemented concurrently, each row records its own gates as they return.
+  A `-` in a gate column on a DONE row means that gate never ran — Post-Execution must not
+  start until every DONE row carries real results.

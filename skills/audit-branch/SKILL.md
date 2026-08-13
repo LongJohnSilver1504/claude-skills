@@ -64,7 +64,16 @@ Fresh evidence per `verification-before-completion.md` — never reuse pre-fix o
 When `execute-tasks` delegates its post-execution holistic review here, the loop mechanics are identical (fan-out → triage → fix → fresh re-verify) with these overrides:
 
 - **Scope**: the changed-file list and `Base Branch` handed over from PROGRESS.md — skip Phase 1 discovery.
-- **Reviewer set**: `code-reviewer` (cross-deliverable concerns; per-deliverable convention gates already ran, so no `quality-reviewer`/`test-reviewer`) + `/code-review` (correctness) + `design-reviewer` (only if the feature has visual components). Still parallel, one message.
+- **Reviewer set**: `code-reviewer` (cross-deliverable concerns) + `/code-review` (correctness) + `design-reviewer` (only if the feature has visual components). Still parallel, one message.
+
+  `quality-reviewer`/`test-reviewer` are dropped here **only because the per-deliverable
+  gates already covered them — verify that against PROGRESS.md rather than assuming it.**
+  Any deliverable whose Step 4 gate did not run gets `quality-reviewer` added to this
+  fan-out, scoped to its files. Left as an assumption, the two skills' defaults compose
+  into a hole with no symptom: a run that fanned out implementers and lost its Step 4
+  gates reaches this phase, which then skips convention review *because it believes it
+  already happened*, and those files are never checked against `.claude/rules/` at all.
+  Observed in a real 29-deliverable run.
 - **Design fix loop**: `design-reviewer` findings triage by priority — 🔴/🟡 auto-fix via `implementer` (for visual ARCHITECTURAL findings, instruct it to invoke the `refactoring-ui` Build workflow before editing JSX; surgical diffs, no behavior change); 🟢 accumulate and present to the user ONCE at the end ("N nitpicks — fix all or accept?"). After each fix batch, re-dispatch `design-reviewer` on **all** visual components (cross-screen consistency — a fix in one component can break alignment with another). Cap: **3 iterations**, then report what remains.
 - **Exit**: skip Phase 5's commit offer — report the findings table + fresh verification back to `execute-tasks`, which records it in PROGRESS.md and continues (commit/PR belongs to `finish-feature`).
 

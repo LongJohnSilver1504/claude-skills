@@ -2,6 +2,7 @@
 description: Enforce dual project structure — legacy code coexists with new feature-based architecture, both under src/
 globs: "**/*.{ts,tsx}"
 alwaysApply: true
+paths: ["src/**"]
 ---
 
 # Project Structure (Gradual Migration)

@@ -1,3 +1,7 @@
+---
+paths: ["src/**/*.tsx", "src/styles/**"]
+---
+
 # Color Usage
 
 > **Scope:** All new code in `src/`. Legacy code in `src/components/` follows existing conventions.

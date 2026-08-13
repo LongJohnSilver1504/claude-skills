@@ -2,6 +2,7 @@
 description: Enforce error handling conventions — AppError, tryCatch, useError, and error propagation
 globs: "**/*.{ts,tsx}"
 alwaysApply: false
+paths: ["src/**/*.{ts,tsx}"]
 ---
 
 # Error Handling

@@ -1,3 +1,7 @@
+---
+paths: ["src/**/*.tsx", "src/app/**"]
+---
+
 # Layout Ownership
 
 > **Scope:** All new code in `src/`. Inspired by Alex Kondov's component architecture philosophy: a component should never dictate how it's spaced relative to its siblings.

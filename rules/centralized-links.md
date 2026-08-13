@@ -2,6 +2,7 @@
 description: Enforce centralized links and endpoints — no hardcoded URLs or paths anywhere in the codebase
 globs: "**/*.{ts,tsx}"
 alwaysApply: true
+paths: ["src/**/*.{ts,tsx}"]
 ---
 
 # Centralized Links & Endpoints

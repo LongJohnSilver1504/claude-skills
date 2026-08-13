@@ -71,8 +71,12 @@ Reviewers carry their model in frontmatter. For the implementer, pass `model` at
 
 | Complexity signal | Model |
 |------------------|-------|
-| 1-2 files, clear spec, no cross-feature imports | `sonnet` |
-| 3+ files, integration concerns, shared infrastructure | `opus` or inherit |
+| 1-4 files, clear spec, no cross-feature imports | `sonnet` |
+| 5+ files, integration concerns, shared infrastructure | `opus` or inherit |
+
+The threshold sits at 5, not 3: measured over 30 days of real dispatches, `3+` sent 20 of
+35 implementer runs to Opus — the majority, for deliverables a mid-tier model handled fine.
+Raise it back only with evidence that sonnet is actually failing at 3-4 files.
 
 If an implementer reports BLOCKED with a fast model, re-dispatch once with a more capable model before escalating to the user.
 

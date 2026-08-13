@@ -213,6 +213,11 @@ Triage the merged results (spec dominates):
 - **quality/test FAIL (ARCHITECTURAL findings)** → report each finding; ask per finding: fix or accept. Dispatch `implementer` with approved fixes only.
 - **all PASS** → Step 5.
 
+**The fix→re-review cycle caps at 2 rounds per deliverable** (mirroring `audit-branch`'s
+holistic cap). A trivial fix that spawns new findings twice is not trivial — after round 2,
+present what remains to the user as if it were ARCHITECTURAL instead of dispatching a third
+implementer.
+
 **Done when:** every dispatched reviewer returned a Status, and any fixes were applied and re-verified.
 
 ### Step 5: Commit Checkpoint

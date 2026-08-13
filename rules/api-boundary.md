@@ -1,3 +1,7 @@
+---
+paths: ["src/features/**/api/**", "src/features/**/domain/**", "src/shared/api/**"]
+---
+
 # API Boundary (Anti-Corruption Layer)
 
 > **Scope:** All new code under the project's new-code root (see `project-structure.md`). Every backend request/response crosses this boundary — no exceptions.

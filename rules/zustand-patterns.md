@@ -1,3 +1,7 @@
+---
+paths: ["src/features/**", "src/shared/**"]
+---
+
 # Zustand Patterns
 
 > **Scope:** All new code in `src/` that uses Zustand stores.

@@ -2,6 +2,7 @@
 description: Enforce TanStack Query conventions — query keys, hooks, error handling, and provider config
 globs: "**/*.{ts,tsx}"
 alwaysApply: false
+paths: ["src/features/**", "src/shared/providers/**"]
 ---
 
 # TanStack Query Patterns

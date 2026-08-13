@@ -2,6 +2,7 @@
 description: Enforce separation of business logic into hooks, keeping components as pure renderers
 globs: src/**/*.tsx, src/**/*.ts
 alwaysApply: false
+paths: ["src/features/**", "src/ui/**", "src/shared/**"]
 ---
 
 # Component–Hook Separation

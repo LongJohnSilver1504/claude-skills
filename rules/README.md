@@ -1,3 +1,7 @@
+---
+paths: [".claude/rules/**"]
+---
+
 # Example Project Convention Rules
 
 These are `.claude/rules/` files from a production React/Next.js/TypeScript project. They complement the skills in this repo by providing project-specific conventions that skills like `/create-feature`, `/execute-tasks`, and `/frontend-testing` reference.

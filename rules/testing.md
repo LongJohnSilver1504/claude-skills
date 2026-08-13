@@ -2,6 +2,7 @@
 description: Test infrastructure, polyfills, and patterns for Vitest + React Testing Library
 globs: "**/*.test.{ts,tsx}"
 alwaysApply: false
+paths: ["**/*.test.{ts,tsx}", "test/**", "src/**/testing/**", "vitest.config.ts", "vitest.setup.ts", "scripts/check-test-patterns.mjs"]
 ---
 
 # Testing

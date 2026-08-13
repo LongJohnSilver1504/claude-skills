@@ -1,3 +1,7 @@
+---
+paths: ["src/**/*.tsx", "src/ui/**"]
+---
+
 # Design System Component Map
 
 > **Scope:** Reference for all skills that generate or reference UI components. Use this map to ensure correct component usage — never invent components that already exist.

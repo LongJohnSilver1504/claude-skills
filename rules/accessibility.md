@@ -1,3 +1,7 @@
+---
+paths: ["src/**/*.tsx"]
+---
+
 # Accessibility Standard
 
 > **Scope:** Project-wide. Applies to all new code in `src/`.

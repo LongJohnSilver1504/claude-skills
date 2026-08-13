@@ -2,6 +2,7 @@
 description: React component conventions for consistent code style
 globs: src/**/*.tsx, src/**/*.jsx
 alwaysApply: true
+paths: ["src/**/*.tsx"]
 ---
 
 # React Component Conventions

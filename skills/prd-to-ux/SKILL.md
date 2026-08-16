@@ -213,7 +213,7 @@ For each interaction in Passes 3-5, verify it's expressible as "Given [state], w
 ### Forms & Inputs
 | UX Element | shadcn Component | Notes |
 |------------|------------------|-------|
-| [Form] | Form | With react-hook-form + zod |
+| [Form field] | Field + FieldLabel + FieldError | `Controller` + Zod — never the deprecated `<Form>` / `register()` |
 
 ### Feedback & States
 | State | shadcn Component | Pattern |
@@ -242,7 +242,7 @@ For each interaction in Passes 3-5, verify it's expressible as "Given [state], w
 | Dialog/Sheet | Close button visible or hidden? | |
 | Dialog/Sheet | Who owns the trigger — parent or dialog? | |
 | Dialog/Sheet | Fixed height or content-driven? | |
-| Dialog/Sheet | Action buttons use `size="hero"` (44px+ touch targets)? | |
+| Dialog/Sheet | Touch vs pointer: follow `accessibility.md` — do not enlarge default `Button` sizes on desktop-first surfaces | |
 | Carousel/Stepper | Custom `renderIndicator` needed? | |
 | Carousel/Stepper | Constrained inside a modal? If yes: `overflow-hidden` + `min-w-0` | |
 | ScrollArea (horizontal) | Content has unpredictable width? If yes: use plain `div` with `overflow-auto`, NOT Radix ScrollArea. | |
@@ -259,47 +259,33 @@ Fetch the design context using Figma MCP tool before finalizing. Compare against
 
 ### Pass 8: Design Language
 
-**"What makes this look intentional, not generated?"**
+**"Does this use the project's tokens, or invent a second palette?"**
+
+Read before writing: `.claude/rules/color-usage.md`, `.claude/rules/design-system-map.md`, `.claude/rules/layout-ownership.md`. Hierarchy and density come from the `refactoring-ui` skill — not from a new typeface or raw OKLCH.
 
 **Required output:**
 ```markdown
 ## Pass 8: Design Language
 
-**Aesthetic vision:** [One sentence]
+**Hierarchy:** [What is primary / secondary / tertiary on each screen — one sentence]
 
-**Typography (Inter):**
-- Weights: [Per level — e.g., 700 headings, 400 body, 300 captions]
-- Size scale: [How sizes create hierarchy]
-- Tracking: [Letter-spacing adjustments]
-- Personality lever: [What makes Inter feel crafted]
+**Tokens used:** [Existing semantic tokens only, e.g. `bg-card`, `text-muted-foreground`, `text-destructive`]
 
-**Color direction:**
-- Dominant: [Token or OKLCH value] — [Role]
-- Accent: [Token or OKLCH value] — [Where and why]
-- Strategy: [Monochromatic / complementary / etc.]
-- New tokens: [Additions to globals.css or "none — existing palette sufficient"]
+**New tokens:** [Name + why, to add to `globals.css` light/dark — or "none — existing palette sufficient"]
 
-**Motion (opt-in — default is CSS transitions only):**
-- Default: CSS transitions / `tw-animate-css` — no library
-- High-impact moment: [Key animation, or "none — transitions sufficient"]
-- Micro-interactions: [Pressed/active, focus, feedback]
-- Easing + Duration: [e.g., ease-out 150-300ms for feedback, 400-600ms for reveals]
-- Library: propose the `motion` package (motion.dev) ONLY when the PRD justifies an orchestrated reveal (staggered lists, exit animations, gestures) — otherwise stick with CSS transitions
+**Typography:** [Project type scale already in use. Do not introduce a new font.]
 
-**Spatial personality:**
-- Density: [Airy / Balanced / Dense]
-- Layout approach: [Asymmetric / Grid-breaking / Strict grid]
-- Signature detail: [One distinctive visual element]
+**Motion:** CSS transitions only, unless the PRD names an orchestrated reveal. If it does, cite the PRD line.
+
+**Density:** [Airy / Balanced / Dense] — must match sibling screens in the same feature
 ```
 
-**Anti-generic checkpoint — revise if ANY is true:**
-- A user would guess this was AI-generated at first glance
-- It looks like every other shadcn/ui site
-- Inter is used with default weights — no typographic hierarchy documented
-- Color is evenly distributed — no clear dominant
-- No animation beyond browser defaults
+**Reject the pass if ANY is true:**
+- A raw Tailwind palette class or inline hex/oklch appears in the spec
+- A font or color system is proposed that is not already in the project
+- Color is evenly distributed — no clear primary action
 
-**Motion setup (only when the `motion` package is justified):** See [references/UX-SPEC-FORMAT.md](references/UX-SPEC-FORMAT.md) for motion code examples.
+**Motion snippets (only when the PRD justifies them):** [references/UX-SPEC-FORMAT.md](references/UX-SPEC-FORMAT.md).
 
 ---
 

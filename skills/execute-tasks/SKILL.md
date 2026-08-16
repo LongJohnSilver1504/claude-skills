@@ -60,25 +60,38 @@ Inject only for component deliverables with rendered UI. Skip for hooks-only, pu
 
 1. Check current branch with `git branch --show-current`
 2. If on the base/integration branch (from `docs/agents/project-conventions.md`): `git checkout -b feat/{feature-name}` (derive the name from the plan title — lowercase, hyphens)
-3. If already on `feat/*`: ask the user — use it or create a new one?
+3. If already on `feat/*`: use it when its name plainly belongs to this feature; otherwise create a fresh one from the base branch. Record which path was taken in PROGRESS.md Decisions.
 4. Record in PROGRESS.md: `**Branch**` and `**Base Branch**` (needed later by `finish-feature` and `audit-branch`)
 
 **Done when:** `git branch --show-current` prints a feature branch and PROGRESS.md records both branch fields.
 
 ## Model Selection (implementer only)
 
-Reviewers carry their model in frontmatter. For the implementer, pass `model` at dispatch:
+Every agent defaults to `sonnet` in its frontmatter. For the implementer, escalate via `model` at dispatch only when the deliverable is genuinely complex:
 
 | Complexity signal | Model |
 |------------------|-------|
-| 1-4 files, clear spec, no cross-feature imports | `sonnet` |
-| 5+ files, integration concerns, shared infrastructure | `opus` or inherit |
+| 1-4 files, clear spec, no cross-feature imports | frontmatter default (`sonnet`) |
+| 5+ files, integration concerns, shared infrastructure | `opus` |
 
 The threshold sits at 5, not 3: measured over 30 days of real dispatches, `3+` sent 20 of
 35 implementer runs to Opus — the majority, for deliverables a mid-tier model handled fine.
 Raise it back only with evidence that sonnet is actually failing at 3-4 files.
 
 If an implementer reports BLOCKED with a fast model, re-dispatch once with a more capable model before escalating to the user.
+
+## Autonomy Contract — decide, record, continue
+
+Questions belong to the planning phase (brainstorm → PRD → UX spec → plan). By the time
+this skill runs, the plan is the contract: execute it with best judgment and **do not ask
+the user anything that has a reasonable default**. Every judgment call lands in
+PROGRESS.md's `## Decisions` table — the user audits decisions after the run, not during.
+
+If you are about to ask something mid-loop, first: (1) is the answer already in the plan,
+PRD, or UX spec? Read them. (2) Is there a reversible default? Take it and record it.
+The ONLY legitimate mid-run stops are: context above 80%, user interruption, information
+that is genuinely absent from every planning artifact (inventing product decisions is the
+one thing execution must never do), and every remaining deliverable blocked.
 
 ## Execution Loop
 
@@ -149,8 +162,13 @@ Agent tool:
 
 - **DONE** → Step 4.
 - **DONE_WITH_CONCERNS** → log concerns in PROGRESS.md, proceed to Step 4; evaluate alongside review results.
-- **NEEDS_CONTEXT** → stop. Report what's missing, ask the user. Never re-dispatch without new information.
-- **BLOCKED** → stop. Report; offer: provide context and retry / skip deliverable / modify plan / stop.
+- **NEEDS_CONTEXT** → hunt for the answer where planning put it: the plan, the PRD, the UX
+  spec, the feature's docs. Found → re-dispatch with it (record in Decisions). Genuinely
+  absent from every artifact → stop; this is the one question execution may still ask,
+  because inventing a product decision is worse than a pause.
+- **BLOCKED** → escalate the model once (per Model Selection). Still BLOCKED → mark it
+  BLOCKED in PROGRESS.md, continue with deliverables that don't depend on it, and surface
+  it prominently in the final report. Stop only if everything remaining depends on it.
 
 ### Step 4: Review Gates (parallel, one message)
 
@@ -211,22 +229,35 @@ Agent tool (test-reviewer — only if the deliverable includes test files):
 
 Triage the merged results (spec dominates):
 
-- **spec FAIL** → stop. Report the compliance matrix; ask how to proceed. Quality/test findings wait until spec is resolved.
-- **spec CONCERNS** → report; ask: fix and re-review, or accept and continue?
+- **spec FAIL** → the plan is the contract: re-dispatch the `implementer` with the
+  compliance matrix as its task spec (one retry). Still FAIL → record the deliverable as
+  FAILED with its matrix in PROGRESS.md, continue with independent deliverables, surface
+  it prominently in the final report. Quality/test findings wait until spec is resolved.
+- **spec CONCERNS** → fix and re-review. Never accept a spec deviation silently. If the
+  concern is that the *spec* looks wrong, implement what the spec says anyway and record
+  the doubt in Decisions — correcting the plan is a planning decision, not an execution one.
 - **quality/test CONCERNS (only TRIVIAL findings)** → auto-fix: dispatch ONE `implementer` with the consolidated trivial-fix list as its task spec.
-- **quality/test FAIL (ARCHITECTURAL findings)** → report each finding; ask per finding: fix or accept. Dispatch `implementer` with approved fixes only.
+- **quality/test FAIL (ARCHITECTURAL findings)** → decide, don't ask: **fix** anything that
+  violates a `.claude/rules/` file or the spec (cite which in Decisions); **accept-and-log**
+  with a one-line rationale only when it is a genuine tradeoff that neither constrains.
+  When in doubt, fix. Dispatch ONE `implementer` with the decided fixes.
 - **all PASS** → Step 5.
 
 **The fix→re-review cycle caps at 2 rounds per deliverable** (mirroring `audit-branch`'s
 holistic cap). A trivial fix that spawns new findings twice is not trivial — after round 2,
-present what remains to the user as if it were ARCHITECTURAL instead of dispatching a third
-implementer.
+record what remains as ACCEPTED_WITH_FINDINGS in PROGRESS.md and move on; it resurfaces in
+the final report instead of a third implementer or a mid-run question.
 
 **Done when:** every dispatched reviewer returned a Status, and any fixes were applied and re-verified.
 
 ### Step 5: Commit Checkpoint
 
-After every 2-3 deliverables pass all reviews (and after any single large one), offer a commit checkpoint via the `git-commit` skill — multi-day runs have carried ALL work uncommitted across dozens of compactions. The user decides; never checkpoint silently.
+After every 2-3 deliverables pass all reviews (and after any single large one), **commit
+automatically** via the `git-commit` skill and record the SHA in PROGRESS.md — multi-day
+runs have carried ALL work uncommitted across dozens of compactions. A commit on the
+feature branch is cheap and reversible; losing a day of context is neither. Announce it in
+the running log rather than asking. **Never push** — publishing stays a user decision and
+belongs to `finish-feature`.
 
 ### Step 6: Mark Complete
 
@@ -275,20 +306,25 @@ After the review loop, walk each user flow from the UX spec through the code:
 
 1. Read the UX spec to identify all user flows
 2. For each flow, trace: component exists → hook wired → route registered in centralized links → loading/error/empty states handled → data flows API → hook → component
-3. Report only gaps, with concrete examples ("Flow 2: missing empty state for no assignments. Fix or accept?")
+3. Gaps follow the Autonomy Contract: a gap that violates the UX spec gets fixed (dispatch
+   `implementer`, cite the flow); a gap the spec never specified is recorded in Decisions
+   with a one-line rationale and listed in the final report.
 
-**Done when:** every flow in the UX spec has been traced and each gap has a user decision.
+**Done when:** every flow in the UX spec has been traced and each gap is either fixed or recorded.
 
 ## Continuous Execution
 
-Do NOT ask user permission between deliverables. Run continuously. Only stop for:
+Do NOT ask user permission between deliverables. Run continuously per the Autonomy
+Contract — decide, record in PROGRESS.md Decisions, continue. Only stop for:
 
-- BLOCKED or NEEDS_CONTEXT from implementer
-- spec-reviewer FAIL
-- ARCHITECTURAL findings awaiting a user decision
-- The audit-branch loop hit its iteration cap with findings remaining
+- NEEDS_CONTEXT whose answer is genuinely absent from plan, PRD and UX spec
+- All remaining deliverables blocked
 - User interruption
 - Context above 80% (mandatory pause — update PROGRESS.md first)
+
+Everything that used to stop here — spec FAIL, ARCHITECTURAL findings, iteration caps —
+now resolves by the triage rules in Step 4 and lands in the final report instead of a
+mid-run question.
 
 Projects that opted into the Iron-Law Stop hook (`.claude/iron-law.json`, seeded by `/setup-daher-skills`) get a mechanical gate on top of this: the turn cannot end with modified source files until the project's verify command passes.
 
@@ -300,7 +336,7 @@ If the user says "resume" or "continue executing": find the most recent PROGRESS
 
 - **Deliverable depends on a failed one:** mark BLOCKED ("depends on D{N} which failed"), continue with the next independent deliverable.
 - **All remaining deliverables blocked:** stop, report full status.
-- **Implementer modified files outside scope:** the spec-reviewer flags it as "extras found" — report to user.
+- **Implementer modified files outside scope:** the spec-reviewer flags it as "extras found" — revert extras that nothing depends on; keep (and record in Decisions) only what a later deliverable in the plan needs. List all extras in the final report.
 
 ## Rules
 
@@ -314,5 +350,5 @@ If the user says "resume" or "continue executing": find the most recent PROGRESS
 - Update PROGRESS.md before moving to the next deliverable
 - Run build verification after the final deliverable and after shared-infra changes
 - Post-execution holistic review goes through `audit-branch` pipeline mode — never re-implement its loop here
-- Always ask the user before committing; ensure a fresh successful build before any commit (the plugin's `check-build-before-commit` hook enforces staleness)
+- Checkpoint commits are automatic (Step 5) and never pushed; ensure a fresh successful build before any commit (the plugin's `check-build-before-commit` hook enforces staleness)
 - Use implementer model selection to optimize cost — sonnet for simple tasks, opus for complex

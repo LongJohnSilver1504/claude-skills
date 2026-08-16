@@ -21,6 +21,17 @@ Lives in the same directory as the implementation plan. Updated after EVERY deli
 | D3 | {name} | IN_PROGRESS | - | - | - | - |
 | D4+ | {name} | PENDING | - | - | - | - |
 
+## Decisions
+
+| When | Decision | Why |
+|------|----------|-----|
+| D2 | Accepted quality finding "prop drilling in FiltersBar" | Genuine tradeoff — spec pins the component API; refactor would touch D5's contract |
+| D4 | Fixed ARCHITECTURAL finding (raw color token) | Violates color-usage.md |
+| checkpoint | Committed a1b2c3d after D1-D3 | Autonomy Contract — checkpoint every 2-3 deliverables |
+
+Append-only, one line each. This is the audit trail the Autonomy Contract promises: the
+user reviews judgment calls here after the run instead of being asked during it.
+
 ## Concerns Log
 
 ### D2 — Implementer Concern

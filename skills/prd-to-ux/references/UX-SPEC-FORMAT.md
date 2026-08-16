@@ -91,6 +91,7 @@ For each interaction in Passes 3-5, verify it's expressible as "Given [state], w
 ### Forms & Inputs
 | UX Element | shadcn Component | Notes |
 |------------|------------------|-------|
+| [Field] | Field + FieldLabel + FieldError | Controller + Zod — never deprecated `<Form>` |
 
 ### Feedback & States
 | State | shadcn Component | Pattern |
@@ -114,7 +115,7 @@ For every component mapped above:
 | Dialog/Sheet | Close button visible or hidden? | |
 | Dialog/Sheet | Who owns the trigger — parent or dialog? | |
 | Dialog/Sheet | Fixed height or content-driven? | |
-| Dialog/Sheet | Action buttons use `size="hero"` (44px+ touch targets)? | |
+| Dialog/Sheet | Touch vs pointer: follow `accessibility.md` — do not enlarge default `Button` sizes on desktop-first surfaces | |
 | Carousel/Stepper | Custom `renderIndicator` needed? | |
 | Carousel/Stepper | Constrained inside a modal? If yes: `overflow-hidden` + `min-w-0` | |
 | ScrollArea (horizontal) | Content has unpredictable width? If yes: use plain `div` with `overflow-auto`, NOT Radix ScrollArea. | |
@@ -124,38 +125,19 @@ For every component mapped above:
 If a render prop component is used inside a constrained container, explicitly specify the render prop configuration — never rely on defaults.
 
 ## Pass 8: Design Language
-**Aesthetic vision:** [One sentence]
+**Hierarchy:** [Primary / secondary / tertiary on each screen]
 
-**Typography (Inter):**
-- Weights: [Which weights per level]
-- Size scale: [How sizes create hierarchy]
-- Tracking: [Letter-spacing adjustments]
-- Personality lever: [What makes Inter feel crafted]
+**Tokens used:** [Existing semantic tokens only]
 
-**Color direction:**
-- Dominant: [Token or OKLCH value] — [Role]
-- Accent: [Token or OKLCH value] — [Where/why]
-- Strategy: [Monochromatic / complementary / etc.]
-- New tokens: [Additions to globals.css or "none — existing palette sufficient"]
+**New tokens:** [Name + why, or "none"]
 
-**Motion (opt-in — default is CSS transitions only):**
-- Default: CSS transitions / `tw-animate-css` — no library
-- High-impact moment: [Key animation, or "none — transitions sufficient"]
-- Micro-interactions: [Pressed/active, focus, feedback]
-- Easing / Duration: [e.g., ease-out 150-300ms for feedback, 400-600ms for reveals]
-- Library: [Usually "none". Propose the `motion` package only if the PRD justifies an orchestrated reveal — cite the PRD requirement]
+**Typography:** [Project type scale — do not introduce a new font]
 
-**Spatial personality:**
-- Density: [Airy / Balanced / Dense]
-- Layout approach: [Grid style]
-- Signature detail: [Distinctive element]
+**Motion:** CSS transitions only, unless the PRD names an orchestrated reveal
 
-**Anti-generic checkpoint — revise if ANY is true:**
-- A user would guess this was AI-generated at first glance
-- It looks like every other shadcn/ui site
-- Inter is used with default weights — no typographic hierarchy documented
-- Color is evenly distributed — no clear dominant
-- No animation beyond browser defaults
+**Density:** [Airy / Balanced / Dense] — match sibling screens
+
+**Reject if:** raw palette / hex / oklch in the spec, a new font or color system, or no clear primary action
 
 ## Pass 9: Test Matrix
 

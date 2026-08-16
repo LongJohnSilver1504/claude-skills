@@ -67,12 +67,12 @@ Inject only for component deliverables with rendered UI. Skip for hooks-only, pu
 
 ## Model Selection (implementer only)
 
-Reviewers carry their model in frontmatter. For the implementer, pass `model` at dispatch:
+Every agent defaults to `sonnet` in its frontmatter. For the implementer, escalate via `model` at dispatch only when the deliverable is genuinely complex:
 
 | Complexity signal | Model |
 |------------------|-------|
-| 1-4 files, clear spec, no cross-feature imports | `sonnet` |
-| 5+ files, integration concerns, shared infrastructure | `opus` or inherit |
+| 1-4 files, clear spec, no cross-feature imports | frontmatter default (`sonnet`) |
+| 5+ files, integration concerns, shared infrastructure | `opus` |
 
 The threshold sits at 5, not 3: measured over 30 days of real dispatches, `3+` sent 20 of
 35 implementer runs to Opus — the majority, for deliverables a mid-tier model handled fine.

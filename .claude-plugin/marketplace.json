@@ -1,6 +1,6 @@
 {
   "name": "claude-skills",
-  "description": "Daher's feature development pipeline for Claude Code — idea to merged PR.",
+  "description": "Daher’s Claude Code plugins — the feature development pipeline (claude-skills) and the design craft set (design-craft).",
   "owner": {
     "name": "Daher"
   },
@@ -9,6 +9,11 @@
       "name": "claude-skills",
       "source": "./",
       "description": "Feature development pipeline — 26 skills from idea to merged PR: project setup, brainstorming, PRD, UX spec, implementation planning, autonomous execution, testing, finalization, and docs."
+    },
+    {
+      "name": "design-craft",
+      "source": "./design-craft",
+      "description": "Design craft — a separate plugin that locks a visual direction, then builds and reviews interfaces with a senior design engineer’s taste: hierarchy, typography, color, surfaces, motion, copy, accessibility, landing pages, variants, stress tests and evidence-based review."
     }
   ]
 }

@@ -6,6 +6,9 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+### Added
+- **`design-craft/` — a second, independent plugin in this repo** (its own `skills/`, `agents/`, manifests, validator and version; registered in `.claude-plugin/marketplace.json` as `design-craft`). The pipeline plugin's skills, counters and validator are untouched. Fourteen design skills synthesized from seven public collections (Jakub Krehel, Emil Kowalski, tastemaker, ConardLi, Meng To, elayadesign) plus the Refactoring UI condensation already here, organized router → main flow → shaping → reference layer. Changelog and versioning live in `design-craft/CHANGELOG.md`.
+
 ## 3.2.3 (2026-08-11)
 
 ### Added

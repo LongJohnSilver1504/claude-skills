@@ -1,0 +1,11 @@
+{
+  "name": "design-craft",
+  "version": "1.0.0",
+  "description": "Design craft skills for Claude Code — 14 skills that lock a direction, build with taste, and review with evidence",
+  "repository": "github:LongJohnSilver1504/claude-skills",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "validate": "node scripts/validate.mjs"
+  }
+}

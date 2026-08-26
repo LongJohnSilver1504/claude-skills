@@ -1,0 +1,14 @@
+{
+  "name": "design-craft",
+  "description": "Design craft skills for Claude Code — lock a direction, build with taste, review with evidence.",
+  "owner": {
+    "name": "Daher"
+  },
+  "plugins": [
+    {
+      "name": "design-craft",
+      "source": "./",
+      "description": "Design craft for Claude Code — 14 skills that lock a visual direction, then build and review interfaces with a senior design engineer's taste: hierarchy, typography, color, surfaces, motion, copy, accessibility, landing pages, variants, stress tests and evidence-based review."
+    }
+  ]
+}

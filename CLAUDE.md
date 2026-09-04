@@ -48,3 +48,7 @@ To see what changed between versions: `npm run changes -- 3.0.0 3.1.0`.
 - `**Done when:**` gates on numbered steps — prefer a runnable check over a descriptive condition.
 - Formulate in positive ("stage specific files") over prohibition where possible; prohibitions that stay must carry the failure they prevent.
 - Test before trusting: a new or heavily edited skill gets one subagent run with a realistic prompt (see `writing-skills`).
+
+## Sibling plugin: `design-craft/`
+
+`design-craft/` is a **separate plugin** in this repo with its own `skills/`, `agents/`, manifests, `CHANGELOG.md`, version and validator (`node design-craft/scripts/validate.mjs`). It is registered as a second entry in `.claude-plugin/marketplace.json`. None of the invariants above count it: the "N skills" claims, `pipeline-help`, `rules/`, hooks and `scripts/validate-skills.mjs` refer only to the pipeline plugin. Never move a skill between the two without updating both validators; see `design-craft/CLAUDE.md` for its own invariants.

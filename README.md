@@ -4,6 +4,16 @@ A complete feature development pipeline for Claude Code — 26 skills that take 
 
 **First run:** after installing, open your project and run `/setup-daher-skills`. It detects your stack (package manager, structure, base branch), seeds the convention rules and `docs/agents/project-conventions.md`, and wires your CLAUDE.md — every other skill reads those files. Skills that need missing config stop with `Run /setup-daher-skills first — missing <file>`.
 
+## Also in this repo: `design-craft`
+
+A separate plugin for **design quality** — it locks a visual direction per project, then builds and reviews interfaces with a design engineer's bar (hierarchy, typography, color, surfaces, motion, copy, accessibility, landing pages, variants, stress tests, evidence-based review). Independent of the pipeline: install either or both.
+
+```text
+/plugin install design-craft@claude-skills
+```
+
+See [`design-craft/README.md`](design-craft/README.md).
+
 ## What This Is
 
 Claude Skills is a composable skill library that turns Claude Code into a structured development partner. Instead of ad-hoc prompting, each skill enforces a specific workflow — brainstorming before coding, specs before implementation, tests before shipping.

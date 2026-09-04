@@ -1,0 +1,22 @@
+{
+  "name": "design-craft",
+  "description": "Design craft for Claude Code — 14 skills that lock a visual direction, then build and review interfaces with a senior design engineer's taste: hierarchy, typography, color, surfaces, motion, copy, accessibility, landing pages, variants, stress tests and evidence-based review.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Daher"
+  },
+  "homepage": "https://github.com/LongJohnSilver1504/claude-skills/tree/main/design-craft",
+  "repository": "https://github.com/LongJohnSilver1504/claude-skills",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "design",
+    "ui",
+    "design-engineering",
+    "typography",
+    "color",
+    "motion",
+    "accessibility",
+    "landing-page"
+  ]
+}

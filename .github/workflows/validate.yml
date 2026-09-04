@@ -18,7 +18,8 @@ jobs:
       - name: Test hooks
         # Hooks are the plugin's only deterministic guarantees (CLAUDE.md
         # invariant 9); each one is exercised with real stdin payloads.
-        run: node --test tests/
+        # Unquoted on purpose: the shell expands the glob on every Node version
+        run: node --test tests/*.test.mjs
       - name: Check version sync
         run: node scripts/sync-version.mjs --check
       - name: Validate plugin, skills, and marketplace manifest

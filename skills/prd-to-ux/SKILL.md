@@ -7,7 +7,7 @@ description: Translate PRDs or feature specs into UX specifications through 9 st
 
 Translate product requirements into UX foundations through **9 structured passes**. Each pass asks different questions that visual-first approaches skip.
 
-**Core principle:** UX foundations come BEFORE visual specifications. Mental models, information architecture, and cognitive load analysis prevent "pretty but unusable" designs. Do all 9 passes in order — skipping passes to "save time" produces specs that need redesign. The passes ARE the shortcut.
+**Core principle:** UX foundations come BEFORE visual specifications. Mental models, information architecture, and cognitive load analysis prevent "pretty but unusable" designs. Do all 9 passes in order — later passes consume earlier ones, and downstream skills read Pass 2, 5 and 9 by name.
 
 ## Output Location
 
@@ -17,6 +17,8 @@ Write the UX specification to a file in the same directory as the source PRD.
 - If PRD is `PRD.md` → output `UX-spec.md`
 
 Always write to file, not to conversation.
+
+Match the spec's length to what the feature needs: fill every pass section, but no filler, no restated PRD content, no boilerplate. A pass with nothing to add for this feature gets one line saying so — `plan-implementation` reads the whole file, and padding costs it context without adding decisions.
 
 ## The 9 Passes
 
@@ -71,7 +73,7 @@ Force these questions:
 - Rationale: [One sentence why this grouping]
 ```
 
-**This is where most AI UX attempts fail.** If you skip explicit IA, your visual specs will be disorganized.
+Without explicit IA, the visual specs in later passes inherit whatever grouping the PRD happened to use.
 
 ---
 

@@ -8,7 +8,9 @@ description: Generate feature documentation after implementation by analyzing co
 
 ## Overview
 
-Generate comprehensive technical documentation AFTER a feature has been implemented. This skill analyzes the actual code to produce accurate, up-to-date documentation.
+Generate accurate technical documentation AFTER a feature has been implemented. This skill analyzes the actual code, so every claim in the doc traces to a file.
+
+Match the doc's length to what the feature needs: cover every section below, but no filler, no boilerplate, no restating what the code already says plainly. A section that doesn't apply (no Zustand store, no external API) gets one line saying so rather than an invented subsection — readers skim these docs to find a file, and padding hides it.
 
 ## When to Use
 

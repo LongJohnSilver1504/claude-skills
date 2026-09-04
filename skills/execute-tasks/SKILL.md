@@ -74,9 +74,9 @@ Every agent defaults to `sonnet` in its frontmatter. For the implementer, escala
 | 1-4 files, clear spec, no cross-feature imports | frontmatter default (`sonnet`) |
 | 5+ files, integration concerns, shared infrastructure | `opus` |
 
-The threshold sits at 5, not 3: measured over 30 days of real dispatches, `3+` sent 20 of
-35 implementer runs to Opus — the majority, for deliverables a mid-tier model handled fine.
-Raise it back only with evidence that sonnet is actually failing at 3-4 files.
+The threshold sits at 5, not 3: at `3+` the majority of dispatches went to Opus for
+deliverables sonnet handled fine (measurements in CHANGELOG 3.3.0). Lower it only with
+evidence that sonnet is actually failing at 3-4 files.
 
 If an implementer reports BLOCKED with a fast model, re-dispatch once with a more capable model before escalating to the user.
 
@@ -107,16 +107,16 @@ in an afternoon. What is not optional is the **join**:
 > Post-Execution while any row still shows `-` in a gate column.**
 
 This is stated as an invariant rather than a sequencing rule because the invariant is
-auditable after the fact and a rule about ordering is not. It is also the exact thing that
-broke: measured over four real runs, 78 deliverables produced 16 spec reviews. One run
-dispatched six implementers in 105 seconds and then, with six reports in flight and no
-defined join, degraded to a single reviewer covering six deliverables — and from there to
-no reviewers at all for 19 consecutive deliverables, leaving only the closing
-`audit-branch` pass. Nothing looked wrong at any point.
+auditable after the fact and a rule about ordering is not. Without a defined join, gate
+results get attributed to the wrong deliverable or lost, and nothing looks wrong at any
+point (the run that established this is in CHANGELOG 3.3.0).
 
-So: fan out freely across independent deliverables, but track them individually. If you
-cannot say which gate result belongs to which deliverable, you have fanned out wider than
-you can join, and the fix is a narrower batch — not a skipped gate.
+**Cap: at most 3 implementers in flight.** Before dispatching another, count the rows
+whose `Status` column reads `IN_PROGRESS` in PROGRESS.md; at 3, wait for one to return and
+run its Step 4 first. Three is what one orchestrator can join without mixing up reports;
+a wider batch is how the gates got lost. Projects that want a mechanical ceiling on top
+set `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (session-global — 1 implementer + 3 reviewers
+per deliverable in flight is 12).
 
 ### Step 1: Prepare
 
@@ -266,6 +266,10 @@ Update PROGRESS.md (format: [references/PROGRESS-FORMAT.md](references/PROGRESS-
 Write this row as soon as **this** deliverable's gates return, even if siblings from the
 same fan-out are still running. The table is the join ledger; filling it in batches at the
 end is how gate results get attributed to the wrong deliverable, or lost.
+
+Tell the user one line per deliverable as its row lands — `D{N}: impl DONE · spec PASS ·
+quality CONCERNS→fixed · tests PASS` — and nothing else between deliverables. That line is
+the whole progress report; the user reads PROGRESS.md for detail.
 
 **Done when:** this deliverable's row carries a real result in `Impl`, `Spec`, `Quality` and
 `Tests` — no `-` left behind.

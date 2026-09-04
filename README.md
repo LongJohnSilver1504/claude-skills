@@ -257,7 +257,7 @@ The `agents/` directory contains the 6 subagents that `/execute-tasks` dispatche
 
 | Agent | Purpose | Dispatched when |
 |-------|---------|-----------------|
-| `implementer` | Implements one deliverable, writes tests, self-reviews | Every deliverable |
+| `implementer` | Implements one deliverable, writes tests, reports with fresh verification | Every deliverable |
 | `spec-reviewer` | Verifies code matches spec (compliance matrix) | After implementer reports DONE |
 | `quality-reviewer` | Checks code against `.claude/rules/` conventions | After spec passes |
 | `test-reviewer` | Checks test quality | After quality passes, if tests exist |

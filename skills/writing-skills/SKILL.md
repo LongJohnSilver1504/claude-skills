@@ -48,6 +48,7 @@ Guidelines:
 - [ ] One excellent code example beats many mediocre ones in multiple languages
 - [ ] No `@` force-load links to other files (they consume context immediately); use plain paths or skill names
 - [ ] Skills that manage long-lived processes (dev servers, watchers, emulators, browsers) define ownership — reuse a healthy process, never kill one the session didn't start, read ports/URLs from real output — and end with a symptom→fix troubleshooting list
+- [ ] Written for Claude 5, not against an older model's habits: no `CRITICAL`/`MUST`/`NEVER` without the failure it prevents (bare emphasis now causes over-triggering); no "double-check", "be thorough", "think step by step" (the model does these unprompted — the lines only add re-verification cost); review prompts ask for everything and let a triage step filter (a "be conservative" reviewer withholds real findings); documents the skill writes carry a length calibration; task sections state outcome + guardrails + done-criteria, and keep a numbered protocol only where the order itself is the deliverable
 
 ## Test Before Trusting
 

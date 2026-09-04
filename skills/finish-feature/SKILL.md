@@ -30,7 +30,7 @@ If tests or build fail, report the failures and ask the user:
 
 ### Step 1.5: Browser Smoke-Walk (UI features — mandatory gate)
 
-"Tests green" has repeatedly NOT meant "flow works" — session mining found ~35+ manual QA rounds where the human caught redirect bugs, runtime schema crashes, and viewport breaks that the unit suite structurally cannot see. If the feature has visual components or user flows, walk it in a real browser BEFORE offering commit/PR:
+"Tests green" has repeatedly not meant "flow works" — redirect bugs, runtime schema crashes, and viewport breaks are invisible to a unit suite and have reached the human every time the walk was skipped. If the feature has visual components or user flows, walk it in a real browser BEFORE offering commit/PR:
 
 1. **Get a dev server — reuse before start.** If a dev server for THIS worktree is already running, probe it (the app responds, not an error page) and reuse it. Otherwise start the project's dev command (from `docs/agents/project-conventions.md`) in the background and **read the actual port/URL from its output** — never assume the default port. In parallel-worktree setups an occupied default port is usually a sibling worktree's server: **never kill a process this session didn't start**; start on a free port instead.
 2. Walk the CHANGED flow only — ≤15 steps, at the project's real viewport (from `docs/agents/project-conventions.md`; mobile-only projects: use the Playwright MCP's device emulation if configured, e.g. `--device "iPhone 15"`, or whatever browser tooling the session has). Derive the steps from the UX spec's flow matrix when one exists.

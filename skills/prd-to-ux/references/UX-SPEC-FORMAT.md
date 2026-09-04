@@ -1,6 +1,6 @@
 # UX Specification Output Template
 
-Use this template structure when generating the final UX specification document. It contains all 9 pass sections from SKILL.md — do not omit any.
+Use this template structure when generating the final UX specification document. It contains all 9 pass sections from SKILL.md — keep every section (downstream skills read them by name), but match each one's length to what the feature needs: no filler, no restated PRD content, no boilerplate. A section with nothing to add gets one line saying so.
 
 ```markdown
 # UX Specification: [Product Name]

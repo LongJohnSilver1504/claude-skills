@@ -140,7 +140,7 @@ Remember the renderHook policy from SKILL.md: only for provider/context hooks, q
 ## Waiting for Async State
 
 ```tsx
-import { waitFor } from '@testing-library/react'
+import { waitFor, waitForElementToBeRemoved } from '@testing-library/react'
 
 // Wait for a query to resolve
 await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -150,8 +150,91 @@ await waitFor(() => {
   expect(screen.getByText('Expected text')).toBeInTheDocument()
 })
 
-// Wait for loading to finish
-await waitFor(() => {
-  expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
-})
+// Wait for loading to finish — see Gotcha 2 for why this beats polling queryBy*
+await waitForElementToBeRemoved(() => screen.queryByText('Loading...'))
 ```
+
+## Gotchas
+
+Each of these is a checkable rule — a reviewer can cite it with a `file:line`.
+
+### 1. One `QueryClient` per test, constructed outside the wrapper closure
+
+```tsx
+// ❌ A new client on every render — cache state resets mid-test
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
+)
+
+// ✅ One client per test, captured by the closure
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+})
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+)
+```
+
+**Why:** a client constructed inside the closure is a fresh instance on every re-render, so cached data and in-flight queries disappear between renders — the test flakes on timing instead of failing on behavior. (Fresh-per-*test* is the goal; fresh-per-*render* is the bug.)
+
+### 2. `waitForElementToBeRemoved` for disappearing loaders
+
+```tsx
+// ❌ Polling for absence — passes instantly if the loader never rendered
+await waitFor(() =>
+  expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
+)
+
+// ✅ Asserts the loader was there, then waits for it to go
+await waitForElementToBeRemoved(() => screen.queryByText(/loading/i))
+```
+
+**Why:** `waitFor` on a `queryBy*` absence is satisfied by an element that was never mounted, so a broken loading state passes; `waitForElementToBeRemoved` throws if the element is missing at the start and only resolves once it actually leaves the DOM.
+
+### 3. Error-boundary tests: spy `console.error`, restore in `finally`
+
+```tsx
+// ❌ Spy leaks — every later test in the file runs with console.error silenced
+vi.spyOn(console, 'error').mockImplementation(() => {})
+render(<ErrorBoundary fallback={<p>Something went wrong</p>}><Broken /></ErrorBoundary>)
+expect(screen.getByText(/something went wrong/i)).toBeInTheDocument()
+
+// ✅ Restored even when the assertion throws
+const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+try {
+  render(<ErrorBoundary fallback={<p>Something went wrong</p>}><Broken /></ErrorBoundary>)
+  expect(screen.getByText(/something went wrong/i)).toBeInTheDocument()
+} finally {
+  errorSpy.mockRestore()
+}
+```
+
+**Why:** React logs the caught error through `console.error`, so the expected throw needs silencing to keep the output readable — but a spy restored only on the happy path hides real errors in every test that runs after a failure.
+
+### 4. The RTL / real-browser boundary
+
+```tsx
+// ❌ jsdom has no layout engine — these assert on stub values, not behavior
+expect(el.getBoundingClientRect().height).toBeGreaterThan(0)
+expect(container.scrollTop).toBe(120)
+
+// ✅ Assert what jsdom can actually see
+expect(screen.getByRole('dialog')).toBeVisible()
+expect(screen.getByRole('button', { name: /save/i })).toBeEnabled()
+```
+
+**Why:** jsdom implements the DOM API but no layout, no compositor and no real input timing — so layout and overflow, scroll position, drag-and-drop, clipboard, and focus-trap timing pass or fail on stubs. Verify those in a real browser: the smoke-walk in the `/finish-feature` skill, or a Playwright run.
+
+### 5. `renderHook` only when no component in the feature exercises the hook
+
+```tsx
+// ❌ The feature renders <ReservationCard />, which already uses this hook
+const { result } = renderHook(() => useReservationCard(id))
+expect(result.current.canExtend).toBe(true)
+
+// ✅ Same behavior, through the component the user sees
+renderWithProviders(<ReservationCard id={id} />)
+expect(screen.getByRole('button', { name: /extend/i })).toBeEnabled()
+```
+
+**Why:** the renderHook policy in SKILL.md reserves `renderHook` for hooks that ARE the public API — provider/context hooks, query hooks, and pure-logic hooks with no UI counterpart. When a component exercises the hook, the component render covers the hook plus its wiring, and the hook-level test only locks in a return shape that refactoring will break.

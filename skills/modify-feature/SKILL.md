@@ -55,6 +55,7 @@ If a request mixes refactor + behavior change, split it: refactor first (this sk
 ## Final Phase (both workflows)
 
 1. **Consumer sweep.** Re-grep the Phase 0 consumer map: every call site compiles against the new shape, imports updated, no orphaned exports left behind.
+   - **If a Zustand action, a store-driven effect, or a query invalidation changed**, run the click-path audit (a reference of the `systematic-debugging` skill): map which keys the action sets and which it resets that it does not own, then trace every handler on the affected screen. A refactor that moves state is where "the wizard jumps back a step" bugs are born, and the test suite rarely pins them.
 2. **Fresh verification** (verification-before-completion.md): `pnpm vitest run {feature-dir}` — if the glob matches 0 test files, that's a FAIL, not a pass — and `pnpm build`. For Refactor: the suite must be green with **zero assertion changes**; an assertion you "had to" change means behavior changed — reclassify and tell the user.
 3. **Report honestly**: what changed, what was reused vs created, any drift/smells noticed but not fixed.
 

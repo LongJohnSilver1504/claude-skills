@@ -7,6 +7,8 @@ description: Structured 4-phase debugging process — reproduce, isolate, identi
 
 4-phase root cause process. Each phase has explicit exit criteria — never skip ahead.
 
+**First move, before any production edit: reproduce the bug as a new failing test** and watch it fail for the right reason. A test that was written but not run is not a reproduction; a fix without one is a tweak you cannot tell apart from luck. Phase 4 turns that test green.
+
 **When to use:** Bugs that aren't immediately obvious. If a bug can be fixed by reading one file and spotting the issue, just fix it. This process is for when you need to investigate.
 
 ## Phase 1: Reproduce
@@ -66,6 +68,7 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 - Binary search: if the data is correct at layer 2 but wrong at layer 3, the bug is in layer 3
 - Each check should take 1-2 minutes — don't spend 10 minutes on one layer
 - For errors surfacing deep in a call stack (bad value from far away): [references/root-cause-tracing.md](references/root-cause-tracing.md)
+- For state that "jumps" (a wizard step resets, a selection clears, a toggle undoes itself) in Zustand stores or multi-step flows — a class the single-symptom trace misses: [references/click-path-audit.md](references/click-path-audit.md) builds the store's side-effect map and traces every handler on the screen
 
 **Exit criteria:** Bug is localized to a specific file and function. You can say: "The bug is in `{file}:{function}` because `{reason}`."
 
@@ -95,7 +98,8 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 
 **Goal:** Prove the fix works and nothing else broke.
 
-1. **Write a failing test** that captures the bug:
+1. **Write a failing test** that captures the bug (if the first move already produced one, reuse it):
+   - Run it and read the failure: it must fail on the bug's assertion, not on setup, imports or syntax — a wrong-reason failure proves nothing
    - The test should fail BEFORE the fix and pass AFTER
    - Follow the project's testing conventions (behavioral focus, query priority)
    - Use shared factories if the type appears in 3+ test files

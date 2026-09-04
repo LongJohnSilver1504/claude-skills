@@ -96,6 +96,7 @@ note(`on main, clean, in sync with origin (HEAD ${git('rev-parse', '--short', 'H
 // guide, not shipped context, and --strict turns that warning into an error.
 phase('Validate (pre-bump)')
 run('node', ['scripts/validate-skills.mjs'])
+run('node', ['--test', 'tests/']) // hooks are the only deterministic guarantees — prove them before shipping
 run('node', ['scripts/sync-version.mjs', '--check'])
 run('claude', ['plugin', 'validate', '.claude-plugin/plugin.json'])
 run('claude', ['plugin', 'validate', '.', '--strict'])

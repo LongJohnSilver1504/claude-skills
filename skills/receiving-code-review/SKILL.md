@@ -93,6 +93,27 @@ FOR each finding:
 AI reviewers hallucinate plausible-sounding findings and cite stale conventions. A finding that
 can't be verified at a specific file:line is not actionable — say so instead of guessing a fix.
 
+#### Common false positives from AI reviewers (reject unless the report cites codebase-specific evidence)
+
+These are the patterns LLM reviewers mis-flag most. The reviewer is asked to report them anyway
+(uncertain findings included — triage is the filter); this list is what triage rejects by default:
+
+| Finding | Reject when |
+|---------|-------------|
+| "Consider adding error handling" | The error path is handled by the caller, an error boundary, the query/mutation `onError`, or the adapter's `tryCatch` — trace one frame up before accepting |
+| "Missing input validation" | The function is internal and its callers already validate (or the value already passed a Zod parse at the boundary) |
+| "Possible null dereference" | The preceding line narrows the type or an `if` guard is in scope — trace type flow, don't pattern-match on `?.` |
+| "Magic number" | Well-known constants (HTTP codes, `1000` ms, `0`/`-1` index) or a single-use local whose name says what it is |
+| "Missing await" | The call is intentionally fire-and-forget (`void` prefix, logging, analytics) |
+| "Function too long" | Exhaustive `switch`, config objects, test tables — length is not complexity |
+| "Hardcoded value" | It is a test fixture, an example, or a documented default — tests should have hardcoded expectations |
+| "Missing JSDoc" / "prefer `const`" | Self-describing helper; or the variable is reassigned two lines down |
+| "N+1 query" | Fixed-cardinality loop (an enum, a tab list) or an already-batched path |
+| "Should add types" / "should use X library" | Suggests a stack change — match the project's existing choice |
+| "Consider extracting" (a hook, a component, a util) | Fewer than 3 call sites and no third in sight — the `react-clean-architecture` extraction trigger is not met |
+
+Surviving a row requires the trigger (input/state → wrong outcome) and why the existing guard misses it. The pipeline's `code-reviewer` is contracted to supply both; when the finding comes from a reviewer that has no such field (the built-in `/code-review`, a human), triage reads the code and supplies the trigger itself before deciding — every finding is still verified, the catalog only decides who does the work of proving it.
+
 ## YAGNI Check for "Professional" Features
 
 ```

@@ -72,6 +72,28 @@ hooks/
   use-my-component.test.ts
 ```
 
+## Accessibility Assertions (opt-in)
+
+When `vitest-axe` is installed, every **page/screen-level** component test gets an axe pass. Leaf components inherit it from the screen test — don't repeat it per button.
+
+```typescript
+import { axe } from 'vitest-axe'
+import * as axeMatchers from 'vitest-axe/matchers'
+
+expect.extend(axeMatchers)
+
+it('has no accessibility violations', async () => {
+  const { container } = renderWithProviders(<FeatureScreen />)
+
+  expect(await axe(container)).toHaveNoViolations()
+})
+```
+
+- **Catches:** unlabeled inputs, invalid ARIA, missing `alt`, broken heading order
+- **Misses:** keyboard reachability, focus order, announcement quality, real color contrast (jsdom has no CSS engine)
+
+**Necessary, not sufficient:** an automated axe run covers roughly 30-40% of WCAG success criteria. The remaining 60-70% is the checklist in `.claude/rules/accessibility.md` — a green axe assertion is never on its own a claim that the screen is accessible.
+
 ## Commands
 
 ```bash

@@ -15,6 +15,10 @@ jobs:
           node-version: 22
       - name: Validate skills, agents, and manifests
         run: node scripts/validate-skills.mjs
+      - name: Test hooks
+        # Hooks are the plugin's only deterministic guarantees (CLAUDE.md
+        # invariant 9); each one is exercised with real stdin payloads.
+        run: node --test tests/
       - name: Check version sync
         run: node scripts/sync-version.mjs --check
       - name: Validate plugin, skills, and marketplace manifest

@@ -40,12 +40,12 @@ Present findings with recommendations, then ask **one AskUserQuestion round for 
 
 Decisions to resolve (skip any that detection settled unambiguously):
 
-1. **Rules subset** — which `.claude/rules/` files to seed. Recommend based on detection (e.g. skip `form-patterns.md` if no react-hook-form; skip `zustand-patterns.md` if no zustand). Full catalog in the plugin's `rules/README.md`.
+1. **Rules subset** — which `.claude/rules/` files to seed. Recommend based on detection (e.g. skip `form-patterns.md` if no react-hook-form; skip `zustand-patterns.md` if no zustand; always recommend `frontend-security.md` and `react-performance.md` for any app that renders user or external data — that is every app). Full catalog in the plugin's `rules/README.md`.
 2. **Base branch** for PRs (if both `develop` and `main` exist).
 3. **Viewport policy** — mobile-only (default) vs responsive; which container component; allowed breakpoints.
 4. **Error surface** — how errors are shown to users.
 5. **Permissions allowlist** — seed `.claude/settings.json` with safe commands for the detected package manager (fewer approval interruptions during `execute-tasks`)?
-6. **Iron-Law Stop hook (opt-in)** — seed `.claude/iron-law.json` with a fast verify command (recommend `{pm} vitest run --changed --passWithNoTests`, or `tsc --noEmit` for projects without tests)? Explain: it mechanically blocks ending a turn with modified source files until the verify command passes.
+6. **Iron-Law Stop hook (opt-in)** — seed `.claude/iron-law.json` with a fast verify command (recommend `tsc --noEmit && {pm} vitest run --changed --passWithNoTests` when a `typecheck`-capable tsconfig exists — the type check catches what `--changed` tests skip; `{pm} vitest run --changed --passWithNoTests` alone otherwise; `tsc --noEmit` for projects without tests)? Explain: it mechanically blocks ending a turn with modified source files until the verify command passes. Mention the two always-on hooks that need no config: `block-no-verify` and `block-lint-config-edits`.
 
 **Done when:** every decision has a user answer or a detection-backed default the user saw.
 

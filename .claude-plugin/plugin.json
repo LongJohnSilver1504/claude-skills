@@ -5,7 +5,6 @@
   "author": {
     "name": "Daher"
   },
-  "hooks": "./hooks/hooks.json",
   "homepage": "https://github.com/LongJohnSilver1504/claude-skills",
   "repository": "https://github.com/LongJohnSilver1504/claude-skills",
   "license": "MIT",

@@ -356,7 +356,7 @@ await waitFor(() => {
 
 ## Additional Resources
 
-- For test utilities, wrapper patterns, and rendering helpers, see [references/test-utilities.md](references/test-utilities.md)
+- For test utilities, wrapper patterns, rendering helpers, and the gotchas that flake tests (`QueryClient` lifetime, disappearing loaders, error-boundary spies, the jsdom/real-browser boundary, when `renderHook` is warranted), see [references/test-utilities.md](references/test-utilities.md)
 - For MSW v2 setup, handler patterns, and network mocking, see [references/msw-setup.md](references/msw-setup.md)
 - For the ways tests rot into false confidence (testing mocks, test-only production code, mocking without understanding), see [references/testing-anti-patterns.md](references/testing-anti-patterns.md)
 

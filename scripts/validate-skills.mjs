@@ -17,7 +17,7 @@ const fail = (file, line, msg, fix) =>
 
 // Claude Code built-ins and external commands that are NOT skills in this repo
 const SLASH_ALLOWLIST = new Set([
-  'review', 'code-review', 'commit', 'clear', 'config', 'plugin', 'compact',
+  'review', 'code-review', 'security-review', 'simplify', 'commit', 'clear', 'config', 'plugin', 'compact',
   'help', 'goal', 'fast', 'resume', 'init',
 ])
 
@@ -92,6 +92,13 @@ for (const name of skillNames) {
       fail(file, 2, `Model-invoked skill description has no "Use when" trigger clause.`,
         'Add "Use when <triggers>" — or mark the skill `disable-model-invocation: true` if it is manual-only.')
     }
+  }
+  // `argument-hint` is shown to the user on `/skill <tab>`; a hint that does not
+  // read as a placeholder (`<path/to/plan.md>`) is noise in the picker.
+  const hintMatch = fmText.match(/^argument-hint:\s*(.+)$/m)
+  if (hintMatch && !/^["']?<.+>["']?$/.test(hintMatch[1].trim())) {
+    fail(file, 2, `argument-hint "${hintMatch[1].trim()}" is not written as a placeholder.`,
+      'Write it as `<what-to-pass>`, e.g. `argument-hint: <path/to/*-implementation-plan.md>`.')
   }
 }
 
@@ -203,11 +210,73 @@ if (!existsSync(join(root, '.claude-plugin/marketplace.json'))) {
     'Restore .claude-plugin/marketplace.json.')
 }
 
+// Claude Code ≥ 2.1 auto-loads `hooks/hooks.json` and `agents/` by convention.
+// Declaring either in plugin.json makes the loader report "Duplicate hooks file
+// detected … Hook load failed" (seen in this repo's own debug logs on 3.3.0) or
+// reject the manifest outright for `agents`. Only *additional* hook files may be
+// declared, and we ship none.
+const pluginJsonPath = join(root, '.claude-plugin/plugin.json')
+if ('hooks' in plugin) {
+  fail(pluginJsonPath, null, 'plugin.json declares `hooks` — Claude Code already auto-loads hooks/hooks.json, so this produces "Duplicate hooks file detected" and the hooks fail to load.',
+    'Remove the `hooks` key. Only additional hook files (not hooks/hooks.json) may be declared.')
+}
+if ('agents' in plugin) {
+  fail(pluginJsonPath, null, 'plugin.json declares `agents` — the Claude Code manifest validator rejects the field; agents/*.md are discovered by convention.',
+    'Remove the `agents` key.')
+}
+
+// The number of `.mjs` hooks wired in hooks.json must match the "N hooks" claim in
+// CLAUDE.md and README — a README table that lists three hooks when five ship is a
+// README that lies about what the plugin enforces.
+const hookScripts = readdirSync(join(root, 'hooks')).filter((f) => f.endsWith('.mjs'))
+const hooksJsonText = readFileSync(join(root, 'hooks/hooks.json'), 'utf8')
+for (const f of hookScripts) {
+  if (!hooksJsonText.includes(f)) {
+    fail(join(root, 'hooks', f), null, `Hook script ${f} exists but is not wired in hooks/hooks.json.`,
+      'Wire it (with its matcher) or delete it — an unwired hook enforces nothing.')
+  }
+}
+// Anchored to the two claim sites ("…, N hooks, and…" in CLAUDE.md; "ships N (`hooks/hooks.json`)"
+// in README) so "React 19 hooks" in prose never trips it.
+const HOOK_WORDS = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 }
+for (const [label, file, re] of [
+  ['CLAUDE.md', join(root, 'CLAUDE.md'), /agents,\s+(\d+|[a-z]+)\s+hooks,/g],
+  ['README', join(root, 'README.md'), /ships\s+(\d+|[a-z]+)\s+\(`hooks\/hooks\.json`\)/g],
+]) {
+  const text = readFileSync(file, 'utf8')
+  let seen = 0
+  for (const m of text.matchAll(re)) {
+    seen++
+    const c = HOOK_WORDS[m[1]] ?? Number(m[1])
+    if (c !== hookScripts.length) {
+      fail(file, null, `${label} says "${m[1]} hooks" but hooks/ contains ${hookScripts.length} wired scripts.`,
+        `Update the count to ${hookScripts.length} and the hooks table.`)
+    }
+  }
+  if (seen === 0) {
+    fail(file, null, `${label} no longer carries a hooks count the validator recognizes.`,
+      'Keep the phrasing "N hooks, and" (CLAUDE.md) / "ships N (`hooks/hooks.json`)" (README), or update the regex here.')
+  }
+}
+
+// Personal absolute paths leak the author's machine into every consumer's context and
+// break the moment the plugin is installed elsewhere. `~/` paths are fine (documented
+// as the user's own clone); `/Users/<name>/` is not. (`/home/` is left alone — it is a
+// common route literal in examples.)
+const rulesDir = join(root, 'rules')
+for (const file of [...walkMd(skillsDir), ...walkMd(join(root, 'agents')), ...walkMd(rulesDir), join(root, 'README.md')]) {
+  readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+    if (/(?:^|[^\w])\/Users\/[a-z][\w.-]*\//i.test(line)) {
+      fail(file, i + 1, 'Personal absolute path (`/Users/<name>/…`).',
+        'Use `~/`, `${CLAUDE_PLUGIN_ROOT}`, or a project-relative path.')
+    }
+  })
+}
+
 // ---------- 4b. Every rule is in the catalog, and every referenced rule exists ----------
 // `rules/README.md` is what /setup-daher-skills offers, so a rule missing from it is
 // never seeded — and every skill saying "read `.claude/rules/<that>.md`" then points at
 // a file the project doesn't have. That silently killed `api-boundary.md`.
-const rulesDir = join(root, 'rules')
 const ruleFiles = readdirSync(rulesDir).filter((f) => f.endsWith('.md') && f !== 'README.md')
 const rulesReadmePath = join(rulesDir, 'README.md')
 const rulesReadme = readFileSync(rulesReadmePath, 'utf8')

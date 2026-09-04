@@ -87,7 +87,7 @@ Reach for a **spring** when the motion is a drag with momentum, an element that 
 
 ### 6. Interruption and exit
 
-Transitions, not keyframes, for anything a user can trigger twice in a second (toasts, toggles). Springs for gestures. Exit the way it entered — a toast that slides in from the bottom leaves through the bottom. Exits are softer and shorter than enters (a small fixed `translateY(-12px)` at 150ms, never the full height at 400ms); remove instantly when motion adds no information. Asymmetric timing where the user is deciding: a hold-to-confirm fills over 2s linear, releases in 200ms ease-out.
+Transitions, not keyframes, for anything a user can trigger twice in a second (toasts, toggles). Springs for gestures. Exit the way it entered — a toast that slides in from the bottom leaves through the bottom. Exits are softer and shorter than enters (a small fixed `translateY(-12px)` at 150ms, never the full height at 400ms); remove instantly when motion adds no information. Asymmetric timing where the user is deciding: a hold-to-confirm fills over 2s linear, releases in 200ms ease-out. Once the exit needs the Motion library, its contract fails silently — `AnimatePresence` wrapping, keys, `mode`, hydration-safe `initial` and reduced-motion branching are in `references/library-contracts.md`.
 
 ### 7. Reduced motion and pointer gating
 

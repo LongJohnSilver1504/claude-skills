@@ -230,6 +230,41 @@ This skill covers the *why*. For the project-specific *how* (file structure, hoo
 
 ---
 
+## Where Does This State Live?
+
+Walk the ladder top-down and stop at the first match. In this model the hook owns the state; the component only receives it already shaped.
+
+| The state is... | It belongs in... | Skipping the rung costs you |
+|-----------------|------------------|-----------------------------|
+| Server data — anything the API owns | TanStack Query, read through a feature hook. Never copied into a store or seeded into `useState` | Copying query data into Zustand creates two sources of truth that drift on the next refetch |
+| UI state one component uses | `useState` inside that component's co-located hook | A global store entry for a local toggle survives unmount and leaks stale UI into the next mount |
+| UI state two siblings share | `useState` in the nearest common parent's hook, passed down as props | Duplicating it in both siblings means they disagree the moment one of them updates |
+| Client state crossing screens, or updating on every keystroke/drag | Zustand, read with primitive selectors (`useStore((s) => s.step)`) | Context re-renders every consumer on every update; selecting the whole store object re-renders on unrelated changes |
+| Low-frequency global config (theme, locale, auth session) | Context, one provider near the app root | A store for values that change once per session adds indirection and hides the dependency from the tree |
+
+Server data plus a little client state is the common case — keep them separate (query for the list, store for "which row is selected") instead of merging them into one blob.
+
+Project specifics: `tanstack-query.md` (query keys, invalidation), `zustand-patterns.md` (selectors, why the store object breaks dep arrays), `component-hook-separation.md` (where the hook lives).
+
+---
+
+## useEffect — When NOT to Reach for It
+
+`useEffect` synchronizes with systems outside React — browser APIs, third-party widgets, real subscriptions. For everything below there is a shorter answer that cannot fall out of sync:
+
+| Reaching for an effect to... | ✅ Do this instead |
+|------------------------------|-------------------|
+| Derive state from props or other state | Compute it during render in the hook (`const fullName = [first, last].join(' ')`) — the effect version renders once with the stale value first |
+| Reset state when a prop changes | Pass `key={id}` to the child so React remounts it with fresh state |
+| Notify the parent that something changed | Call the parent's callback in the event handler that caused the change |
+| Subscribe to an external store | Use the store's own hook (`useMyStore((s) => s.x)`) or `useSyncExternalStore` |
+| Run one-time setup (analytics, i18n, client config) | Call it at module scope or in the app entry — a component effect runs again on every mount |
+| Fetch server data | Use a TanStack Query hook (see the Extraction Triggers table) |
+
+What's left is a legitimate effect: an event listener, an interval, a widget instance, an imperative browser API — and each returns a cleanup. Per `component-hook-separation.md`, all of them live in the co-located hook, never in the component body.
+
+---
+
 ## Hardcoded Value Extraction (Principle)
 
 Hardcoded strings (routes, endpoints, query keys) drift into bugs when copy-pasted. Extract them to a single source of truth so the type system catches typos.

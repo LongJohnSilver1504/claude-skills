@@ -23,4 +23,5 @@ SOFTWARE.
 This plugin synthesizes material from the following MIT-licensed projects:
 jakubkrehel/skills (Jakub Krehel), emilkowalski/skills (Emil Kowalski),
 codeswithroh/tastemaker, ConardLi/garden-skills, MengTo/Skills,
-elayadesign/ai-design-skills and elayadesign/redesign-skill.
+elayadesign/ai-design-skills, elayadesign/redesign-skill, and affaan-m/ECC
+(Affaan Mustafa; motion library contracts).

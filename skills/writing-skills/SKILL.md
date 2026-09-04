@@ -43,6 +43,7 @@ Guidelines:
 ## Structure Checklist
 
 - [ ] Frontmatter has `name` (letters, numbers, hyphens only) and `description` (max 1024 chars)
+- [ ] A skill that takes an argument declares `argument-hint: <what-to-pass>` — it is what the user sees on `/skill <tab>`; without it they guess (the validator requires the `<placeholder>` form)
 - [ ] SKILL.md stays lean — well under 500 lines; move depth to `references/` files loaded on demand
 - [ ] One canonical copy of any shared reference — never duplicate guidance across skills; cross-reference by skill name instead
 - [ ] One excellent code example beats many mediocre ones in multiple languages
@@ -70,3 +71,4 @@ If the agent ignored or misapplied the skill, fix the description or the ambiguo
 | Narrative "how I solved it once" storytelling | Distill into a reusable technique |
 | Deployed without testing | Run one subagent check first |
 | `Done when:` gate that self-attests ("you understand X") | Gate on a runnable check — a command plus its expected output |
+| Verdicts without evidence — a reviewer contract or triage step that accepts `Superseded` / `Looks fine` / `Rejected` as a reason | Require the evidence and the alternative in the reason: `superseded by X, which covers A and B; nothing unique remains` — a bare label cannot be checked, so it cannot be wrong |

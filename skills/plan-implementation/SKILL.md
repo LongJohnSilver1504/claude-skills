@@ -1,6 +1,7 @@
 ---
 name: plan-implementation
 description: Bridge design artifacts (PRD, UX spec with embedded test matrix) into a structured implementation plan. Classifies deliverables as domain features or shared infrastructure, extracts specs, orders by dependencies, and detects shared patterns. Use when a PRD/UX spec is ready to become a build plan — after prd-to-ux, when planning feature scaffolding, or when user says "implementation plan", "what to build first", "plan the features".
+argument-hint: <path/to/PRD.md or feature dir containing PRD.md + UX-spec.md>
 ---
 
 # Plan Implementation

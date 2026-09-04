@@ -37,22 +37,18 @@ brainstorm → generate-prd → prd-clarifier → prd-to-ux → plan-implementat
 | 7 | `/finish-feature` | Code + tests | Tests/build run, commit / PR / discard | No |
 | 8 | `/generate-feature-doc` | Feature code | `README.md` + artifact cleanup | Yes — for small features |
 
-## Quick Start
+## Quick Start — pick the entry by blast radius
 
-**Full feature (recommended):**
-```
-/brainstorm (or /generate-prd if the idea is clear) → follow the skill transitions
-```
+Score the request on three signals and take the **highest** tier any of them reaches. State the tier in one line before starting so the user can override it.
 
-**Small change (skip early stages):**
-```
-/plan-implementation → /execute-tasks → /finish-feature
-```
+| Tier | Files | New contract / dependency | Ambiguity | Entry point |
+|------|-------|---------------------------|-----------|-------------|
+| **Bug** | any | none — behavior is wrong, spec is not | none | `/systematic-debugging` (failing test first, then the fix). No pipeline. |
+| **Small** | 1–4, inside one feature | none, or one internal hook/component | clear once you read the code | `/modify-feature` for extend/refactor; or `/plan-implementation → /execute-tasks → /finish-feature` when several files need review gates |
+| **Standard** | 5+, or fewer with a new contract | new endpoint, new screen, new shared piece | one real choice to make | `/generate-prd → /prd-to-ux → /plan-implementation → /execute-tasks → /finish-feature` |
+| **Large** | cross-feature or shared infra | new external dep, public API, `UNVERIFIED` contracts | multiple open questions | `/brainstorm` first, then the full pipeline |
 
-**Bug fix:**
-```
-Just fix the bug. No pipeline needed.
-```
+File count alone never promotes past Small — the contract and ambiguity columns do. Tie-breaker: anything touching auth, user input, external HTML/URLs, token storage or env access is **at least Standard** — the quality gate is where `frontend-security.md` runs. Inside `/execute-tasks` the same idea repeats per deliverable (tier S/M/L in PROGRESS.md decides how many reviewers each one gets).
 
 ## Artifacts
 

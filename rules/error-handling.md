@@ -114,6 +114,50 @@ await saveSession(data)
 router.push(links.private.dashboard)
 ```
 
+## Render Errors: Suspense + ErrorBoundary Pairing
+
+An error boundary only catches errors thrown **during render** (including a suspended query that rejects). Place one per feature section or route segment, not only at the app root — a root-only boundary blanks the whole screen when one card fails.
+
+**Every `Suspense` fallback gets an error boundary at the same level.** A skeleton with no sibling boundary turns a failed query into an unmounted subtree with no message.
+
+```tsx
+// ✅ Boundary + Suspense paired around one section, reset wired to the query cache
+import { ErrorBoundary } from 'react-error-boundary'
+import { QueryErrorResetBoundary } from '@tanstack/react-query'
+import { AppError } from '@/shared/errors'
+
+export const ReservationsSection = () => (
+  <QueryErrorResetBoundary>
+    {({ reset }) => (
+      <ErrorBoundary
+        onReset={reset}
+        fallbackRender={({ error, resetErrorBoundary }) => (
+          <SectionError
+            message={AppError.isAppError(error) ? error.message : 'Something went wrong'}
+            onRetry={resetErrorBoundary}
+          />
+        )}
+      >
+        <Suspense fallback={<ReservationsSkeleton />}>
+          <ReservationsList />
+        </Suspense>
+      </ErrorBoundary>
+    )}
+  </QueryErrorResetBoundary>
+)
+
+// ❌ Skeleton with no boundary — a rejected query unmounts the section silently
+<Suspense fallback={<ReservationsSkeleton />}>
+  <ReservationsList />
+</Suspense>
+
+// ❌ One boundary at the app root — one failing card blanks every screen
+```
+
+- `fallbackRender` receives the thrown value: narrow with `AppError.isAppError(error)` before reading `.code` or `.message`, and fall back to a generic message for anything else.
+- `onReset={reset}` from `QueryErrorResetBoundary` is required whenever the section has queries — without it the query stays in its error state and the retry re-throws immediately.
+- Boundaries do **not** catch errors from event handlers, mutations, or any other async work — those are not render-time. They keep flowing through the `AppError` → `showError` path above (mutation `onError` or `tryCatch`). Wrapping a section in a boundary never replaces a mutation's `onError`.
+
 ## Domain Error Classes
 
 ```typescript

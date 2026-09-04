@@ -307,13 +307,17 @@ cp ~/claude-skills/rules/error-handling.md .claude/rules/
 
 ## Hooks (Deterministic Guardrails)
 
-Instructions are advisory; hooks are deterministic. The plugin ships three (`hooks/hooks.json`):
+Instructions are advisory; hooks are deterministic. The plugin ships five (`hooks/hooks.json`), each covered by a stdin-driven test in `tests/` (`npm test`):
 
 | Hook | Event | What it does |
 |------|-------|--------------|
 | `check-build-before-commit` | PreToolUse (Bash) | Blocks `git commit` when build output is stale relative to source changes |
+| `block-no-verify` | PreToolUse (Bash) | Blocks `--no-verify` / `-n` and `-c core.hooksPath=` on git commit/push/merge/rebase — the project's git hooks are its quality gates, a failing one is fixed in the code, not skipped |
+| `block-lint-config-edits` | PreToolUse (Write/Edit) | Blocks modifying an existing ESLint / Prettier / Biome / Stylelint config (creating one is allowed) — steers a failing lint back to the source instead of a weakened rule |
 | `block-raw-palette` | PreToolUse (Write/Edit) | Blocks raw Tailwind palette classes in `.tsx`/`.jsx` — only in projects that carry `.claude/rules/color-usage.md` |
 | `iron-law-stop` | Stop | Blocks ending a turn with modified source files until the project's verify command passes — **opt-in**, active only when `.claude/iron-law.json` exists (seeded by `/setup-daher-skills`) |
+
+Hooks load from `hooks/hooks.json` by convention — do not also declare them in `plugin.json` (Claude Code ≥ 2.1 rejects the duplicate reference and logs `Hook load failed` on every session; the validator and `tests/plugin-manifest.test.mjs` guard this).
 
 ## Upstream Skills
 
@@ -325,6 +329,7 @@ Some skills were adapted from external sources. To pull updates, check the origi
 | `/receiving-code-review` | [obra/superpowers](https://github.com/obra/superpowers) (adapted) |
 | `/writing-skills` | [obra/superpowers](https://github.com/obra/superpowers) (adapted) + [Anthropic skill authoring docs](https://docs.claude.com) |
 | `/test-mobile-app`, `/ios-simulator`, `/android-emulator` | Patterns distilled from [pingdotgg/t3code](https://github.com/pingdotgg/t3code) `.agents/skills`, itself partly adapted from OpenAI's [`build-ios-apps`](https://github.com/openai/plugins/tree/main/plugins/build-ios-apps) (MIT). Rewritten generically — no T3-specific commands, tooling, or stack assumptions carried over. |
+| `block-no-verify` + `block-lint-config-edits` hooks, reviewer "require proof" gate + false-positive catalog, build-fix dispatch contract, right-sizing tiers, `react-performance.md` + `frontend-security.md` rules, click-path audit, motion library contract | [affaan-m/ECC](https://github.com/affaan-m/ECC) — Everything Claude Code (MIT). Cherry-picked mechanisms only, rewritten to this pipeline's contracts (the CHANGELOG entry that ships them and `.out-of-scope/` record what was deliberately *not* adopted). |
 
 These skills are snapshots — they don't auto-update. When the upstream source changes, review it and update the skill content manually.
 

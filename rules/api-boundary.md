@@ -25,7 +25,7 @@ Requests go through the same boundary in reverse: `buildCreateXBody(input): Crea
 2. **Every consumed response is validated then mapped.** Adapter methods do `parseResponse(dtoSchema, response.data)` → `toDomain(dto)`. Even near-identity mappers are required — they are the stable rename point for when the backend changes.
 3. **Domain types are hand-authored in `domain/{feature}.types.ts`** and owned by the frontend. Never re-export `z.infer` of a DTO schema as a domain type.
 4. **Mappers are pure functions in `api/{feature}.mapper.ts`**: `toX(dto): X` for responses, `buildXBody(input): XDto` for request bodies. No fetching, no side effects — trivially testable.
-5. **Import rule (enforced by hook):** files outside `api/` must never import from `api/*.dto`. Hooks and components import types from `domain/` only.
+5. **Import rule (checked by `quality-reviewer` — there is no hook for it):** files outside `api/` must never import from `api/*.dto`. Hooks and components import types from `domain/` only.
 6. **Strict schemas by default.** Every field is required unless the *verified* contract says otherwise. Each `.optional()`/`.nullable()` needs a one-line comment citing why (a permissive schema is a switched-off detector — the backend can drop the field and nothing fires).
 7. **Void responses (204)** skip mapping — verify status only.
 8. **Normalization scope:** mappers normalize names, nullables (`?? null` / defaults), envelope flattening, and string unions. Keep dates as ISO strings and money in backend units for now — formatters in `domain/` handle presentation.

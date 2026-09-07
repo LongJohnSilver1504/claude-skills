@@ -6,6 +6,9 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+### Fixed
+- **`api-boundary.md` rule 5 claimed "enforced by hook".** No hook in `hooks/` checks import direction — the five that exist are build-before-commit, no-verify, lint-config, raw-palette and iron-law. A seeded project read the rule as a guarantee that never fired (invariant 9: hooks are real or absent). The rule now says the check belongs to `quality-reviewer`; the hook stays an open idea, not a claim.
+
 ## 3.4.0 (2026-09-04)
 
 Comparison pass against [affaan-m/ECC](https://github.com/affaan-m/ECC) (286 skills, 68 agents, ~50 hooks). Verdict recorded so it is not re-litigated: ECC is bigger, not better — our pipeline wins on mechanisms (blocking hooks, one reviewer contract, the PROGRESS join ledger, 13 validator invariants). What follows is the cherry-pick: every item is a mechanism or a checkable rule, judged by whether it changes model behaviour. Sources are credited in the README's Upstream table; the deliberate rejections are in `.out-of-scope/`.

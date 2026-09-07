@@ -30,30 +30,13 @@ Read the convention files listed in your task — the orchestrator already mappe
 
 ## Finding Severity
 
-**TRIVIAL** — Can be auto-fixed without changing behavior or structure:
-- Missing `displayName` on forwardRef component
-- Wrong import path (e.g., `@/components/` instead of `@/ui/`)
-- Naming inconsistency with convention pattern
-- Missing `as const` on a constant object
-- Import ordering issues
-- Missing TypeScript type annotation where convention requires one
-- Import of `api/*.dto` or `api/*.mapper` outside `api/` — flag if present in existing code
+Classify from the rule you just read — do not keep a second copy of the rules in this file. Project values (error surface, package manager) come from `docs/agents/project-conventions.md`, not from memory.
 
-**ARCHITECTURAL** — Changes behavior, structure, or design decisions:
-- `useState`, `useEffect`, `useCallback`, `useMemo`, `useRouter`, or `useTranslation` called directly in a component body
-- Missing co-located hook for a component that has logic
-- Cross-feature imports that violate layer boundaries (feature A importing from feature B)
-- New feature code importing from legacy (`src/components/`, `src/api/`, `src/hooks/`)
-- Hardcoded URLs, API paths, or color values
-- `toast.error()` instead of `useNotification().showError()`
-- `register()` instead of `Controller` in forms
-- Missing Zod validation at API boundary (no `parseResponse`)
-- Domain types re-exported from `api/` schemas instead of hand-authored (api-boundary.md)
-- Missing `onError` in a mutation
-- Silent failure per error-handling.md: empty `catch`, `.catch(() => [])`, or a `?? []` on an **error path** that turns a failed request into an empty list, a rethrow that drops the original error, an un-awaited mutation. (A `?? EMPTY` render default for a value that is legitimately absent is react-performance.md rule 2, not a silent failure — the question is whether absence is a valid state or a hidden failure)
-- External spacing classes (`mt-*`, `mb-*`, `mx-*`) on a component's root element
-- Raw Tailwind color classes (`text-red-500`, `bg-blue-200`) instead of semantic tokens
-- Missing ARIA label on an icon-only button
+**TRIVIAL** — mechanical, no behavior or structure change. The orchestrator can auto-fix it. Typical shape: wrong import alias, missing `as const`, naming that the cited rule already specifies.
+
+**ARCHITECTURAL** — the cited rule forbids the structure or the behavior. Typical shape: logic in a component body, hardcoded URL/color, wrong form binding, missing adapter validation, domain types re-exported from wire schemas (`api-boundary.md`), a silent failure on an error path (`error-handling.md` — a `?? EMPTY` render default for a value that is legitimately absent is `react-performance.md` rule 2, not a silent failure; the question is whether absence is a valid state or a hidden failure). The exact prohibition is in the rule file; quote it.
+
+If the rule lists an exception, respect it. If you cannot point at a rule file + line, it is not a finding.
 
 ## Report Format
 
@@ -63,7 +46,7 @@ Read the convention files listed in your task — the orchestrator already mappe
 
 | # | Severity | File:Line | Convention | Issue | Suggested Fix |
 |---|----------|-----------|------------|-------|---------------|
-| 1 | TRIVIAL | src/features/x/components/y.tsx:42 | react-components | Missing displayName on forwardRef | Add `Y.displayName = 'Y'` after the component |
+| 1 | TRIVIAL | src/features/x/hooks/use-y.ts:12 | tanstack-query | Inline query key | Use the feature's `*.keys.ts` factory |
 | 2 | ARCHITECTURAL | src/features/x/components/y.tsx:15 | component-hook-separation | `useState` in component body | Create `hooks/use-y.ts`, move state there |
 
 ### Summary

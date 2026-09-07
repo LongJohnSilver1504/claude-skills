@@ -1,6 +1,5 @@
 ---
 description: Always use pnpm for package management in this project
-alwaysApply: true
 ---
 
 # Package Manager: pnpm

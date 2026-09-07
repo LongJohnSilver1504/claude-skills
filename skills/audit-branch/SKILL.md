@@ -76,7 +76,14 @@ When `execute-tasks` delegates its post-execution holistic review here, the loop
   assumption, a run that lost its Step 4 gates reaches this phase, which skips convention
   review *because it believes it already happened* — those files are never checked against
   `.claude/rules/` at all.
-- **Design fix loop**: `design-reviewer` findings triage by priority — 🔴/🟡 auto-fix via `implementer` (for visual ARCHITECTURAL findings, instruct it to invoke the `refactoring-ui` Build workflow before editing JSX; surgical diffs, no behavior change); 🟢 accumulate and present to the user ONCE at the end ("N nitpicks — fix all or accept?"). After each fix batch, re-dispatch `design-reviewer` on **all** visual components (cross-screen consistency — a fix in one component can break alignment with another). Cap: **3 iterations**, then report what remains.
+- **Design fix loop**: `design-reviewer` findings triage by priority — 🔴/🟡 auto-fix via `implementer` (for visual ARCHITECTURAL findings, instruct it to invoke the `refactoring-ui` Build workflow before editing JSX; surgical diffs, no behavior change); 🟢 auto-fix in the final fix batch (see Autonomy below — standalone mode presents them instead). After each fix batch, re-dispatch `design-reviewer` on **all** visual components (cross-screen consistency — a fix in one component can break alignment with another). Cap: **3 iterations**, then record what remains in Decisions and report.
+- **Autonomy**: pipeline mode never asks mid-loop — it follows `execute-tasks`' Autonomy
+  Contract. ARCHITECTURAL findings: **fix** what violates a `.claude/rules/` file or the
+  spec (cite which), **accept-and-log** in PROGRESS.md Decisions only for genuine tradeoffs
+  neither constrains; when in doubt, fix. Design 🟢 nitpicks: auto-fix them in the final
+  fix batch instead of presenting them. Everything decided lands in Decisions and the
+  final report. (Standalone mode — a user-invoked `/audit-branch` — keeps its interactive
+  asks; the user is present by definition there.)
 - **Exit**: skip Phase 5's commit offer — report the findings table + fresh verification back to `execute-tasks`, which records it in PROGRESS.md and continues (commit/PR belongs to `finish-feature`).
 
 ## Phase 5 — Report & Next Step
@@ -96,6 +103,6 @@ Then use AskUserQuestion to offer:
 
 - **Never skip triage verification.** Reviewers hallucinate — every finding is checked against the code before any fix is dispatched.
 - **Never auto-fix ARCHITECTURAL findings.** The user decides fix-or-accept, per finding. (Exception: pipeline-mode design 🔴/🟡 — visual-only, no behavior change.)
-- **Triage is the filter; reviewers are not.** Reviewers report everything they see, uncertain findings included — this phase keeps only correctness- or requirement-affecting gaps and drops the rest with a reason. Chasing every suggestion produces abstraction layers, defensive code, and tests for impossible cases; asking reviewers to pre-filter instead makes them withhold real findings.
+- **Only correctness- or requirement-affecting gaps are findings.** Reviewers asked to find gaps will find some even in clean work — chasing every one produces abstraction layers, defensive code, and tests for impossible cases. Everything else is optional, not a finding.
 - **Fix loops cap at 2 rounds** (3 for the pipeline-mode design loop). Then report what remains — no endless review/fix cycles.
 - **Fresh outputs before any claim** (`verification-before-completion.md`). No "tests pass" without the run in this session; no build claims from memory.

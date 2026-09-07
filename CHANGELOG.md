@@ -7,6 +7,7 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 ## [Unreleased]
 
 ### Fixed
+- **Cursor keys in 10 seed rules.** `globs:` and `alwaysApply:` are Cursor frontmatter; Claude Code ignores them, so every `/setup-daher-skills` copied dead keys into the project and a reader could mistake `globs:` for the scoping key (`paths:` is the one that loads a rule on demand). Removed; the seeds carry `paths:` only.
 - **`api-boundary.md` rule 5 claimed "enforced by hook".** No hook in `hooks/` checks import direction — the five that exist are build-before-commit, no-verify, lint-config, raw-palette and iron-law. A seeded project read the rule as a guarantee that never fired (invariant 9: hooks are real or absent). The rule now says the check belongs to `quality-reviewer`; the hook stays an open idea, not a claim.
 
 ## 3.4.0 (2026-09-04)

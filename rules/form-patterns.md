@@ -1,7 +1,5 @@
 ---
 description: Enforce standard form patterns — react-hook-form + Zod + Controller + Field components
-globs: "**/*.{ts,tsx}"
-alwaysApply: false
 paths: ["src/**/*.tsx", "src/**/hooks/**"]
 ---
 

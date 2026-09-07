@@ -1,6 +1,5 @@
 ---
 description: Checkable client-side security rules — HTML injection, URL schemes, env prefixes, token storage, bundle secrets
-globs: "**/*.{ts,tsx}"
 paths: ["src/**/*.tsx", "src/**/*.ts"]
 ---
 

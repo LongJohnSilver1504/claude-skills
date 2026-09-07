@@ -1,6 +1,5 @@
 ---
 description: Checkable React render and load performance rules for mobile — selectors, stable references, images, long lists, imports
-globs: "**/*.{ts,tsx}"
 paths: ["src/**/*.tsx", "src/**/*.ts"]
 ---
 

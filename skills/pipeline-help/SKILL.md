@@ -26,7 +26,18 @@ brainstorm → generate-prd → prd-clarifier → prd-to-ux → plan-implementat
 | 7 | `/finish-feature` | Code | Tests, build, commit / PR / discard | — |
 | 8 | `/generate-feature-doc` | Feature code | Feature `README.md` | Small features |
 
-**Small change:** `/plan-implementation` → `/execute-tasks` → `/finish-feature`. **Bug fix:** no pipeline.
+## Quick Start — pick the entry by blast radius
+
+Score the request on three signals and take the **highest** tier any of them reaches. State the tier in one line before starting so the user can override it.
+
+| Tier | Files | New contract / dependency | Ambiguity | Entry point |
+|------|-------|---------------------------|-----------|-------------|
+| **Bug** | any | none — behavior is wrong, spec is not | none | `/systematic-debugging` (failing test first, then the fix). No pipeline. |
+| **Small** | 1–4, inside one feature | none, or one internal hook/component | clear once you read the code | `/modify-feature` for extend/refactor; or `/plan-implementation → /execute-tasks → /finish-feature` when several files need review gates |
+| **Standard** | 5+, or fewer with a new contract | new endpoint, new screen, new shared piece | one real choice to make | `/generate-prd → /prd-to-ux → /plan-implementation → /execute-tasks → /finish-feature` |
+| **Large** | cross-feature or shared infra | new external dep, public API, `UNVERIFIED` contracts | multiple open questions | `/brainstorm` first, then the full pipeline |
+
+File count alone never promotes past Small — the contract and ambiguity columns do. Tie-breaker: anything touching auth, user input, external HTML/URLs, token storage or env access is **at least Standard** — the quality gate is where `frontend-security.md` runs. Inside `/execute-tasks` the same idea repeats per deliverable (tier S/M/L in PROGRESS.md decides how many reviewers each one gets).
 
 ## Artifacts
 

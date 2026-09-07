@@ -50,6 +50,7 @@ Rules:
 - Phrase as capabilities, not implementation ("supports X", not "use library Y")
 - Priority: P0 (must-have) or P1 (important). No P2s — those belong in a backlog, not a PRD
 - Keep the list tight — if it's longer than 10 rows, you're over-scoping
+- Every P0 carries a `Must not:` in Notes — the behavior that satisfies the letter of the requirement while breaking its intent ("Must not: charge the card before the shift is confirmed"; "Must not: show the empty state while the query is still loading"). It is the assertion the spec-reviewer would otherwise never write
 
 ### 6. UX Decisions
 
@@ -77,4 +78,5 @@ Make implicit assumptions explicit so nothing is left to interpretation.
 
 - Every requirement must be testable — you could write an assertion for it.
 - No section says "TBD". Assumptions are labeled, not hidden.
+- Business and product constraints are never inferred from the code. The repository shows how the system behaves today, not what the business requires — a limit, a role exemption or a pricing rule read off an `if` statement goes in as an **assumption to confirm**, not as a requirement.
 - Contracts appear as **VERIFIED** (cite the file/source) or **UNVERIFIED** (state what was assumed) — never as unmarked facts.

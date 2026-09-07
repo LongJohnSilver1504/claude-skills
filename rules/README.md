@@ -32,9 +32,11 @@ Then customize them to match your project's conventions.
 | `design-system-map.md` | Component selection guide (shadcn/ui + custom components) |
 | `error-handling.md` | AppError class, API adapter pattern, tryCatch utility |
 | `form-patterns.md` | react-hook-form + Zod + Controller pattern |
+| `frontend-security.md` | Client-side security — sanitized HTML, URL schemes, env prefixes, no tokens or secrets in the bundle |
 | `layout-ownership.md` | Components render flush, parents own inter-component spacing |
 | `package-manager.md` | pnpm enforcement |
 | `react-components.md` | Arrow functions, named exports, forwardRef conventions |
+| `react-performance.md` | Checkable render and load rules — narrow selectors, stable references, image dimensions, long lists, direct imports |
 | `tanstack-query.md` | Query keys, mutation patterns, invalidation rules |
 | `testing.md` | Vitest config, polyfills, feature test helpers |
 | `zustand-patterns.md` | Avoid store-object in dependency arrays, use selectors |

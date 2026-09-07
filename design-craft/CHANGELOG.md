@@ -4,6 +4,10 @@ Work in progress goes under `## [Unreleased]`; a release cuts it into a dated ve
 
 ## [Unreleased]
 
+### Added
+
+- **`motion` — `references/library-contracts.md`.** The CSS-first ladder took easing, duration and exit as far as CSS goes but never stated the Motion library's own contract, which fails silently: `AnimatePresence` must stay mounted outside the condition, the direct child needs a stable `key` and an `exit` prop, `mode` is `sync`/`wait`/`popLayout` per situation, `initial` must match server-rendered output or hydration mismatches, and `prefers-reduced-motion` has to be branched in code because a media query cannot reach values passed as props. Linked from the skill's interruption-and-exit step. Adapted from the `motion-patterns` and `motion-foundations` skills in Affaan Mustafa's `ecc-universal` collection (MIT); its token, spring-preset and `isLowEnd` device-tier system was deliberately not imported — design-craft extends the project's tokens rather than forking them.
+
 ## 1.0.0 (2026-08-25)
 
 ### Added

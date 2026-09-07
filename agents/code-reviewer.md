@@ -33,13 +33,17 @@ Hunt logic bugs that live across deliverable boundaries — no single-deliverabl
 2. **Race conditions across hooks** — queries, mutations, or effects in different hooks racing on shared state, invalidations that refetch mid-flow, unguarded async ordering
 3. **null/undefined flowing across layer boundaries** — a value optional at the API/adapter layer consumed as non-null by a hook or component downstream
 4. **Stale-closure bugs in callbacks passed between components** — a callback captured in one component closing over state that another component has since changed
+5. **Silent failures** — an error path that produces a plausible result instead of a failure: empty `catch`, `.catch(() => [])`, a `?? []` on a value whose absence means the request **failed** (not a render default for a legitimately-absent value — that is react-performance.md rule 2) that turns a failed fetch into "no items", a rethrow that drops the original error (stack and cause lost), a mutation whose promise is not awaited or has no `onError`, a `parseResponse` result read without checking success. The user sees an empty screen, not an error surface
+6. **Types that admit impossible states** — a domain type wider than what the Zod schema or API can produce (`string` where the DTO is a known union, optional field that is never absent, two booleans that encode one three-state enum), so downstream code branches on states that cannot occur or misses one that can
 
 ## Finding Classification
 
 Only flag issues that require the full feature diff. Per-file convention nits (`displayName`, import alias, `as const`, single-file spacing) belong to `quality-reviewer` — do not re-report them.
 
-- **TRIVIAL** — mechanical, no behavior change, but only visible across deliverables: the same concept named two ways, a barrel export missing so the next deliverable cannot import, a type alias duplicated under two names
-- **ARCHITECTURAL** — structure or correctness across modules: duplicate logic that should be shared, import-direction / layer violation, integration gap, mismatched assumptions, races, null flowing across a boundary, stale closures between components
+- **TRIVIAL** — mechanical, no behavior change, and typically only visible across deliverables: the same concept named two ways, a barrel export missing so the next deliverable cannot import, a type alias duplicated under two names, a wrong import path, a missing `as const`
+- **ARCHITECTURAL** — Changes behavior or structure: duplicate logic needing extraction, import direction violation, missing shared hook, integration gap, cross-deliverable correctness bug (mismatched assumptions, race condition, null flow, stale closure, silent failure, impossible-state type)
+
+**An ARCHITECTURAL correctness finding carries its proof.** Name the trigger — the input or state that reaches the line, and the wrong outcome — and say why the guard you would expect (a type, a Zod parse, a framework default, a check one frame up) does not catch it. A finding you cannot state that way is pattern-matching, not review: report it as `(possible)` with what would confirm it, and let triage decide. Without the proof requirement, "consider adding error handling" and "possible null dereference" arrive as ARCHITECTURAL, triage burns a round verifying each, and the real one hides among them.
 
 ## Report Format
 
@@ -59,6 +63,8 @@ Only flag issues that require the full feature diff. Per-file convention nits (`
 
 ### ARCHITECTURAL
 - [{file}:{line}] {description}
+  **Trigger:** {input/state that reaches this line → wrong outcome} — correctness findings only
+  **Why unguarded:** {the type / parse / check that would normally catch it, and why it doesn't here}
   **Impact:** {what this affects}
   **Suggestion:** {how to fix}
 

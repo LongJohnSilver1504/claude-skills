@@ -63,6 +63,7 @@ Count how many of these apply to the user's idea:
 3. For each decision, **ask one challenging question at a time**:
    - "You chose X — why not Y?" or "What happens when Z?"
    - **Provide your recommended answer** with each question — the user can agree, disagree, or refine
+   - **Write your position before consulting anything else** (a subagent, a second model, docs beyond the codebase). Form it from the code you read in step 1, then challenge it; if an outside voice changes your recommendation, say so explicitly ("I recommended X; the doc/agent showed Y, so now Z"). Reading the external answer first makes the "recommendation" a paraphrase of it
    - **If a question can be answered by reading the codebase**, read the code instead of asking — then present what you found and whether it supports or contradicts the plan
 4. Adapt based on answers — if the user's reasoning is solid, move on; if it's weak, dig deeper into that branch
 5. After all branches are resolved, summarize what held up and what changed

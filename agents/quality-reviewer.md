@@ -20,10 +20,11 @@ Read the convention files listed in your task — the orchestrator already mappe
 1. Read the convention files — understand every hard rule and its exceptions
 2. Read every file to review
 3. For each file, check every convention that applies:
-   - Is this a component? Check component-hook-separation, react-components, layout-ownership, accessibility, color-usage
-   - Is this a hook? Check component-hook-separation, tanstack-query, error-handling
-   - Is this an API adapter? Check api-boundary, error-handling, centralized-links
+   - Is this a component? Check component-hook-separation, react-components, react-performance, layout-ownership, accessibility, color-usage
+   - Is this a hook? Check component-hook-separation, tanstack-query, react-performance, error-handling
+   - Is this an API adapter? Check api-boundary, error-handling, centralized-links, frontend-security
    - Is this a form? Check form-patterns
+   - Does it render external HTML, build URLs from input, touch auth/tokens/storage, or read env vars? Check frontend-security
 4. Tag each finding by severity
 5. Determine overall status
 
@@ -33,7 +34,7 @@ Classify from the rule you just read — do not keep a second copy of the rules 
 
 **TRIVIAL** — mechanical, no behavior or structure change. The orchestrator can auto-fix it. Typical shape: wrong import alias, missing `as const`, naming that the cited rule already specifies.
 
-**ARCHITECTURAL** — the cited rule forbids the structure or the behavior. Typical shape: logic in a component body, hardcoded URL/color, wrong form binding, missing adapter validation. The exact prohibition is in the rule file; quote it.
+**ARCHITECTURAL** — the cited rule forbids the structure or the behavior. Typical shape: logic in a component body, hardcoded URL/color, wrong form binding, missing adapter validation, domain types re-exported from wire schemas (`api-boundary.md`), a silent failure on an error path (`error-handling.md` — a `?? EMPTY` render default for a value that is legitimately absent is `react-performance.md` rule 2, not a silent failure; the question is whether absence is a valid state or a hidden failure). The exact prohibition is in the rule file; quote it.
 
 If the rule lists an exception, respect it. If you cannot point at a rule file + line, it is not a finding.
 
@@ -63,7 +64,7 @@ If the rule lists an exception, respect it. If you cannot point at a rule file +
 - Only flag violations of convention files you actually read — do not invent rules
 - If a convention file lists exceptions (e.g., "shadcn/ui primitives are exempt"), respect them
 - Be precise: absolute file path + line number for every finding
-- Include a concrete, specific suggested fix for every finding
+- Include a concrete, specific suggested fix for every finding; an ARCHITECTURAL one also names the rule and the exact line — a confident ARCHITECTURAL that turns out exempt costs triage a full verification round, so an exemption you could not rule out goes in the `(possible — exempt if …)` form below
 - Do not check spec compliance — that's the spec-reviewer's job
 - Do not check test quality — that's the test-reviewer's job
 - Report uncertain violations too, with `(possible — exempt if …)` appended to the Issue cell naming the exemption you suspect. The orchestrator's triage verifies every finding against the code, so filtering belongs there; a reviewer that withholds uncertain findings hides them from the only pass that can check them

@@ -58,6 +58,7 @@ Tag every finding twice:
 
 - Report only what to change — never restate passing checks.
 - Cite the rule + `file:line` for every finding so the fix loop can act on it directly.
+- An ARCHITECTURAL finding (Audit rules 2.x/3.x) carries its proof: either the cross-screen counterpart it conflicts with (`a.tsx:31` vs `b.tsx:12`) or the restructure a single screen needs and why the per-deliverable audit could not have caught it. A hierarchy claim with neither is reported as `(possible)` — triage decides, but it will not auto-fix on a bare label.
 - Only flag violations you can point to in the code — never invent rules. Being asked to audit does not mean findings must exist; a clean PASS is a valid, complete answer.
 - Your report is consumed by an orchestrator with limited context: findings only, no narration of your process. Keep the whole report under 120 lines.
 - Do not check spec compliance, logic, or test quality — other reviewers own those.

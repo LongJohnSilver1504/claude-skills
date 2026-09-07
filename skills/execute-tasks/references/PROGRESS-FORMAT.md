@@ -14,12 +14,19 @@ Lives in the same directory as the implementation plan. Updated after EVERY deli
 
 ## Deliverables
 
-| # | Deliverable | Status | Impl | Spec | Quality | Tests |
-|---|-------------|--------|------|------|---------|-------|
-| D1 | {name} | DONE | DONE | PASS | PASS | N/A |
-| D2 | {name} | DONE | DONE_WITH_CONCERNS | PASS | CONCERNS (1 trivial, auto-fixed) | PASS |
-| D3 | {name} | IN_PROGRESS | - | - | - | - |
-| D4+ | {name} | PENDING | - | - | - | - |
+| # | Deliverable | Tier | Status | Impl | Spec | Quality | Tests |
+|---|-------------|------|--------|------|------|---------|-------|
+| D1 | {name} | S | DONE | DONE | PASS | SKIPPED (S) | SKIPPED (S) |
+| D2 | {name} | M | DONE | DONE_WITH_CONCERNS | PASS | CONCERNS (1 trivial, auto-fixed) | PASS |
+| D3 | {name} | L | IN_PROGRESS | - | - | - | - |
+| D4+ | {name} | - | PENDING | - | - | - | - |
+
+## Dispatch Log
+
+| # | Model | Re-dispatches | Fix rounds | Files predicted → changed |
+|---|-------|---------------|------------|---------------------------|
+| D1 | sonnet | 0 | 0 | 1 → 1 |
+| D2 | sonnet | 1 (BLOCKED → opus) | 1 | 3 → 4 |
 
 ## Decisions
 
@@ -44,6 +51,19 @@ user reviews judgment calls here after the run instead of being asked during it.
 
 {empty or description}
 
+## What Did NOT Work
+
+{Every approach tried and abandoned, with the EXACT reason — "threw X because Y", not
+"didn't work". A resumed session reads this before touching anything, so it never retries
+a dead end.}
+
+- **{approach}** (D{N}) — failed because: {error / reason}
+
+## Exact Next Step
+
+{One sentence a resumed session can act on with zero re-derivation: "Dispatch D5 (tier M)
+with rules X, Y; D4's quality re-review is pending." Written before every context pause.}
+
 ## Files Changed
 
 {running list of every file created/modified, per deliverable — the post-execution
@@ -66,4 +86,12 @@ review and finish-feature read this}
 - The `Spec`/`Quality`/`Tests` columns are the **review-gate join ledger**: when independent
   deliverables are implemented concurrently, each row records its own gates as they return.
   A `-` in a gate column on a DONE row means that gate never ran — Post-Execution must not
-  start until every DONE row carries real results.
+  start until every DONE row carries real results. `SKIPPED (S)` is a real result: it records
+  that the tier deferred the gate on purpose — Post-Execution runs one batched
+  `quality-reviewer` over every `SKIPPED (S)` file. (`N/A` alone still means "no test files".)
+- `Tier` is written **before** dispatch, so the user can override the ceremony. The
+  Dispatch Log (joined to the tier by `#`) is the standing evidence for the implementer
+  model threshold (5 files) — re-dispatches and fix rounds per tier are what would justify
+  moving it.
+- **What Did NOT Work** and **Exact Next Step** are written at the moment, not reconstructed
+  later: the first whenever an approach is abandoned, the second before every context pause.

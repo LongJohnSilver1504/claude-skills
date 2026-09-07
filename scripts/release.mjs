@@ -13,9 +13,9 @@
  *   node scripts/release.mjs 3.5.0             # explicit version
  *   node scripts/release.mjs minor --dry-run   # print every step, change nothing
  */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { resolve, dirname } from 'node:path'
+import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -96,6 +96,7 @@ note(`on main, clean, in sync with origin (HEAD ${git('rev-parse', '--short', 'H
 // guide, not shipped context, and --strict turns that warning into an error.
 phase('Validate (pre-bump)')
 run('node', ['scripts/validate-skills.mjs'])
+run('node', ['--test', ...readdirSync(join(root, 'tests')).filter((f) => f.endsWith('.test.mjs')).map((f) => join('tests', f))]) // hooks are the only deterministic guarantees — prove them before shipping
 run('node', ['scripts/sync-version.mjs', '--check'])
 run('claude', ['plugin', 'validate', '.claude-plugin/plugin.json'])
 run('claude', ['plugin', 'validate', '.', '--strict'])

@@ -66,8 +66,9 @@ Inject only for component deliverables with rendered UI. Skip for hooks-only, pu
 2. If on the base/integration branch (from `docs/agents/project-conventions.md`): `git checkout -b feat/{feature-name}` (derive the name from the plan title — lowercase, hyphens)
 3. If already on `feat/*`: use it when its name plainly belongs to this feature; otherwise create a fresh one from the base branch. Record which path was taken in PROGRESS.md Decisions.
 4. Record in PROGRESS.md: `**Branch**` and `**Base Branch**` (needed later by `finish-feature` and `audit-branch`)
+5. Record `**Progress**: 0/{N × 4} gates (0%)` — N is the deliverable count in the plan, 4 the gate columns. The 100% is fixed here, before anything runs; the loop only ever fills the numerator.
 
-**Done when:** `git branch --show-current` prints a feature branch and PROGRESS.md records both branch fields.
+**Done when:** `git branch --show-current` prints a feature branch and PROGRESS.md records both branch fields and the Progress line.
 
 ## Right-Sizing: Tier per Deliverable
 
@@ -132,6 +133,30 @@ run its Step 4 first. Three is what one orchestrator can join without mixing up 
 a wider batch is how the gates got lost. Projects that want a mechanical ceiling on top
 set `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (session-global — 1 implementer + 3 reviewers
 per deliverable in flight is 12).
+
+### Liveness and progress (every fan-out)
+
+"Running" in the task panel does not distinguish slow from stuck: on 2026-09-07 seven agents
+sat for up to two hours on a Bash call waiting for a permission nobody could answer, and
+nothing on screen changed. The plugin's `agent-heartbeat` hook records every subagent's tool
+calls and files written; the watchdog reads those records.
+
+1. **After each dispatch message, if no watch is running, start one** with
+   `Bash run_in_background` (plugin root = `${CLAUDE_PLUGIN_ROOT}` if set, otherwise two
+   levels above this skill's own directory):
+   `node "<plugin-root>/scripts/agent-status.mjs" --watch --silence 5 --progress <PROGRESS.md>`
+   It exits on the first event with **one** line — `STALL …`, `ALL_DONE …`, `NO_HEARTBEAT …`
+   or `WATCH_TIMEOUT …` — so you get one notification, never a stream. Never use the
+   `Monitor` tool for this (it spawns itself in a loop; see the reference).
+2. **On `STALL`:** confirm the agent's last transcript entry is a `tool_use` with no result,
+   `TaskStop` it (a `SendMessage` does not reach a stuck agent), check `git status` for a
+   half-done mutation, record the hung command under **What Did NOT Work**, re-dispatch.
+3. **On `NO_HEARTBEAT`:** the hook is not active in this session (plugin not updated, hooks
+   disabled). Say so once and fall back to `ls -lT` on the deliverable's target files.
+4. **Status on demand:** the same script without `--watch` prints a per-agent table
+   (state, tool calls, files, minutes since last activity) plus the Progress line.
+
+Procedure, thresholds and their reasoning: [references/AGENT-LIVENESS.md](references/AGENT-LIVENESS.md).
 
 ### Step 1: Prepare
 
@@ -286,9 +311,10 @@ Write this row as soon as **this** deliverable's gates return, even if siblings 
 same fan-out are still running. The table is the join ledger; filling it in batches at the
 end is how gate results get attributed to the wrong deliverable, or lost.
 
-Tell the user one line per deliverable as its row lands — `D{N} [M]: impl DONE · spec PASS ·
-quality CONCERNS→fixed · tests PASS` — and nothing else between deliverables. That line is
-the whole progress report; the user reads PROGRESS.md for detail.
+Recompute the header's `**Progress**` line (filled gate cells over deliverables × 4) and tell
+the user one line per deliverable as its row lands — `D{N} [M]: impl DONE · spec PASS ·
+quality CONCERNS→fixed · tests PASS · 61/76 gates (80%)` — and nothing else between
+deliverables. That line is the whole progress report; the user reads PROGRESS.md for detail.
 
 **Done when:** this deliverable's row carries a real result in `Impl`, `Spec`, `Quality` and
 `Tests` — no `-` left behind.
@@ -396,7 +422,8 @@ If the user says "resume" or "continue executing": find the most recent PROGRESS
 - Independent deliverables may be implemented concurrently, but each one joins to its own
   Step 4 and its own PROGRESS.md row — no gate column may stay `-` (see Execution Loop)
 - Dispatch the per-deliverable reviewers in parallel, in one message
-- Update PROGRESS.md before moving to the next deliverable
+- One `agent-status.mjs --watch` per fan-out, never the `Monitor` tool; a `STALL` is a `TaskStop` + re-dispatch, not a `SendMessage`
+- Update PROGRESS.md (rows and the Progress line) before moving to the next deliverable
 - Run build verification after the final deliverable and after shared-infra changes
 - Post-execution holistic review goes through `audit-branch` pipeline mode — never re-implement its loop here
 - Checkpoint commits are automatic (Step 5) and never pushed; ensure a fresh successful build before any commit (the plugin's `check-build-before-commit` hook enforces staleness)

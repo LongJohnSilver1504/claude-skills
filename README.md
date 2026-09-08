@@ -91,6 +91,8 @@ execute-tasks (orchestrator)
 
 **Agent model selection:** Simple deliverables (1-2 files, clear spec) use a fast model. Complex ones (3+ files, integration concerns) use a more capable model. If an agent gets stuck, it's automatically re-dispatched with a stronger model before escalating to you.
 
+**Liveness and progress:** the 100% is fixed before the first dispatch (deliverables × 4 gate columns, written as `**Progress**` in PROGRESS.md) and every landed row reports `n/N gates (p%)`. The `agent-heartbeat` hook records each subagent's activity; after each fan-out the orchestrator runs `scripts/agent-status.mjs --watch` in the background, which wakes it with a single `STALL` line when an agent stops making tool calls for 5 minutes — stuck is detected in minutes, not hours (`skills/execute-tasks/references/AGENT-LIVENESS.md`).
+
 **Review triage:**
 - **PASS** — move to the next deliverable
 - **TRIVIAL findings** — auto-fixed by re-dispatching the implementer
@@ -307,7 +309,7 @@ cp ~/claude-skills/rules/error-handling.md .claude/rules/
 
 ## Hooks (Deterministic Guardrails)
 
-Instructions are advisory; hooks are deterministic. The plugin ships five (`hooks/hooks.json`), each covered by a stdin-driven test in `tests/` (`npm test`):
+Instructions are advisory; hooks are deterministic. The plugin ships six (`hooks/hooks.json`), each covered by a stdin-driven test in `tests/` (`npm test`):
 
 | Hook | Event | What it does |
 |------|-------|--------------|
@@ -316,6 +318,7 @@ Instructions are advisory; hooks are deterministic. The plugin ships five (`hook
 | `block-lint-config-edits` | PreToolUse (Write/Edit) | Blocks modifying an existing ESLint / Prettier / Biome / Stylelint config (creating one is allowed) — steers a failing lint back to the source instead of a weakened rule |
 | `block-raw-palette` | PreToolUse (Write/Edit) | Blocks raw Tailwind palette classes in `.tsx`/`.jsx` — only in projects that carry `.claude/rules/color-usage.md` |
 | `iron-law-stop` | Stop | Blocks ending a turn with modified source files until the project's verify command passes — **opt-in**, active only when `.claude/iron-law.json` exists (seeded by `/setup-daher-skills`) |
+| `agent-heartbeat` | SubagentStart / PostToolUse / PostToolUseFailure / SubagentStop | Records every subagent's tool calls, files written and last-activity time in `~/.claude/heartbeats/<session>/<agent>.json` — never blocks. `scripts/agent-status.mjs` reads it to print a per-agent table with the run's `Progress: n/N gates`, or `--watch` to wake the orchestrator with one line when an agent goes silent (default 5 min). Design and recovery procedure: `skills/execute-tasks/references/AGENT-LIVENESS.md` |
 
 Hooks load from `hooks/hooks.json` by convention — do not also declare them in `plugin.json` (Claude Code ≥ 2.1 rejects the duplicate reference and logs `Hook load failed` on every session; the validator and `tests/plugin-manifest.test.mjs` guard this).
 

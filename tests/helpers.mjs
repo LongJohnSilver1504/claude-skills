@@ -7,13 +7,13 @@ import { fileURLToPath } from 'node:url'
 export const hooksDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'hooks')
 
 /** Run a hook script with a JSON payload on stdin, the way Claude Code does. */
-export function runHook(script, payload, { cwd } = {}) {
+export function runHook(script, payload, { cwd, env } = {}) {
   const input = typeof payload === 'string' ? payload : JSON.stringify(payload)
   const r = spawnSync(process.execPath, [join(hooksDir, script)], {
     input,
     encoding: 'utf8',
     cwd: cwd ?? process.cwd(),
-    env: { ...process.env, CLAUDE_PLUGIN_ROOT: resolve(hooksDir, '..') },
+    env: { ...process.env, CLAUDE_PLUGIN_ROOT: resolve(hooksDir, '..'), ...env },
   })
   return { code: r.status, stderr: r.stderr ?? '', stdout: r.stdout ?? '' }
 }

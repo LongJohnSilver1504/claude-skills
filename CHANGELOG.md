@@ -6,6 +6,11 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+### Added
+- **`agent-heartbeat` hook + `scripts/agent-status.mjs` (6 hooks).** On 2026-09-07 an `execute-tasks` run left seven subagents "running" for up to two hours with zero output: each was stuck on a Bash `tool_use` that never got a result (Claude Code 2.1.259 applied `Read()` deny rules to Bash arguments, so a `cd …; grep` asked for permission even in bypass mode, and a third-party `PermissionRequest` hook with a 24-hour timeout held the request). The first diagnosis — a transcript-size ceiling, a saturated machine — was wrong, and it was wrong because nothing exposed the one signal that mattered: minutes since the agent's last tool call. The hook now writes one small JSON per subagent (`~/.claude/heartbeats/<session>/<agent>.json`: tool calls, files written, last activity, status) on SubagentStart / PostToolUse / PostToolUseFailure / SubagentStop; it never blocks and never prints. `agent-status.mjs` prints the per-agent table, or `--watch` blocks in the background and exits with a single `STALL` / `ALL_DONE` / `NO_HEARTBEAT` / `WATCH_TIMEOUT` line — one notification, deliberately not the `Monitor` tool, whose per-event turns make the model re-spawn it in a loop (anthropics/claude-code#55151). 18 stdin/CLI tests.
+- **`**Progress**` line in PROGRESS.md** (`n/N gates (p%)`, N = deliverables × 4 gate columns). The 100% is fixed at Step 0, before anything runs; every landed row recomputes it and the per-deliverable report line carries it. Reuses the join ledger, so it cannot drift from the table — and agents are never asked to estimate their own progress. `agent-status.mjs --progress <PROGRESS.md>` prints the same line.
+- **`references/AGENT-LIVENESS.md`** in `execute-tasks`: the incident, what is measured and why, the STALL recovery procedure (`TaskStop`, not `SendMessage` — a message is delivered at the next tool round and a stuck agent has none), thresholds with their reasoning, and the improvements considered and deferred (files predicted → written per agent, `--diagnose`, a SubagentStop-driven join, the Workflow tool, dashboards).
+
 ## 3.5.0 (2026-09-07)
 
 ### Fixed

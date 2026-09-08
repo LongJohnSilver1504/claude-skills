@@ -11,6 +11,7 @@ Lives in the same directory as the implementation plan. Updated after EVERY deli
 **Branch**: feat/{feature-name}
 **Base Branch**: {branch execution started from}
 **Status**: In Progress | Complete | Blocked
+**Progress**: {filled gate cells}/{deliverables × 4} gates ({percent}%)
 
 ## Deliverables
 

@@ -8,3 +8,8 @@ node_modules/
 # Editor/OS scratch
 *.swp
 .idea/
+
+# Eval runs — `claude plugin eval` writes a timestamped report per run. The
+# cases are the artifact; a local run's scores and HTML report are not.
+evals/results/
+design-craft/evals/results/

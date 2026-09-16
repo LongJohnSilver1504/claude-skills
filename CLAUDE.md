@@ -17,7 +17,8 @@ This repo is a Claude Code **plugin**: 26 skills, 6 agents, 6 hooks, and 19 seed
 10. **No TruckBays values in generic content.** Project-specific values (package manager, base branch, error surface, viewport container) live in the seeded `docs/agents/project-conventions.md`; skills reference the file, with `pnpm`-style commands only as examples ("e.g. `pnpm build`").
 11. **Retired means deleted.** Removing a skill = delete the directory + remove every reference (README, pipeline-help, plugin counts) + CHANGELOG entry naming the replacement. No deprecated/ graveyard.
 12. **Rejected ideas live in `.out-of-scope/`.** One file per concept with the decision and the why — check it before proposing "new" ideas.
-13. **Every released version is recoverable.** It has a `claude-skills--vX.Y.Z` tag at the commit that shipped it and a `## X.Y.Z (date)` CHANGELOG section (validator enforces the section for the current version). Without both, "go back to the version before it broke" is guesswork.
+13. **A `NOT for` clause is checked, not asserted.** Every skill whose description carries one has a routing case in `evals/` — a realistic request, a `tool_used` grader (`min: 1`) for the owning skill and one (`min: 0, max: 0`) for the competitor it names. `validate-skills.mjs` fails when a `NOT for` skill has no case or a grader names a skill that does not exist; `npm run eval` runs the cases themselves (~$1.60, needs a model). It is a regression gate on descriptions, not a quality measure — see `evals/README.md`.
+14. **Every released version is recoverable.** It has a `claude-skills--vX.Y.Z` tag at the commit that shipped it and a `## X.Y.Z (date)` CHANGELOG section (validator enforces the section for the current version). Without both, "go back to the version before it broke" is guesswork.
 
 ## Releases
 
@@ -51,4 +52,4 @@ To see what changed between versions: `npm run changes -- 3.0.0 3.1.0`.
 
 ## Sibling plugin: `design-craft/`
 
-`design-craft/` is a **separate plugin** in this repo with its own `skills/`, `agents/`, manifests, `CHANGELOG.md`, version and validator (`node design-craft/scripts/validate.mjs`). It is registered as a second entry in `.claude-plugin/marketplace.json`. None of the invariants above count it: the "N skills" claims, `pipeline-help`, `rules/`, hooks and `scripts/validate-skills.mjs` refer only to the pipeline plugin. Never move a skill between the two without updating both validators; see `design-craft/CLAUDE.md` for its own invariants.
+`design-craft/` is a **separate plugin** in this repo with its own `skills/`, `agents/`, manifests, `CHANGELOG.md`, version, validator (`node design-craft/scripts/validate.mjs`, run in CI alongside this plugin's) and routing eval suite. It is registered as a second entry in `.claude-plugin/marketplace.json`. None of the invariants above count it: the "N skills" claims, `pipeline-help`, `rules/`, hooks and `scripts/validate-skills.mjs` refer only to the pipeline plugin. Never move a skill between the two without updating both validators; see `design-craft/CLAUDE.md` for its own invariants.

@@ -18,8 +18,11 @@ For a change review, open with:
 
 ## Coverage
 
+The first row is the runtime rung reached, because it bounds what every row under it can claim:
+
 | Domain | Evidence inspected | Result |
 | --- | --- | --- |
+| runtime | `pnpm dev` at `http://localhost:3000/checkout` · tiers 320/375/768/1440 · keyboard, state and console walks | running instance |
 | accessibility | files, components, states or checks | findings count, `Clear`, or `Not reviewed: <why>` |
 | hierarchy-layout | … | … |
 | interface-copy | … | … |
@@ -31,6 +34,8 @@ For a change review, open with:
 | arc (marketing pages only) | … | … |
 
 `Clear` means inspected with no actionable finding. `Not reviewed` always explains why; in a change review, a domain with no evidence in the diff is `Not reviewed: no evidence in the change scope`, which is a coverage statement, not a gap.
+
+The `runtime` row's result is the rung reached — `running instance`, `built preview`, `existing harness`, or `static only: <what blocked it>`. At `static only` every runtime-decided domain reads `Not verified: no rendered instance`, never `Clear`.
 
 ## Findings
 

@@ -333,6 +333,57 @@ for (const file of [...walkMd(skillsDir), ...walkMd(join(root, 'agents'))]) {
   })
 }
 
+// ---------- 4d. Routing evals cover every skill that claims a NOT-for boundary ----------
+// A `NOT for <competitor>` clause is a behavioural claim. Prose cannot check it, so
+// every skill that makes one carries a case in evals/ asserting the boundary holds.
+// This section is the offline half — it runs in CI for free; `npm run eval` runs the
+// cases themselves, which cost money and a model.
+const evalsDir = join(root, 'evals')
+if (!existsSync(evalsDir)) {
+  fail(evalsDir, null, 'No evals/ directory.', 'Add routing cases — see evals/README.md.')
+} else {
+  const caseDirs = readdirSync(evalsDir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && e.name !== 'results')
+    .map((e) => e.name)
+  const covered = new Set()
+
+  for (const c of caseDirs) {
+    const caseDir = join(evalsDir, c)
+    const gradersDir = join(caseDir, 'graders')
+    if (!existsSync(join(caseDir, 'prompt.md'))) {
+      fail(caseDir, null, 'Eval case has no prompt.md.', 'Add one, or delete the directory.')
+      continue
+    }
+    const graders = existsSync(gradersDir) ? readdirSync(gradersDir).filter((f) => f.endsWith('.md')) : []
+    if (!graders.length) {
+      fail(caseDir, null, 'Eval case has no graders — it can never fail.', 'Add a grader under graders/.')
+      continue
+    }
+    for (const g of graders) {
+      const gPath = join(gradersDir, g)
+      const gText = readFileSync(gPath, 'utf8')
+      const match = gText.match(/^input_match:\s*(\S+)\s*$/m)
+      if (!match) continue
+      const target = match[1]
+      if (!skillNames.includes(target)) {
+        fail(gPath, null, `Grader asserts on \`${target}\`, which is not a skill in skills/.`,
+          'Fix the name — a case that names a skill that does not exist passes for the wrong reason.')
+        continue
+      }
+      const min = gText.match(/^min:\s*(\d+)\s*$/m)
+      if (min && Number(min[1]) >= 1) covered.add(target)
+    }
+  }
+
+  for (const name of skillNames) {
+    const desc = readFileSync(join(skillsDir, name, 'SKILL.md'), 'utf8').match(/^description:\s*(.+)$/m)?.[1] ?? ''
+    if (!/NOT for/i.test(desc) || covered.has(name)) continue
+    fail(join(skillsDir, name, 'SKILL.md'), null,
+      `\`${name}\` claims a NOT-for boundary but no eval case asserts it fires.`,
+      `Add evals/pipeline-NN-${name}/ with a \`fires-${name}\` grader (tool_used, min: 1) and a \`not-<competitor>\` grader.`)
+  }
+}
+
 // ---------- 5. Reviewer agents must not carry Write/Edit ----------
 for (const agentFile of readdirSync(join(root, 'agents')).filter((f) => f.endsWith('.md'))) {
   const p = join(root, 'agents', agentFile)

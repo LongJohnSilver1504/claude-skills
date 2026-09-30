@@ -18,20 +18,20 @@ Both live in `features/{feature}/testing/factories.ts` (location defined in `.cl
 **DTO factories are a detection layer.** Declaring `satisfies z.input<typeof xDtoSchema>` means any change to the wire schema makes the mocks fail to compile — contract drift surfaces at build time instead of when a user hits it:
 
 ```typescript
-// features/stays/testing/factories.ts
+// features/orders/testing/factories.ts
 import { z } from 'zod'
-import { stayDetailDtoSchema } from '../api/stays.dto'
+import { orderDetailDtoSchema } from '../api/orders.dto'
 
-export const createStayDetailDto = (
-  overrides: Partial<z.input<typeof stayDetailDtoSchema>> = {}
+export const createOrderDetailDto = (
+  overrides: Partial<z.input<typeof orderDetailDtoSchema>> = {}
 ) =>
   ({
     id: 1,
     status: 'active',
-    cab_plate: 'ABC-1234',
+    tracking_number: 'TRK-1234',
     // ... every field the backend sends, wire names and all ...
     ...overrides,
-  }) satisfies z.input<typeof stayDetailDtoSchema>
+  }) satisfies z.input<typeof orderDetailDtoSchema>
 ```
 
 > The DTO-import ban in `rules/api-boundary.md` targets app code (hooks/components); `testing/` factories are the exception — they must import the dto schema to stay typed against it.
@@ -92,8 +92,8 @@ MSW handlers simulate the backend, so they return **DTO-factory output (wire sha
 
 ```typescript
 // features/{feature}/testing/handlers.ts
-http.get('*/stays/:id', ({ params }) =>
-  HttpResponse.json(createStayDetailDto({ id: Number(params.id) }))  // wire shape
+http.get('*/orders/:id', ({ params }) =>
+  HttpResponse.json(createOrderDetailDto({ id: Number(params.id) }))  // wire shape
 )
 ```
 
@@ -102,13 +102,13 @@ http.get('*/stays/:id', ({ params }) =>
 Mappers (`api/{feature}.mapper.ts`) are pure functions — give them direct unit tests. Call `toX(dtoFactory())` and assert field mapping, nullable normalization (`?? null` / defaults), and envelope flattening:
 
 ```typescript
-import { toStay } from './stays.mapper'
-import { createStayDetailDto } from '../testing/factories'
+import { toOrder } from './orders.mapper'
+import { createOrderDetailDto } from '../testing/factories'
 
 it('maps wire names and normalizes nullables', () => {
-  const stay = toStay(createStayDetailDto({ cab_plate: null }))
-  expect(stay.plate).toBeNull()
-  expect(stay.id).toBe(1)
+  const order = toOrder(createOrderDetailDto({ tracking_number: null }))
+  expect(order.trackingNumber).toBeNull()
+  expect(order.id).toBe(1)
 })
 ```
 

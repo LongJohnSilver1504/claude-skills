@@ -122,18 +122,18 @@ feat: Create reservation details feature
 ```
 refactor: Move custom UI components to ui/custom
 
-- Move AppContainer, BackButton, TruckerNavbar, LanguageSelector
+- Move AppContainer, BackButton, AppNavbar, LanguageSelector
   from shared/layouts/ to ui/custom/
-- Move FuelMeter and Stepper from shared/components/ to ui/custom/
+- Move ProgressMeter and Stepper from shared/components/ to ui/custom/
 - Separate custom hand-crafted UI from shadcn CLI-managed primitives
 ```
 
 ### Fix commit
 
 ```
-fix: Correct warehouse data extraction in checkout flow
+fix: Correct store data extraction in checkout flow
 
-- Update daily and hourly pay-invoices pages to access nested data property
+- Update monthly and annual pay-invoice pages to access nested data property
 ```
 
 ### Chore commit

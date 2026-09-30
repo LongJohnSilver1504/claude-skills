@@ -39,7 +39,7 @@ Sentence case. No hyphenated compounds the copy can avoid. Two lines maximum in 
 
 ## Section copy
 
-- Section headings state the benefit of the section, not its category ("Know where every truck is" over "Features").
+- Section headings state the benefit of the section, not its category ("Know where every invoice stands" over "Features").
 - One tagline moment mid-page is allowed as its own large-type beat (a benefit statement of two lines minimum) — one, not on every section.
 - Captions never narrate what the visual already shows; if the visual labels itself, cut the caption.
 

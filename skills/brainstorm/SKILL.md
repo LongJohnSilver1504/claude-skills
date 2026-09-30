@@ -115,7 +115,7 @@ Save to `.claude/pipeline/{feature}/DESIGN.md`:
 1. {Decision that should carry into the PRD}
 2. {Decision that should carry into the PRD}
 
-**Existing code reused:** {Required — the specific files/patterns the chosen approach reuses or builds on, e.g. `features/stays/hooks/use-stay-detail.ts`, the `Page<T>` envelope schema. If genuinely greenfield, say so and why.}
+**Existing code reused:** {Required — the specific files/patterns the chosen approach reuses or builds on, e.g. `features/orders/hooks/use-order-detail.ts`, the `Page<T>` envelope schema. If genuinely greenfield, say so and why.}
 
 ## Open Questions
 {Anything unresolved that the PRD should address, or "None"}

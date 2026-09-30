@@ -87,15 +87,15 @@ The domain layer must own its types. Re-exporting `z.infer` of a wire (DTO) sche
 
 ```tsx
 // Bad: domain/{feature}.types.ts is just a passthrough of the wire format
-export type { Stay } from '../api/stays.schemas'
-export type Stay = z.infer<typeof stayDtoSchema>
+export type { Order } from '../api/orders.schemas'
+export type Order = z.infer<typeof orderDtoSchema>
 
 // Good: hand-authored, frontend-owned domain type; mapper converts dto → domain
-// domain/stays.types.ts
-export type Stay = {
+// domain/orders.types.ts
+export type Order = {
   id: number
-  status: StayStatus
-  plate: string | null
+  status: OrderStatus
+  trackingNumber: string | null
   // ...named and shaped for the app, not the wire
 }
 ```

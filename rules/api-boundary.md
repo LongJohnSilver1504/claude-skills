@@ -43,22 +43,22 @@ domain/{feature}.types.ts  # the app's model, hand-written, frontend-owned
 
 ```typescript
 import { client, handleApiError, parseResponse } from '@/{app}/shared/api'
-import { stayDetailDtoSchema } from './stays.dto'
-import { toStay, buildCreateStayBody } from './stays.mapper'
+import { orderDetailDtoSchema } from './orders.dto'
+import { toOrder, buildCreateOrderBody } from './orders.mapper'
 
-export const staysApi = {
+export const ordersApi = {
   getById: async (id: number) => {
     const response = await client
-      .get(stayEndpoints.detail(id))
-      .catch((error) => handleApiError(error, [{ status: 404, code: 'STAY_NOT_FOUND', message: 'Stay not found' }]))
-    const dto = parseResponse(stayDetailDtoSchema, response.data) // validate
-    return toStay(dto)                                            // map
+      .get(orderEndpoints.detail(id))
+      .catch((error) => handleApiError(error, [{ status: 404, code: 'ORDER_NOT_FOUND', message: 'Order not found' }]))
+    const dto = parseResponse(orderDetailDtoSchema, response.data) // validate
+    return toOrder(dto)                                            // map
   },
-  create: async (input: CreateStayInput) => {
+  create: async (input: CreateOrderInput) => {
     const response = await client
-      .post(stayEndpoints.create, buildCreateStayBody(input))     // reverse map
+      .post(orderEndpoints.create, buildCreateOrderBody(input))     // reverse map
       .catch((error) => handleApiError(error, []))
-    return toStay(parseResponse(createStayDtoSchema, response.data))
+    return toOrder(parseResponse(createOrderDtoSchema, response.data))
   },
 }
 ```
@@ -83,19 +83,19 @@ Runtime validation catches drift, but at the worst moment — when a user hits i
 
 ```typescript
 // ❌ Re-exporting wire types as the domain
-export type { Stay } from '../api/stays.schemas'
+export type { Order } from '../api/orders.schemas'
 
 // ❌ Component/hook importing wire shapes
-import type { StayDto } from '../api/stays.dto'
+import type { OrderDto } from '../api/orders.dto'
 
 // ❌ Form submitting the backend's shape directly (coupling re-enters on the request side)
 mutation.mutate(formValues) // where formValues IS the wire body
 
 // ❌ Optional-by-default schema — silent-drop detector is off
-z.object({ plate: z.string().nullable().optional() }) // no justification comment
+z.object({ tracking_number: z.string().nullable().optional() }) // no justification comment
 
 // ❌ Skipping the mapper "because it's identical today"
-return parseResponse(stayDtoSchema, response.data) // returns wire type to consumers
+return parseResponse(orderDtoSchema, response.data) // returns wire type to consumers
 ```
 
 ## Migration Note

@@ -105,17 +105,17 @@ External API calls use the `client` singleton from `@/shared/api`, which has the
 // Bad — hardcoded strings scattered in methods
 export const authApi = {
   signIn: async (creds) => {
-    return client.post('/user/warehouse-owner/login', creds)
+    return client.post('/auth/login', creds)
   },
   refresh: async (token) => {
-    return client.post('/user/warehouse-owner/refresh', { refreshToken: token })
+    return client.post('/auth/refresh', { refreshToken: token })
   },
 }
 
 // Good — endpoints defined once at the top
 const authEndpoints = {
-  signIn: '/user/warehouse-owner/login',
-  refresh: '/user/warehouse-owner/refresh',
+  signIn: '/auth/login',
+  refresh: '/auth/refresh',
 } as const
 
 export const authApi = {

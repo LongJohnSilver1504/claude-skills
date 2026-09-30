@@ -3,7 +3,7 @@
 > **Project config:** `{app}` is the project's new-code root from `.claude/rules/project-structure.md`; project values (package manager, commands, base branch, error surface) come from `docs/agents/project-conventions.md`. Resolve both before writing any file — never assume. If a needed file is missing, stop: "Run `/setup-daher-skills` first — missing `<file>`."
 
 
-Complete code templates for each layer in a feature module, modeled on the shipped `stays` feature. **Exception:** stays predates the API-boundary rule — for dto/mapper structure follow `api-boundary.md` and the templates below, not stays.
+Complete code templates for each layer in a feature module. When the project already has a merged feature that predates the API-boundary rule, follow `api-boundary.md` and the templates below for dto/mapper structure, not that feature.
 
 Replace `{feature}` with the feature name (lowercase) and `{Feature}` with PascalCase.
 
@@ -283,7 +283,7 @@ export class {Feature}NotFoundError extends AppError {
 
 ### 3.1 Query Keys (`queries/{feature}.keys.ts`)
 
-Key structure `[feature, scope, ...params]` — see `tanstack-query.md`. Pattern from `stays/queries/stay.keys.ts`:
+Key structure `[feature, scope, ...params]` — see `tanstack-query.md`:
 
 ```tsx
 export const {feature}Keys = {
@@ -349,7 +349,7 @@ Every component gets a co-located hook that owns ALL logic — queries, handlers
 
 ### 5.1 Query Hooks (`hooks/use-{feature}s-query.ts`, `hooks/use-{feature}-query.ts`)
 
-Thin data hooks (pattern from `stays/hooks/use-stay-query.ts`):
+Thin data hooks:
 
 ```tsx
 import { useQuery } from '@tanstack/react-query'
@@ -372,7 +372,7 @@ export const use{Feature}Query = (id: number) =>
 
 ### 5.2 Component Hook (`hooks/use-{feature}-list.ts`)
 
-Composes query hooks + translations into display-ready values with a typed return (pattern from `stays/metered-detail/hooks/use-stay-summary-card.ts`):
+Composes query hooks + translations into display-ready values with a typed return:
 
 ```tsx
 import { useTranslation } from 'next-i18next'
@@ -689,16 +689,16 @@ export const {Feature}Form = () => {
 
 ### 6.4 Page Compositor (`pages/{feature}s-page.tsx` in the feature)
 
-Every page wraps its content in `AppContainer` and owns inter-component spacing (pattern from `stays/metered-detail/pages/stay-detail-page.tsx`):
+Every page wraps its content in `AppContainer` and owns inter-component spacing:
 
 ```tsx
 import { AppContainer } from '@/{app}/ui/custom/app-container'
-import { TruckerNavbar } from '@/{app}/ui/custom/navbar'
+import { AppNavbar } from '@/{app}/ui/custom/navbar'
 import { {Feature}List } from '../components/{feature}-list'
 
 export const {Feature}sPage = () => {
   return (
-    <AppContainer navbar={<TruckerNavbar />}>
+    <AppContainer navbar={<AppNavbar />}>
       <div className="px-4 pt-3">
         <{Feature}List />
       </div>

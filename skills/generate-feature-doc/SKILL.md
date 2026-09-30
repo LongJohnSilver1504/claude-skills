@@ -152,7 +152,7 @@ rm -f {feature-dir}/DECISIONS.md
 rm -f .claude/pipeline/{feature-name}/DESIGN.md
 ```
 
-> **Important:** `PRD-*.md` files (e.g., `PRD-v2.md`, `PRD-enrichment.md`, `PRD-bay-status-card.md`) are iteration artifacts from the pipeline. The original `PRD.md` is the authoritative requirements reference. Sub-PRDs served their purpose during implementation and are now captured in the README.
+> **Important:** `PRD-*.md` files (e.g., `PRD-v2.md`, `PRD-enrichment.md`, `PRD-order-status-card.md`) are iteration artifacts from the pipeline. The original `PRD.md` is the authoritative requirements reference. Sub-PRDs served their purpose during implementation and are now captured in the README.
 
 
 ## Commit

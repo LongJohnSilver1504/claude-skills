@@ -17,7 +17,7 @@ Components own their **internal** layout. Parent layouts own **external** spacin
 import { AppContainer } from '@/ui/custom/app-container'
 
 <AppContainer>
-  <TruckerNavbar />
+  <AppNavbar />
   <div className="px-4 pt-3">
     <SectionA />
   </div>
@@ -28,7 +28,7 @@ import { AppContainer } from '@/ui/custom/app-container'
 
 // ❌ Page without AppContainer — missing viewport constraints
 <div>
-  <TruckerNavbar />
+  <AppNavbar />
   <SectionA />
 </div>
 ```
@@ -47,12 +47,12 @@ import { AppContainer } from '@/ui/custom/app-container'
 ```tsx
 // ✅ DO: Parent owns spacing via wrapper divs (different spacing per section)
 <AppContainer>
-  <TruckerNavbar />
+  <AppNavbar />
   <div className="px-4 pt-3">
     <NavigationBadgeSection />
   </div>
   <div className="px-4 pt-6">
-    <BayStatusCardStack />
+    <OrderStatusCardStack />
   </div>
 </AppContainer>
 

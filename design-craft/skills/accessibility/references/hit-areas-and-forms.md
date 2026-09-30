@@ -43,15 +43,13 @@ plus `aria-hidden="true"`. A modal scrim that dismisses on click is a control, n
 
 ## Touch behavior
 
-- `touch-action: manipulation` on interactive elements removes the double-tap-to-zoom delay.
-- `touch-action: none` only on a surface implementing its own pan, zoom or drag.
-- `-webkit-tap-highlight-color` matched to the design.
-- Hover-only styling behind `@media (hover: hover)` — on touch, `:hover` latches after a tap.
+- Hover-only styling behind `@media (hover: hover) and (pointer: fine)` — on touch, `:hover` latches after a tap until the next tap elsewhere. Both conditions: `pointer: fine` also rules out styluses and devices that misreport hover. Tailwind v4's `hover:` variant already compiles to `@media (hover: hover)`; in v3 set `future.hoverOnlyWhenSupported`. Touch still gets press feedback through `:active`.
+- Tap highlight, the double-tap delay and `touch-action` per gesture surface belong to mobile-web.
 
 ## Forms
 
 - `<label for>` or a wrapping `<label>` on every input. Placeholder ≠ label.
-- `autocomplete` with a meaningful `name`; `type="email"`, `inputmode="numeric"` etc. summon the right keyboard.
+- `autocomplete` with a meaningful `name`; `type="email"`, `type="tel"`, `inputmode="numeric"` (codes) and `inputmode="decimal"` (amounts) summon the right keyboard; `autocapitalize="none"` and `autocorrect="off"` on usernames and codes; `enterkeyhint="send"`, `"search"` or `"done"` so the return key names its action.
 - Never block paste (passwords, one-time codes).
 - Submit stays enabled until the request starts; then disabled with a spinner and the original label.
 - Validate on submit: `aria-invalid="true"` on failing fields, `aria-describedby` pointing at the inline error, focus the first invalid field.

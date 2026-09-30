@@ -29,7 +29,7 @@ const skillNames = readdirSync(skillsDir).filter((d) => {
 // Skills whose rules design-review routes to. Their Reporting blocks share one
 // canonical tail so the orchestrator can consolidate them without translation.
 const REFERENCE_SKILLS = [
-  'accessibility', 'hierarchy-layout', 'interface-copy', 'typography', 'color-system', 'ui-polish', 'motion',
+  'accessibility', 'hierarchy-layout', 'mobile-web', 'interface-copy', 'typography', 'color-system', 'ui-polish', 'motion',
 ]
 const CANONICAL_REPORTING = [
   '**Format.** Group findings under the principle each violates, ordered by severity, one row per root cause listing every location it appears in:',

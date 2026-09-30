@@ -68,6 +68,18 @@ Add drag and it becomes a gesture problem — see `gestures-and-springs.md`.
 
 `ease` and a slightly longer duration than typical UI — the motion matches the component's elegant personality. Fallback without `@starting-style`: a `data-mounted` flag set in an effect. A toast carrying an action or an error stays until dismissed.
 
+Two edge cases a hand-rolled stack gets wrong (Sonner handles both — prefer it via pick-library):
+
+```css
+/* Bridge the gap between stacked toasts so hover-to-expand doesn't collapse mid-travel */
+.toast::after { content: ""; position: absolute; inset-inline: 0; top: 100%; height: var(--toast-gap); }
+```
+
+```js
+// Freeze the dismiss timer while the tab is hidden — nobody reads a toast in a background tab
+document.addEventListener("visibilitychange", () => (document.hidden ? pauseTimers() : resumeTimers()));
+```
+
 ## Accordion / collapse
 
 ```css
@@ -120,6 +132,48 @@ Text and background change together because one element is revealed rather than 
 ## Icon swap
 
 Both icons in the DOM, one absolutely positioned; cross-fade with scale `0.25→1`, opacity `0→1`, blur `4px→0`. With Motion: `transition: { type: "spring", duration: 0.3, bounce: 0 }`. Without: `cubic-bezier(0.2, 0, 0, 1)` on the same three properties.
+
+## Comparison slider
+
+```css
+.compare { position: relative; }
+.compare .after { position: absolute; inset: 0; clip-path: inset(0 50% 0 0); }
+```
+
+```js
+// on pointermove after setPointerCapture: write the inset on the clipped element itself
+after.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+```
+
+Two stacked images, the top one clipped; the drag writes the right inset, starting at `50%`. No extra DOM, compositor-only. Pointer capture and 1:1 tracking from `gestures-and-springs.md`; the handle's keyboard and naming contract belongs to the accessibility skill.
+
+## Spring-smoothed pointer tracking (decorative only)
+
+```tsx
+const rotate = useSpring(0, { stiffness: 100, damping: 10 });
+onPointerMove={(e) => rotate.set((e.clientX - centerX) * 0.1)}
+<motion.div style={{ rotate }} />
+```
+
+A value bound straight to the pointer feels mechanical; a spring gives it mass. Only where the effect is decoration — a hero card, a marketing tilt — behind `(hover: hover) and (pointer: fine)` and off under reduced motion. On a functional surface (a chart, a data table) bind nothing to the pointer.
+
+## 3D flip and orbit
+
+```css
+.stage { perspective: 800px; }
+.card { transform-style: preserve-3d; transition: transform 500ms var(--ease-in-out); }
+.card[data-flipped] { transform: rotateY(180deg); }
+.card .face { backface-visibility: hidden; }
+.card .back { transform: rotateY(180deg); }
+
+.orbit { transform-style: preserve-3d; }
+@keyframes orbit {
+  from { transform: translate(-50%, -50%) rotateY(0deg) translateZ(72px) rotateY(360deg); }
+  to   { transform: translate(-50%, -50%) rotateY(360deg) translateZ(72px) rotateY(0deg); }
+}
+```
+
+Pure CSS depth, no library. The counter-rotation in the orbit keeps the orbiting element facing the viewer. Rare-tier or marketing only; under reduced motion the flip becomes an opacity crossfade and the orbit stops.
 
 ## Scroll reveal (marketing only)
 

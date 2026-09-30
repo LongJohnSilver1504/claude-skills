@@ -19,7 +19,7 @@ design-direction  →  build with the reference skills  →  design-review  → 
    (lock it)          (hierarchy-layout, typography,        (Block / Approve)
                        color-system, ui-polish, motion,
                        interface-copy, accessibility,
-                       pick-library)
+                       mobile-web, pick-library)
 ```
 
 Marketing pages take the same flow with `landing-page` as the build step. Exploration branches off anywhere: `variants` to choose between directions, `stress-states` to see what breaks.
@@ -38,9 +38,12 @@ Marketing pages take the same flow with `landing-page` as the build step. Explor
 | pick or pair fonts, fix wrapping, widows, truncation, a type scale | `typography` |
 | build or fix a palette, tokens, dark mode, a failing contrast pair | `color-system` |
 | nested corners, shadows, icons, empty states, the finishing pass | `ui-polish` |
-| animate something, review motion, or find where motion would help | `motion` |
+| animate something or review motion | `motion` |
+| "what could be animated here?" — find where motion belongs and what should stay still | `motion` (scout mode) |
+| name an effect you can describe but not name ("what's it called when…") | `motion` (its vocabulary reference) |
 | write or fix labels, errors, empty states, CTAs, marketing copy | `interface-copy` |
 | keyboard, focus, screen readers, hit areas, ARIA | `accessibility` |
+| make a web app feel native on a phone — notch and home-bar insets, `100vh`, bounce and pull-to-refresh, tap flash, status-bar color, carousel axis | `mobile-web` |
 | a toast, drawer, command menu, chart, sortable or virtualized list | `pick-library` |
 | choose between several directions for one piece of UI | `variants` |
 | see every state a component can be pushed into | `stress-states` |
@@ -63,3 +66,4 @@ Marketing pages take the same flow with `landing-page` as the build step. Explor
 | "Does this handle long names?" | `stress-states`, not a code read |
 | "Pick colors for my app" | `design-direction` on a cold project; `color-system` when a lock exists |
 | "This dropdown is buggy" | `pick-library` before hand-fixing a `<div>` dropdown |
+| "Works in Chrome, feels wrong on my phone" | `mobile-web` — and a real device, not device mode |

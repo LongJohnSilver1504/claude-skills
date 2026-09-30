@@ -89,7 +89,7 @@ Enter and exit along the same path; anchor menus and sheets to their trigger; hi
 - Drag: ~10px movement threshold before committing to a direction, then 1:1.
 - Detect plausible gestures in parallel from the first move; cancel the losers once intent is clear.
 - Pay the double-tap disambiguation delay only where double-tap exists.
-- `touch-action: none` only on the surface that owns the gesture.
+- Which `touch-action` value the gesture surface takes is the mobile-web skill's rule; this skill owns the gesture itself.
 
 ## Reduced motion and materials
 

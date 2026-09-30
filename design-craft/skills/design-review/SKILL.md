@@ -1,6 +1,6 @@
 ---
 name: design-review
-description: Evidence-based, cross-discipline review of an interface — routes a screen, flow or change through every reference skill (accessibility, hierarchy-layout, interface-copy, typography, color-system, ui-polish, motion) plus the style lock and anti-slop gates, and consolidates one ranked Before/After/Why table with a Block or Approve verdict. Use when asked to review, audit, critique or grade UI ("design review", "is this good", "why does this look AI-generated", "what's wrong with this screen"), to review the interface side of a branch, PR or uncommitted change, or as the pre-handoff gate after building. NOT for correctness, tests or security (the project's code review), building fixes (the owning skills), or exploring alternatives (variants).
+description: Evidence-based, cross-discipline review of an interface — routes a screen, flow or change through every reference skill (accessibility, hierarchy-layout, mobile-web, interface-copy, typography, color-system, ui-polish, motion) plus the style lock and anti-slop gates, and consolidates one ranked Before/After/Why table with a Block or Approve verdict. Use when asked to review, audit, critique or grade UI ("design review", "is this good", "why does this look AI-generated", "what's wrong with this screen"), to review the interface side of a branch, PR or uncommitted change, or as the pre-handoff gate after building. NOT for correctness, tests or security (the project's code review), building fixes (the owning skills), or exploring alternatives (variants).
 ---
 
 # Design review
@@ -31,7 +31,9 @@ Half the escalation triggers below are decided at runtime and cannot be settled 
 
 Confirm each is available, then apply them in this order so foundational failures are not hidden by polish:
 
-1. accessibility · 2. hierarchy-layout · 3. interface-copy · 4. typography · 5. color-system · 6. ui-polish · 7. motion
+1. accessibility · 2. hierarchy-layout · 3. mobile-web · 4. interface-copy · 5. typography · 6. color-system · 7. ui-polish · 8. motion
+
+mobile-web applies when the interface ships to phones; on a desktop-only surface mark it `Not reviewed: no phone target`.
 
 Then two checks the reference skills do not own: **direction** — does the work match the style lock's tokens, mood words and "Do not" list, and does the design-direction skill's anti-slop list find any tell (default gradient, letter-in-a-box logo, invented metrics, generic template shape, text-wall sections)? — and, for marketing pages, **arc** — can you name what each section does in the argument, and does the CSS stamp still match what shipped?
 
@@ -98,7 +100,7 @@ Always a single table with Before and After as columns — never a list of "Befo
 
 | Mistake | Fix |
 | --- | --- |
-| Seven disconnected domain reports | One ranked table |
+| Eight disconnected domain reports | One ranked table |
 | Visual claim inferred from source only | Inspect the rendered state or mark `Not verified` |
 | Judged without ever rendering it | Work the ladder in `references/runtime-evidence.md`; name the rung you reached |
 | One width captured, "responsive" claimed | Name every tier you captured; 320px and 1440px at minimum |

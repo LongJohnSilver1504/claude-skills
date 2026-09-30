@@ -1,6 +1,6 @@
 ---
 name: motion
-description: Build, review or scout UI motion with a design engineer's bar — whether something should animate at all, its purpose, tool, properties, easing, duration or spring, interruptibility, exit, reduced motion and hover gating; recipes for press, popover, tooltip, modal, drawer, toast, accordion, stagger, hold-to-confirm, scroll reveal and drag-to-dismiss. Use when asked to animate something, add or remove motion, make a component feel alive, review transitions ("feels sluggish", "janky", "too much"), or find where motion would genuinely help. NOT for static surfaces, radius and shadows (ui-polish), or the layout that moves (hierarchy-layout).
+description: Build, review or scout UI motion with a design engineer's bar — whether something should animate at all, its purpose, tool, properties, easing, duration or spring, interruptibility, exit, reduced motion and hover gating; recipes for press, popover, tooltip, modal, drawer, toast, accordion, stagger, hold-to-confirm, scroll reveal and drag-to-dismiss. Use when asked to animate something, add or remove motion, make a component feel alive, review transitions ("feels sluggish", "janky", "too much"), find where motion would genuinely help ("what could be animated here?"), or name a motion effect someone can only describe ("what's it called when…"). NOT for static surfaces, radius and shadows (ui-polish), or the layout that moves (hierarchy-layout).
 ---
 
 # Motion
@@ -104,7 +104,11 @@ On a landing page the budget opens: visitors see it once and choreography is par
 
 ### Recipes
 
-`references/recipes.md` holds ready-to-adapt implementations for press, popover, tooltip, modal, drawer, toast, accordion, stagger, hold-to-confirm, tab indicator, scroll reveal, icon swap, blur-masked crossfade, drag-to-dismiss and WAAPI. Start from the recipe, not a blank file.
+`references/recipes.md` holds ready-to-adapt implementations for press, popover, tooltip, modal, drawer, toast, accordion, stagger, hold-to-confirm, tab indicator, comparison slider, spring-smoothed pointer tracking, 3D flip and orbit, scroll reveal, icon swap, blur-masked crossfade and WAAPI (drag-to-dismiss lives in `references/gestures-and-springs.md`). Start from the recipe, not a blank file.
+
+### Naming an effect
+
+When someone describes motion without its name ("the bouncy thing when a popover opens"), answer with the term from `references/vocabulary.md` — each entry lands on the recipe or value above, so the name is immediately buildable.
 
 ## Review mode
 
@@ -112,7 +116,7 @@ Default to flagging; approval is earned. Load the escalation list below, read ev
 
 ## Scout mode
 
-Sweep for feedback gaps (pressables with no `:active`), teleporting state (conditional renders with no bridge, accordions that snap), missing spatial story (panels with no origin, dismissals that exit a different way), group entrances that pop in at once, gestures that snap without physics, and flat rare moments (first run, success, empty). Gate every candidate through steps 1, 2, 5 and the function check; expect to reject most. Report at most 5–7 opportunities with exact values, then the 2–5 rejections and the gate that killed each — the rejections are what separate this from a wishlist.
+Read-only: survey a screen or codebase for missing motion and reject what should stay still. Work `references/opportunities.md` — recon (tooling, tokens, personality, frequency map), sweep ten seams (feedback gaps, teleporting content, orphaned panels, asymmetric dismissals, group pop-ins, gestures without physics, flat rare moments…), gate every candidate on frequency → purpose → budget → function, report at most 5–7 opportunities with exact values plus the 2–5 rejections and the gate that killed each. The rejections are what separate this from a wishlist; nothing surviving is a valid result.
 
 ## Never ship
 

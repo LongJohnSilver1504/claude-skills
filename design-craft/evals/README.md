@@ -19,7 +19,7 @@ cd design-craft && npm run eval
 
 The target is `design-craft`, which scopes the scan to this plugin's own cases and loads this plugin. Running the suite from the repo root instead would score design-craft's cases against the `claude-skills` plugin and report a pass that means nothing.
 
-Each case is `runs: 1`, `max_turns: 4`, `allowed_tools: [Skill]`, with an `append_system_prompt` that stops the agent once it has routed: a full pass is about 15 seconds and $1.50.
+Twelve cases. Each is `runs: 1`, `max_turns: 4`, `allowed_tools: [Skill]`, with an `append_system_prompt` that stops the agent once it has routed: a full pass is about 15 seconds and $1.50.
 
 ## What a failure means
 

@@ -1,6 +1,6 @@
 # design-craft
 
-Design skills for Claude Code that give an agent the taste of a senior design engineer — 14 skills that lock a visual direction, build with exact values instead of approximations, and review with evidence instead of preference.
+Design skills for Claude Code that give an agent the taste of a senior design engineer — 15 skills that lock a visual direction, build with exact values instead of approximations, and review with evidence instead of preference.
 
 Agents don't have great taste by default: `ease-in` on an entrance, a solid border where a soft shadow belongs, Inter plus an indigo gradient on every hero, a proof bar full of invented metrics. All the small mistakes compound into interfaces that are fine and forgettable. These skills list those mistakes and how to avoid them, and they remember the decisions so the second screen matches the first.
 
@@ -55,6 +55,7 @@ The reusable layer the flow skills route to and cite. Each owns one domain, says
 | `motion` | Should it animate at all → purpose → tool → properties → curve and duration or spring → interruption → reduced motion. Build, review and scout modes, with recipes. |
 | `interface-copy` | Voice and tone, verb-first buttons, links that name destinations, errors that say how to fix, empty states that point forward, real content over lorem ipsum and clichés. |
 | `accessibility` | Native elements first, visible focus, full keyboard support, hit areas, labeled forms, accessible names, color never alone, reduced motion, live regions, structure, zoom. |
+| `mobile-web` | The phone-browser platform layer: tap highlight, `dvh`/`svh` instead of `100vh`, `viewport-fit=cover` and safe-area insets, overscroll and pull-to-refresh, `touch-action` and the tap delay, callouts on controls, carousel axis, `theme-color` per scheme, and verifying on a real device. |
 | `pick-library` | The right library for toasts, primitives, command menus, motion, numbers, charts, drag and drop, virtualization, state and theming — instead of hand-rolling. |
 
 ## Agent
@@ -76,14 +77,14 @@ The reusable layer the flow skills route to and cite. Each owns one domain, says
 The boundaries between these skills live entirely in their descriptions — nothing but a `NOT for` clause keeps a dark-mode token question out of `accessibility`. `evals/` checks that mechanically: one case per skill carrying the clause, each graded deterministically (the owning skill fires, the competitor it names does not). No LLM judge.
 
 ```bash
-npm run eval   # 11 cases, ~40s, ~$1.44 — run from design-craft/
+npm run eval   # 12 cases, ~45s, ~$1.57 — run from design-craft/
 ```
 
 `node scripts/validate.mjs` runs the free half: a skill with a `NOT for` clause and no case fails. It is a regression gate on descriptions, not a quality measure — see `evals/README.md`.
 
 ## Sources
 
-Synthesized from seven public, MIT-licensed collections — the strongest material from each, rewritten into one coherent system: [Jakub Krehel](https://github.com/jakubkrehel/skills) (review architecture, domain skills, variant, break), [Emil Kowalski](https://github.com/emilkowalski/skills) (motion framework and recipes, library picks, Apple fluid interfaces), [tastemaker](https://github.com/codeswithroh/tastemaker) (style lock, anti-slop gates, narrative arc, page shapes, diversification), [ConardLi](https://github.com/ConardLi/garden-skills) (design read and dials, checkpoints, redesign protocol), [Meng To](https://github.com/MengTo/Skills) (reference-inspired brand worlds), [elayadesign](https://github.com/elayadesign/ai-design-skills) (landing-page structure, conversion copy, content realism), and Refactoring UI as condensed in `claude-skills`. Two mechanisms — the browser-driven review loop and keying a cold start to product type — are adapted from [ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill); none of its palette, font-pairing or style data was copied. Organization follows [Matt Pocock's](https://www.aihero.dev/skills) router → main flow → shaping → reference layer.
+Synthesized from seven public, MIT-licensed collections — the strongest material from each, rewritten into one coherent system: [Jakub Krehel](https://github.com/jakubkrehel/skills) (review architecture, domain skills, variant, break), [Emil Kowalski](https://github.com/emilkowalski/skill) (motion framework, recipes, scout mode and vocabulary, library picks, Apple fluid interfaces, mobile-web platform fixes), [tastemaker](https://github.com/codeswithroh/tastemaker) (style lock, anti-slop gates, narrative arc, page shapes, diversification), [ConardLi](https://github.com/ConardLi/garden-skills) (design read and dials, checkpoints, redesign protocol), [Meng To](https://github.com/MengTo/Skills) (reference-inspired brand worlds), [elayadesign](https://github.com/elayadesign/ai-design-skills) (landing-page structure, conversion copy, content realism), and Refactoring UI as condensed in `claude-skills`. Two mechanisms — the browser-driven review loop and keying a cold start to product type — are adapted from [ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill); none of its palette, font-pairing or style data was copied. Organization follows [Matt Pocock's](https://www.aihero.dev/skills) router → main flow → shaping → reference layer.
 
 ## Maintaining
 

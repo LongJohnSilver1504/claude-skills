@@ -13,7 +13,7 @@ Work down the ladder and stop at the first rung that renders:
 3. **The component in a harness** — a story, a test route, a sandbox page the project already has. Never author a new harness during a review; a review does not mutate the project.
 4. **Static only.** Nothing renders and nothing can be started safely. Say so once in the report, and mark every runtime-decided domain `Not verified: no rendered instance`.
 
-Prefer the browser automation available in the session; a screenshot tool that only captures one width verifies one width. On a mobile-only project, the simulator or emulator is the running instance and the tiers below collapse to the device sizes the project supports.
+Prefer the browser automation available in the session; a screenshot tool that only captures one width verifies one width. On a mobile-only project, the simulator or emulator is the running instance and the tiers below collapse to the device sizes the project supports. A desktop browser at 375px is not a phone: mobile-web's domain — tap highlight, toolbar-driven viewport height, overscroll, safe areas, the keyboard — reads `Not verified: no device` unless a real device was loaded.
 
 Never start a server the project did not document, never install dependencies, never navigate to a destructive route (delete, purchase, send), and never accept a dialog on a page you did not author. A review that changed state is not a review.
 

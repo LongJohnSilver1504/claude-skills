@@ -64,7 +64,7 @@ Store text in natural case and apply `text-transform`, so a redesign never rewri
 
 ## Inputs at 16px on mobile
 
-iOS Safari zooms the page when an input's text is under `16px`. Either size the input up on small screens (`text-base sm:text-sm`) or keep `font-size: 16px` and render the design size with a transform (recipe in `references/wrapping-and-details.md`). Ask which look the design wants; both are correct.
+iOS Safari zooms the page when an input's text is under `16px`, and does not zoom back out on blur. Either size the input up on small screens (`text-base sm:text-sm`) or keep `font-size: 16px` and render the design size with a transform (recipe in `references/wrapping-and-details.md`). Ask which look the design wants; both are correct.
 
 ## Size and contrast floors
 
@@ -72,7 +72,7 @@ Long-form body starts at `16px`; move off it only for a nameable reason. UI text
 
 ## Root-level details
 
-`-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale` once on the root, never per component (Tailwind `antialiased`). Serve `.woff2`; load the weights and styles the design uses so the browser never synthesizes a fake bold or italic. Set `lang` and `dir`; isolate mixed-direction values with `<bdi>`; never reverse digits. Keep text selectable — `user-select: none` belongs only on drag surfaces.
+`-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale` once on the root, never per component (Tailwind `antialiased`). Serve `.woff2`; load the weights and styles the design uses so the browser never synthesizes a fake bold or italic. Set `lang` and `dir`; isolate mixed-direction values with `<bdi>`; never reverse digits. Keep text selectable — `user-select: none` (with `-webkit-user-select: none` for Safari) belongs only on drag surfaces and control labels (buttons, tabs, chips), where a long-press would otherwise select the label; never on `body` or content.
 
 ## Before you finish
 

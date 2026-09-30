@@ -71,7 +71,7 @@ html, body { overflow-x: clip; }            /* clip, not hidden — hidden break
 h1, h2 { min-width: 0; overflow-wrap: anywhere; }
 ```
 
-Full-viewport sections use `min-height: 100dvh`, never `height: 100vh`, so iOS Safari's toolbars do not cause a jump.
+Which viewport unit a full-height section takes — and why `100vh` breaks on phones — belongs to mobile-web.
 
 ## User-supplied images
 

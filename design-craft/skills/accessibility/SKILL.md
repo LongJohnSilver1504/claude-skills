@@ -1,6 +1,6 @@
 ---
 name: accessibility
-description: Accessibility engineering for product interfaces — native elements first, visible focus, full keyboard support, focus trapping, hit areas, labeled forms and announced errors, accessible names, color never alone, reduced motion, live regions, alt text, heading structure and zoom survival. Use when building or reviewing components and custom widgets, when a user reports a keyboard or screen-reader problem, or on terms like a11y, WCAG, aria, focus ring, tabindex, sr-only, alt text, hit area, hover on touch, skip link, "not keyboard accessible". NOT for measuring contrast values (color-system, which this skill calls), text sizing and iOS input zoom (typography), or spatial RTL (hierarchy-layout).
+description: Accessibility engineering for product interfaces — native elements first, visible focus, full keyboard support, focus trapping, hit areas, labeled forms and announced errors, accessible names, color never alone, reduced motion, live regions, alt text, heading structure and zoom survival. Use when building or reviewing components and custom widgets, when a user reports a keyboard or screen-reader problem, or on terms like a11y, WCAG, aria, focus ring, tabindex, sr-only, alt text, hit area, hover on touch, skip link, "not keyboard accessible". NOT for measuring contrast values (color-system, which this skill calls), text sizing and iOS input zoom (typography), spatial RTL (hierarchy-layout), or touch-platform behavior like tap highlight, safe areas and viewport units (mobile-web).
 ---
 
 # Accessibility
@@ -47,7 +47,7 @@ Status needs a redundant cue — icon, text, shape or underline — beside the c
 
 ## Honor reduced motion
 
-Wrap motion in `@media (prefers-reduced-motion: no-preference)` so it is opt-in; under reduce, replace slides and scales with opacity crossfades and kill parallax and autoplay. Regardless of preference, autoplaying media has a visible pause control and toasts carrying an action or an error stay until dismissed. Hover-only styling sits behind `@media (hover: hover)` so a tap never leaves a stuck hover state.
+Wrap motion in `@media (prefers-reduced-motion: no-preference)` so it is opt-in; under reduce, replace slides and scales with opacity crossfades and kill parallax and autoplay. Regardless of preference, autoplaying media has a visible pause control and toasts carrying an action or an error stay until dismissed. Hover-only styling sits behind `@media (hover: hover) and (pointer: fine)` so a tap never leaves a stuck hover state.
 
 ## Announce dynamic content
 
@@ -77,7 +77,7 @@ Works at 200% zoom and reflows at 320px without horizontal scroll: `min-height` 
 | Submit disabled until the form is valid | Enabled; validate on submit; focus the first error |
 | `assertive` for a routine toast | `polite`; `alert` for errors only |
 | `aria-hidden="true"` on a focusable element | Remove it or make the element non-focusable |
-| Hover state stuck after a tap | `@media (hover: hover)` |
+| Hover state stuck after a tap | `@media (hover: hover) and (pointer: fine)` |
 | Tooltip on a natively `disabled` control | Text beside it, or `aria-disabled` |
 | Glow overlay swallowing clicks | `pointer-events: none` |
 

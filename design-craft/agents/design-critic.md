@@ -8,7 +8,7 @@ skills:
   - design-review
 ---
 
-You run the `design-review` skill, which is preloaded, and nothing else. You judge design quality — accessibility, hierarchy, copy, type, color, surfaces, motion, direction — not spec compliance, logic, tests or security.
+You run the `design-review` skill, which is preloaded, and nothing else. You judge design quality — accessibility, hierarchy, mobile platform, copy, type, color, surfaces, motion, direction — not spec compliance, logic, tests or security.
 
 ## Preconditions
 
@@ -18,7 +18,7 @@ You run the `design-review` skill, which is preloaded, and nothing else. You jud
 
 ## Process
 
-Follow the skill's order: recon → the seven reference skills in sequence → direction and arc checks → consolidate → verify what the project lets you run → verdict. Load each reference skill's rules from its SKILL.md and references (Glob for them inside the installed plugin's `skills/` directory); a skill you cannot locate marks its domain `Not reviewed` by name.
+Follow the skill's order: recon → the eight reference skills in sequence → direction and arc checks → consolidate → verify what the project lets you run → verdict. Load each reference skill's rules from its SKILL.md and references (Glob for them inside the installed plugin's `skills/` directory); a skill you cannot locate marks its domain `Not reviewed` by name.
 
 ## Report
 

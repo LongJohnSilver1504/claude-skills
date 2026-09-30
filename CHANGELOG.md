@@ -6,6 +6,8 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+## 3.7.0 (2026-09-30)
+
 Comparison pass against [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT). Its content layer — 95 palettes, 56 font pairings, 57 style presets as CSV — was deliberately not imported: presets are the opposite of the direction-first stance in `design-craft`, and the catalogue's provenance is unverifiable. What it exposed instead were two missing mechanisms, both adopted below. The rejection is recorded in `.out-of-scope/`.
 
 ### Added

@@ -6,6 +6,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "validate": "node scripts/validate.mjs"
+    "validate": "node scripts/validate.mjs",
+    "eval": "claude plugin eval . --ablation none --no-publish --trust-plugin"
   }
 }

@@ -14,6 +14,8 @@ A stand-alone Claude Code plugin that lives beside `claude-skills` in this repo 
 8. **Agents are read-only** (`tools:` without Write/Edit).
 9. **Memory lives in `.design/`** in the consumer's project: `style-lock.md` (the system, the color contract, the "Do not" list) and `log.json` (marketing-build record for rotation). No skill invents a second memory location.
 10. **Sources are credited** in `LICENSE` and `CHANGELOG.md`; new borrowed material adds its source there.
+11. **A `NOT for` clause is checked, not asserted.** Every skill carrying one has a case in `evals/`: a realistic request plus two `tool_used` graders — the owning skill (`min: 1`) and the competitor it names (`min: 0, max: 0`). `scripts/validate.mjs` fails when a `NOT for` skill has no case or a grader names a skill that does not exist. `npm run eval` runs the cases (~$1.44, needs a model) — always from `design-craft/`, since the repo root's target would score them against the other plugin.
+12. **A review that never rendered the interface says so.** `design-review` and `design-critic` work the ladder in the review skill's `references/runtime-evidence.md` and report the rung reached in the coverage table's `runtime` row. A static review is valid; a static review claiming a runtime-decided domain is not.
 
 ## Organization (Matt Pocock's taxonomy)
 
@@ -27,6 +29,7 @@ Opinionated and brief. Positive formulation ("name the properties") over prohibi
 
 ```bash
 node scripts/validate.mjs
+npm run eval                                        # routing cases (needs a model; ~$1.44)
 claude plugin validate .claude-plugin/plugin.json   # plugin + every SKILL.md
 claude plugin validate . --strict                   # marketplace manifest
 ```

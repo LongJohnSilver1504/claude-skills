@@ -6,6 +6,17 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+Comparison pass against [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT). Its content layer — 95 palettes, 56 font pairings, 57 style presets as CSV — was deliberately not imported: presets are the opposite of the direction-first stance in `design-craft`, and the catalogue's provenance is unverifiable. What it exposed instead were two missing mechanisms, both adopted below. The rejection is recorded in `.out-of-scope/`.
+
+### Added
+
+- **`evals/` — routing cases with an offline gate.** Invariant 4 has required a `NOT for <competitor>` clause on every competing skill since v3.0, and nothing ever checked that the clause changed behaviour; a widened trigger or a deleted clause only showed up in a user's session. One case per skill that carries the clause (10 of them): a realistic request plus two deterministic `tool_used` graders — the owning skill fires (`min: 1`), the competitor it names does not (`min: 0, max: 0`). No LLM judge anywhere. `npm run eval` runs the suite in ~40s for ~$1.60; `scripts/validate-skills.mjs` gained the free half, which fails when a `NOT for` skill has no case or a grader names a skill that does not exist. All 10 passed on first run — this is a regression gate on descriptions, not a discovery tool, and `evals/README.md` says so. Adapted from the upstream project's relevance-evaluation harness (graded judgments, hard negatives, a CI floor); its fingerprinting and nDCG scoring were not needed for a corpus of 26 routing decisions.
+- **`agents/design-reviewer.md` — a runtime phase before the audit.** The agent judged a feature's UI from source alone, so what actually overlaps at the container width, where focus actually lands, and what a loading or error state actually looks like were all inference. It now opens the screens at the project's dev URL, walks the shipped states, tabs each screen, and reads the console before judging anything visual — a failed font or a 404 asset explains most "the spacing is wrong" findings. Read-only browser tools only; it starts no server and clicks nothing destructive. When nothing renders it says so in the Summary and marks the runtime-decided checks `not verified` — a static audit is a valid report, a static audit claiming runtime coverage is not.
+
+### Changed
+
+- **CI validates `design-craft`.** The sibling plugin has had its own validator since v1.0 and CI never ran it; `node design-craft/scripts/validate.mjs` is now a step in `validate.yml`, alongside a `routing-evals` job that runs both suites when `ANTHROPIC_API_KEY` is present and skips with a loud warning when it is not.
+
 ## 3.6.0 (2026-09-08)
 
 ### Added

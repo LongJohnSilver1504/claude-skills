@@ -69,10 +69,21 @@ The reusable layer the flow skills route to and cite. Each owns one domain, says
 - **Evidence, not taste.** Reviews cite `file:line`, show Before and After, measure contrast rather than eyeballing it, and mark unrun checks `Not verified`.
 - **Cheaper fix first.** Delete → use the platform → reuse a project token → correct the value → add.
 - **Exact values.** `scale(0.96)`, `cubic-bezier(0.23, 1, 0.32, 1)`, `oklch(0 0 0 / 0.1)` — never a familiar-looking substitute.
+- **Render before you judge.** A review opens the interface, captures the viewport tiers, walks the keyboard, the states and the console, and reports which rung of that ladder it reached. A static review is valid; a static review claiming a runtime-decided domain is not.
+
+## Routing evals
+
+The boundaries between these skills live entirely in their descriptions — nothing but a `NOT for` clause keeps a dark-mode token question out of `accessibility`. `evals/` checks that mechanically: one case per skill carrying the clause, each graded deterministically (the owning skill fires, the competitor it names does not). No LLM judge.
+
+```bash
+npm run eval   # 11 cases, ~40s, ~$1.44 — run from design-craft/
+```
+
+`node scripts/validate.mjs` runs the free half: a skill with a `NOT for` clause and no case fails. It is a regression gate on descriptions, not a quality measure — see `evals/README.md`.
 
 ## Sources
 
-Synthesized from seven public, MIT-licensed collections — the strongest material from each, rewritten into one coherent system: [Jakub Krehel](https://github.com/jakubkrehel/skills) (review architecture, domain skills, variant, break), [Emil Kowalski](https://github.com/emilkowalski/skills) (motion framework and recipes, library picks, Apple fluid interfaces), [tastemaker](https://github.com/codeswithroh/tastemaker) (style lock, anti-slop gates, narrative arc, page shapes, diversification), [ConardLi](https://github.com/ConardLi/garden-skills) (design read and dials, checkpoints, redesign protocol), [Meng To](https://github.com/MengTo/Skills) (reference-inspired brand worlds), [elayadesign](https://github.com/elayadesign/ai-design-skills) (landing-page structure, conversion copy, content realism), and Refactoring UI as condensed in `claude-skills`. Organization follows [Matt Pocock's](https://www.aihero.dev/skills) router → main flow → shaping → reference layer.
+Synthesized from seven public, MIT-licensed collections — the strongest material from each, rewritten into one coherent system: [Jakub Krehel](https://github.com/jakubkrehel/skills) (review architecture, domain skills, variant, break), [Emil Kowalski](https://github.com/emilkowalski/skills) (motion framework and recipes, library picks, Apple fluid interfaces), [tastemaker](https://github.com/codeswithroh/tastemaker) (style lock, anti-slop gates, narrative arc, page shapes, diversification), [ConardLi](https://github.com/ConardLi/garden-skills) (design read and dials, checkpoints, redesign protocol), [Meng To](https://github.com/MengTo/Skills) (reference-inspired brand worlds), [elayadesign](https://github.com/elayadesign/ai-design-skills) (landing-page structure, conversion copy, content realism), and Refactoring UI as condensed in `claude-skills`. Two mechanisms — the browser-driven review loop and keying a cold start to product type — are adapted from [ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill); none of its palette, font-pairing or style data was copied. Organization follows [Matt Pocock's](https://www.aihero.dev/skills) router → main flow → shaping → reference layer.
 
 ## Maintaining
 

@@ -180,6 +180,56 @@ for (const s of skillNames) {
   if (!readme.includes(`\`${s}\``)) fail(join(root, 'README.md'), null, `Skill \`${s}\` is not in the README catalog.`, 'Add a row.')
 }
 
+// ---------- 3b. Routing evals cover every skill that claims a NOT-for boundary ----------
+// The boundaries between these skills live entirely in their descriptions, so a
+// `NOT for <competitor>` clause is the only thing keeping a colour question out of
+// accessibility. Every skill that makes the claim carries a case asserting it. This is
+// the offline half; `npm run eval` runs the cases, which need a model.
+const evalsDir = join(root, 'evals')
+if (!existsSync(evalsDir)) {
+  fail(evalsDir, null, 'No evals/ directory.', 'Add routing cases — see evals/README.md.')
+} else {
+  const caseDirs = readdirSync(evalsDir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && e.name !== 'results')
+    .map((e) => e.name)
+  const covered = new Set()
+
+  for (const c of caseDirs) {
+    const caseDir = join(evalsDir, c)
+    const gradersDir = join(caseDir, 'graders')
+    if (!existsSync(join(caseDir, 'prompt.md'))) {
+      fail(caseDir, null, 'Eval case has no prompt.md.', 'Add one, or delete the directory.')
+      continue
+    }
+    const graders = existsSync(gradersDir) ? readdirSync(gradersDir).filter((f) => f.endsWith('.md')) : []
+    if (!graders.length) {
+      fail(caseDir, null, 'Eval case has no graders — it can never fail.', 'Add a grader under graders/.')
+      continue
+    }
+    for (const g of graders) {
+      const gPath = join(gradersDir, g)
+      const gText = readFileSync(gPath, 'utf8')
+      const target = gText.match(/^input_match:\s*(\S+)\s*$/m)?.[1]
+      if (!target) continue
+      if (!skillNames.includes(target)) {
+        fail(gPath, null, `Grader asserts on \`${target}\`, which is not a skill in skills/.`,
+          'Fix the name — a case naming a skill that does not exist passes for the wrong reason.')
+        continue
+      }
+      const min = gText.match(/^min:\s*(\d+)\s*$/m)
+      if (min && Number(min[1]) >= 1) covered.add(target)
+    }
+  }
+
+  for (const name of skillNames) {
+    const desc = readFileSync(join(skillsDir, name, 'SKILL.md'), 'utf8').match(/^description:\s*(.+)$/m)?.[1] ?? ''
+    if (!/NOT for/i.test(desc) || covered.has(name)) continue
+    fail(join(skillsDir, name, 'SKILL.md'), null,
+      `\`${name}\` claims a NOT-for boundary but no eval case asserts it fires.`,
+      `Add evals/NN-${name}/ with a \`fires-${name}\` grader (tool_used, min: 1) and a \`not-<competitor>\` grader.`)
+  }
+}
+
 // ---------- 4. Agents are read-only ----------
 for (const agentFile of readdirSync(join(root, 'agents')).filter((f) => f.endsWith('.md'))) {
   const p = join(root, 'agents', agentFile)

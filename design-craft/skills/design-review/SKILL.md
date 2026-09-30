@@ -21,7 +21,13 @@ Press hard on the escalation triggers and leave deliberate project choices alone
 
 Identify the framework, styling system, component library, tokens, supported viewports and any preview or test command; write every fix in the project's idiom. Read `.design/style-lock.md` and whatever the project wrote about its interface (`CLAUDE.md`, `CONTRIBUTING.md`, design-system docs); name what you found or that there was none. Documentation tells you *where* a finding belongs — when a shared token or guideline is the cause, report it once against that source with the components as locations — never whether to drop it. "It's in the style guide" retires nothing.
 
-## 3. Load every owning skill and review in order
+## 3. Open the interface
+
+Render what you are about to judge before you judge it. Work the ladder in `references/runtime-evidence.md` (running instance → built preview → existing harness → static only), capture the viewport tiers the project supports — 320px and 1440px at minimum — and complete the keyboard, state and console walks.
+
+Half the escalation triggers below are decided at runtime and cannot be settled from source: what clips at 320px, where focus lands, which pair renders on which background, whether the console is already telling you the cause. Reaching only the static rung is a valid review; claiming a runtime-decided domain from it is not. Name the rung you reached, mark what it could not reach `Not verified`, and never start a server, install anything or trigger a destructive action to get further.
+
+## 4. Load every owning skill and review in order
 
 Confirm each is available, then apply them in this order so foundational failures are not hidden by polish:
 
@@ -31,11 +37,11 @@ Then two checks the reference skills do not own: **direction** — does the work
 
 Take each skill's principles, references and verification checks; its standalone severity ladder and format are replaced by the consolidated ones here. An unavailable skill marks its domain `Not reviewed` by name — never recreate its rules from memory or claim coverage. When two skills seem to cover one issue, assign it to the owner of the underlying rule and note the secondary effect in **Why**.
 
-## 4. Require evidence
+## 5. Require evidence
 
 Every finding cites `path/to/file:line` and shows the current implementation. No code-level finding from appearance alone; no visual finding from source alone when runtime behavior decides it. Contrast values are measured, never estimated.
 
-## 5. Rank by user impact
+## 6. Rank by user impact
 
 - `HIGH` blocks a task, misleads, hides content or controls, risks data loss, or is a repeated systemic failure.
 - `MEDIUM` meaningfully harms comprehension, efficiency, adaptability or consistency.
@@ -62,25 +68,25 @@ Within a severity, rank by reach: a token or shared-component fix outranks the s
 
 Triggers rank above everything; when more fire than the cap allows, list them first and say how many the cap excluded. In a change review, a confirmed `Regression` against a trigger is `HIGH` even where the pre-existing symptom would be `MEDIUM`.
 
-## 6. Prefer the cheaper fix
+## 7. Prefer the cheaper fix
 
 When several fixes would work, take the earliest: **delete** (a separator space would carry, an animation on a high-frequency action, an ARIA attribute a native element makes redundant, a ramp nothing imports) → **use the platform** (native element, browser focus ring) → **reuse what the project has** (existing token, spacing step, curve) → **correct the value** (the exact one the owning skill gives) → **add** (a token, a wrapper, a media query). A fix written at "add" where "delete" was available is itself a finding.
 
-## 7. Consolidate
+## 8. Consolidate
 
 One root cause is one finding, every confirmed location in the same row. Report at most 15 findings. Never pad; a short review or no findings is a valid result.
 
-## 8. Verify what can be verified
+## 9. Verify what the project lets you run
 
-Run the safe checks the project offers and inspect the rendered interface when runtime behavior or visual judgment matters. Report the exact command or interaction and its result. A check you cannot run is `Not verified`, never a finding and never silently assumed.
+Run the safe checks the project offers — lint, type-check, an accessibility or contrast script, the test command — on top of the captures and walks from step 3. Report the exact command or interaction and its result. A check you cannot run is `Not verified`, never a finding and never silently assumed.
 
-## 9. Review without mutating
+## 10. Review without mutating
 
 A review is read-only. Edit only when the user also asks you to implement the findings; then keep the report as the change scope and re-run the relevant verification afterward. Grading and changing are different acts.
 
 ## Output
 
-The full format is in `references/review-format.md`: scope and recon, a coverage table (every domain: findings count, `Clear`, or `Not reviewed: why`), one findings table, verification, verdict.
+The full format is in `references/review-format.md`: scope and recon, a coverage table (a `Runtime` row naming the instance, tiers and walks, then every domain: findings count, `Clear`, or `Not reviewed: why`), one findings table, verification, verdict.
 
 | Severity | Domain | Location | Before | After | Why |
 | --- | --- | --- | --- | --- | --- |
@@ -94,6 +100,9 @@ Always a single table with Before and After as columns — never a list of "Befo
 | --- | --- |
 | Seven disconnected domain reports | One ranked table |
 | Visual claim inferred from source only | Inspect the rendered state or mark `Not verified` |
+| Judged without ever rendering it | Work the ladder in `references/runtime-evidence.md`; name the rung you reached |
+| One width captured, "responsive" claimed | Name every tier you captured; 320px and 1440px at minimum |
+| Layout finding reported over the console error causing it | Read the console first; report the cause |
 | Silent coverage gaps | The coverage table shows every domain and state inspected |
 | Missing skill treated as covered | `Not reviewed`, by name |
 | Every legacy issue in a touched file reported | Three pre-existing findings, in their own section |
@@ -102,4 +111,4 @@ Always a single table with Before and After as columns — never a list of "Befo
 | Findings phrased as preference | Cite the principle and the user impact, or drop it |
 | Contrast "looks low" | Measure it or mark it `Not verified` |
 
-**Done when:** the scope is stated, every domain appears in the coverage table with real evidence or a named reason, every finding has `file:line`, Before, After and Why, triggers lead the table, verification lists what ran and what did not, and the verdict follows the `HIGH` rule.
+**Done when:** the scope is stated, the coverage table names the runtime rung reached with its tiers and walks, every domain appears with real evidence or a named reason, every finding has `file:line`, Before, After and Why, triggers lead the table, verification lists what ran and what did not, and the verdict follows the `HIGH` rule.

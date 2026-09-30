@@ -14,6 +14,55 @@ Use only when the ladder in the skill reached the bottom: no codebase tokens, no
 
 When the brief states the mood ("playful app for teens"), use it. When the idea spans two moods with no lean, ask which should dominate — that is the one question worth asking.
 
+## Product type → mood
+
+The signal lists above leave too much room: "a booking tool for a spa" and "a booking tool for a freight yard" read the same through them and must not land in the same lane. Look the product type up here first, and fall back to the signals only for something genuinely not on the list.
+
+The third column is the point of the table. Every lane has a version of itself that a model reaches for by reflex, and the product type is what pulls it off that default — without it this is a preset catalogue, which is the thing we are not building.
+
+| Product type | Mood | Pull it off the lane's default |
+| --- | --- | --- |
+| B2B SaaS, "for teams" | Premium | the accent belongs on one action per view, not on the nav, the logo and every heading |
+| Fintech, banking, payments | Premium | numbers are the interface: tabular figures and a real data type role before any brand decision |
+| Analytics, BI, reporting | Premium | the chart palette is a separate decision from the brand accent, and it is categorical, not a ramp |
+| Insurance, legal, compliance | Premium | density reads as seriousness here; airy layouts read as a marketing site for a product that is not one |
+| Enterprise admin, ops console | Premium | dark-native is a request, not a default — operators mostly sit in bright rooms |
+| CRM, sales tooling | Premium | the row is the unit; design the table before the dashboard |
+| HR, payroll, people ops | Premium → Warm | the warmest thing in a payroll product should be the copy, not the palette |
+| Healthcare, patient-facing | Warm | warm never means soft contrast; clinical information carries the strictest contrast in the product |
+| Medical, clinician-facing | Premium | this is an ops console with lives attached — density and zero ambiguity beat reassurance |
+| Wellness, fitness, meditation | Warm | resist the gradient; this lane's tell is a purple-to-pink hero |
+| Coaching, therapy, mental health | Warm | one quiet accent and generous measure; enthusiasm in this lane reads as a sales pitch |
+| Education, courses, e-learning | Warm | progress and state need their own color meanings before the brand gets one |
+| Parenting, family, childcare | Warm | warm, not childish — the buyer is an exhausted adult, not the child |
+| Nonprofit, civic, community | Warm | photography of real people carries this lane; illustration reads as a stock template |
+| Food delivery, restaurants | Warm | the food is the art direction; keep the interface quiet enough to let imagery run |
+| Hobby marketplace, local services | Warm | seller-supplied images will be inconsistent — design the frame that makes them look deliberate |
+| Developer tool, API, CLI | Technical | mono is for code, data and timestamps; a mono body is the lane's costume, not its craft |
+| Infrastructure, devops, monitoring | Technical | status color is the whole product; fix the status ramps before the accent |
+| Database, data platform | Technical | the empty state and the ten-thousand-row state are the two real designs |
+| Security, cybersecurity | Technical | severity needs an ordered scale, not four unrelated hues; and never a matrix-green hero |
+| AI product, agent, LLM tooling | Technical | streaming, partial and failed output are the primary states — design those first |
+| Open source project site | Technical | the install command is the hero; treat everything above it as overhead |
+| Games, game adjacent | Playful | the game supplies the spectacle; the UI around it stays quiet or it competes |
+| Creator tools, editors | Playful → Technical | the canvas takes the color budget; the chrome goes neutral |
+| Music, audio, podcasts | Playful | artwork is the palette — pull accents from the content, do not impose one on it |
+| Dating, social, community feed | Playful | one vivid hue on a quiet base; a second saturated hue turns the feed into noise |
+| Youth, student, consumer app | Playful | the base still has to survive daylight on a cheap phone screen |
+| Publishing, editorial, news | Elegant | measure, hierarchy and the byline scale carry it; a card grid flattens an argument into a catalogue |
+| Portfolio, personal site | Elegant | the work is the design; a strong frame around weak work fools nobody |
+| Agency, studio, consultancy | Elegant | one signature move executed exactly, or it reads as a template with better fonts |
+| Luxury retail, fashion, beauty | Elegant | restraint is the signal: fewer weights, more space, no shadows |
+| Gallery, museum, archive | Elegant | the image outline rule matters more here than anywhere else |
+| Real estate, property | Elegant → Premium | photography quality decides this lane; design the bad-photo case |
+| Travel, hospitality, booking | Warm → Elegant | dates, prices and availability are dense data wearing a warm coat — do not let the coat win |
+| Logistics, fleet, field ops | Technical → Premium | built for gloves, glare and one hand; hit areas and contrast beat every other decision |
+| Job board, recruiting | Premium → Warm | scanning is the job; the row's information hierarchy is the whole design |
+| Marketplace, multi-vendor | Premium | two audiences, two surfaces — do not let the seller console inherit the buyer's art direction |
+| CMS, internal content tooling | Technical | the editing surface should disappear; every control the writer does not need is a cost |
+
+An arrow means the first mood sets type and shape while the second adjusts palette and density. A product type that is genuinely absent gets classified by the signals above, and the row that would have covered it gets added here.
+
 ## Type pairing per mood
 
 All Google Fonts. Pair for contrast, not similarity; the pairing is a starting point, not a mandate.

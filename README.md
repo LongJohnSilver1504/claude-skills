@@ -320,6 +320,17 @@ Instructions are advisory; hooks are deterministic. The plugin ships six (`hooks
 | `iron-law-stop` | Stop | Blocks ending a turn with modified source files until the project's verify command passes — **opt-in**, active only when `.claude/iron-law.json` exists (seeded by `/setup-daher-skills`) |
 | `agent-heartbeat` | SubagentStart / PostToolUse / PostToolUseFailure / SubagentStop | Records every subagent's tool calls, files written and last-activity time in `~/.claude/heartbeats/<session>/<agent>.json` — never blocks. `scripts/agent-status.mjs` reads it to print a per-agent table with the run's `Progress: n/N gates`, or `--watch` to wake the orchestrator with one line when an agent goes silent (default 5 min). Design and recovery procedure: `skills/execute-tasks/references/AGENT-LIVENESS.md` |
 
+## Routing Evals (Descriptions, Checked)
+
+Every skill that competes with another carries a `NOT for <competitor>` clause in its description. `evals/` checks that the clause changes behaviour instead of just claiming to: one case per skill that has one, each a realistic request graded deterministically — the owning skill fires (`tool_used`, `min: 1`) and the competitor it names does not (`min: 0, max: 0`). No LLM judge.
+
+```bash
+npm run eval                  # 10 pipeline cases, ~40s, ~$1.60 (needs a model)
+cd design-craft && npm run eval   # 11 design-craft cases, ~$1.44
+```
+
+`node scripts/validate-skills.mjs` runs the free half on every PR: a skill with a `NOT for` clause and no case fails, and so does a grader naming a skill that does not exist. It is a **regression gate on descriptions**, not a quality measure — every case passed the first time it ran, and their value is the next edit that widens a trigger or drops a clause. Details and honest limits in [`evals/README.md`](evals/README.md).
+
 Hooks load from `hooks/hooks.json` by convention — do not also declare them in `plugin.json` (Claude Code ≥ 2.1 rejects the duplicate reference and logs `Hook load failed` on every session; the validator and `tests/plugin-manifest.test.mjs` guard this).
 
 ## Upstream Skills
@@ -333,6 +344,7 @@ Some skills were adapted from external sources. To pull updates, check the origi
 | `/writing-skills` | [obra/superpowers](https://github.com/obra/superpowers) (adapted) + [Anthropic skill authoring docs](https://docs.claude.com) |
 | `/test-mobile-app`, `/ios-simulator`, `/android-emulator` | Patterns distilled from [pingdotgg/t3code](https://github.com/pingdotgg/t3code) `.agents/skills`, itself partly adapted from OpenAI's [`build-ios-apps`](https://github.com/openai/plugins/tree/main/plugins/build-ios-apps) (MIT). Rewritten generically — no T3-specific commands, tooling, or stack assumptions carried over. |
 | `block-no-verify` + `block-lint-config-edits` hooks, reviewer "require proof" gate + false-positive catalog, build-fix dispatch contract, right-sizing tiers, `react-performance.md` + `frontend-security.md` rules, click-path audit, motion library contract | [affaan-m/ECC](https://github.com/affaan-m/ECC) — Everything Claude Code (MIT). Cherry-picked mechanisms only, rewritten to this pipeline's contracts (the CHANGELOG entry that ships them and `.out-of-scope/` record what was deliberately *not* adopted). |
+| Routing eval suites (`evals/`), the browser-driven runtime phase in `design-reviewer` and `design-craft`'s design review | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT). Mechanisms only — its ~1.9 MB CSV catalog of palettes, font pairings and style presets was deliberately not imported; see `.out-of-scope/design-preset-catalog.md`. |
 
 These skills are snapshots — they don't auto-update. When the upstream source changes, review it and update the skill content manually.
 

@@ -48,7 +48,7 @@ If a request mixes refactor + behavior change, split it: refactor first (this sk
    - **Promote to `shared/` or `ui/custom/`** → project-structure placement rules; move, update every consumer from the Phase 0 map, delete the original
    - **Absorb duplication** → react-clean-architecture extraction triggers (3+ occurrences, or 2 with a third in sight — not before)
    - **Migrate legacy code toward `{app}` patterns** → project-structure.md scope notes (only when already touching that code)
-   - **Feature predates the API boundary** → migrate that endpoint's slice to dto/mapper per api-boundary.md's migration note (see the stays migration as the reference)
+   - **Feature predates the API boundary** → migrate that endpoint's slice to dto/mapper per api-boundary.md's migration note (migrate one endpoint first and use it as the reference for the rest)
 4. **Execute surgically.** Every changed line traces to the refactor goal (working-principles trace test). No drive-by improvements, no comment rewrites, no formatting churn — mention smells you find, don't fix them here.
 5. Go to Final Phase.
 

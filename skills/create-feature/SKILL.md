@@ -30,7 +30,7 @@ For shared infrastructure (providers, hooks, layouts, i18n, config), use **creat
 
 Small deltas not covered by the rules are listed in [references/shared-conventions.md](references/shared-conventions.md).
 
-**Living example:** the merged `stays` feature — read its `api/`, `domain/`, `queries/`, `hooks/`, and sub-feature directories when a template leaves you unsure. **Exception:** stays predates the API-boundary rule (it re-exports schema types as domain) — for dto/mapper structure follow `api-boundary.md` and this skill's templates, not stays; stays remains the reference for adapter/error/query mechanics.
+**Living example:** the most complete feature already merged in the project — read its `api/`, `domain/`, `queries/`, `hooks/`, and sub-feature directories when a template leaves you unsure. **Exception:** if it predates the API-boundary rule (it re-exports schema types as domain), follow `api-boundary.md` and this skill's templates for dto/mapper structure; it stays the reference for adapter/error/query mechanics.
 
 ## Why the DTO + Mapper Boundary
 

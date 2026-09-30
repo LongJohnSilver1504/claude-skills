@@ -49,10 +49,10 @@ The tables below map **UI concepts to component choices** (the project's design 
 |------------|-----------|-------------|-------------|
 | Page wrapper | `AppContainer` | `@/ui/custom/app-container` | Root layout container for pages |
 | Navigate back | `BackButton` | `@/ui/custom/back-button` | Page-level back navigation |
-| Progress indicator | `FuelMeter` | `@/ui/custom/fuel-meter` | Visual progress/level display |
+| Progress indicator | `ProgressMeter` | `@/ui/custom/progress-meter` | Visual progress/level display |
 | Multi-step flow | `Stepper` | `@/ui/custom/stepper` | Wizard/checkout flows |
 | Language toggle | `LanguageSelector` | `@/ui/custom/language-selector` | EN/ES language switch |
-| Top navigation | `TruckerNavbar` | `@/ui/custom/navbar` | App header with nav |
+| Top navigation | `AppNavbar` | `@/ui/custom/navbar` | App header with nav |
 | Debug overlay | `DevToolPanel` | `@/ui/custom/dev-tool-panel` | Development-only debugging |
 
 ## Form Components

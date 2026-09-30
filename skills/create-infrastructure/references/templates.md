@@ -221,7 +221,7 @@ export { use{Name} } from './use-{name}'
   "navbar": {
     "menu": "Menu",
     "home": "Home",
-    "findBay": "Find Bay",
+    "orders": "Orders",
     "messages": "Messages",
     "profile": "Profile"
   },
@@ -238,7 +238,7 @@ export { use{Name} } from './use-{name}'
   "navbar": {
     "menu": "Menú",
     "home": "Inicio",
-    "findBay": "Buscar Bahía",
+    "orders": "Pedidos",
     "messages": "Mensajes",
     "profile": "Perfil"
   },

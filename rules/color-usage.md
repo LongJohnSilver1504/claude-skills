@@ -13,7 +13,7 @@ All colors must come from the design token system defined in `src/styles/globals
 1. **Never use raw Tailwind color classes** like `text-red-500`, `bg-blue-200`, `border-green-300`, `text-gray-600`, etc. Always use semantic theme tokens instead.
 2. **Never use inline hex, rgb, or oklch values** in component code. All color values are defined once in `globals.css`.
 3. **Use semantic tokens** that describe purpose, not appearance: `text-destructive` not `text-red-600`, `bg-success` not `bg-green-500`, `text-warning` not `text-amber-500`.
-4. **Feature-specific tokens** (e.g., `--bay-card-upcoming`, `--fuel-meter-danger`) are defined in `globals.css` and documented in the feature's UX spec.
+4. **Feature-specific tokens** (e.g., `--order-card-pending`, `--progress-meter-danger`) are defined in `globals.css` and documented in the feature's UX spec.
 5. **New color tokens** must be added to `globals.css` with both light and dark mode values in OKLCH format, then exposed via the `@theme inline` block.
 
 ## Token Reference

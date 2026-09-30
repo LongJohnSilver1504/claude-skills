@@ -94,7 +94,7 @@ Don't define `headline = 2.5em` and call it done. The relationship between headl
 When elements are grouped without a visible separator (border, background), spacing has to do the grouping. **Space around a group must be larger than space within the group.** Common failures: label–input pairs where margin-below-label equals margin-below-input (the form looks like a list of unconnected elements); bulleted lists where line-height of one bullet equals gap between bullets.
 
 ### 3.7 User images get fixed containers
-Users will give you whatever aspect ratio they have. Don't let user-uploaded images (truck photos, plate captures, avatars) dictate your layout — force them into a fixed container with `object-fit: cover` (or `background-size: cover`). For images whose background might match your UI background, use a subtle **inner box-shadow** instead of a border; borders clash with image colors, shadows don't.
+Users will give you whatever aspect ratio they have. Don't let user-uploaded images (product photos, receipt scans, avatars) dictate your layout — force them into a fixed container with `object-fit: cover` (or `background-size: cover`). For images whose background might match your UI background, use a subtle **inner box-shadow** instead of a border; borders clash with image colors, shadows don't.
 
 ---
 

@@ -95,11 +95,11 @@ These are short enough to read in full. Do it once at the start of the audit; yo
 
 ## Example interaction (Build)
 
-> User: "Build the stay summary card for the metered stay detail page."
+> User: "Build the order summary card for the order detail page."
 
 After reading the references, the response opens with the hierarchy decision:
 
-> "Primary: the amount due — it's the number the trucker came to see. Secondary: the warehouse name and bay. Tertiary: check-in time and plate. The card gets an accent top border in the warning hue since payment is pending (rule 8.2), one `default` button ('Pay this stay'), and a `ghost` receipt link (rule 2.8). Amount and '/stay' align by baseline (rule 4.4). Two font weights total."
+> "Primary: the amount due — it's the number the customer came to see. Secondary: the store name and order number. Tertiary: order time and tracking number. The card gets an accent top border in the warning hue since payment is pending (rule 8.2), one `default` button ('Pay this order'), and a `ghost` receipt link (rule 2.8). Amount and 'due now' align by baseline (rule 4.4). Two font weights total."
 
 Then the code:
 
@@ -107,10 +107,10 @@ Then the code:
 <Card className="flex flex-col border-t-4 border-t-warning">
   <CardHeader>
     <div className="flex items-baseline justify-between">
-      <h3 className="text-lg font-semibold">Sunrise Logistics</h3>
-      <span className="text-xs uppercase tracking-wider text-muted-foreground">Bay 4</span>
+      <h3 className="text-lg font-semibold">Sunrise Market</h3>
+      <span className="text-xs uppercase tracking-wider text-muted-foreground">#1042</span>
     </div>
-    <p className="text-sm text-muted-foreground">Checked in 6:42 AM · ABC-1234</p>
+    <p className="text-sm text-muted-foreground">Placed 6:42 AM · TRK-1234</p>
   </CardHeader>
   <CardContent className="space-y-6">
     <div className="flex items-baseline gap-1">
@@ -119,7 +119,7 @@ Then the code:
     </div>
     <ul className="space-y-3 text-sm">
       <li className="flex items-start justify-between">
-        <span className="text-muted-foreground">Parking (3h 15m)</span>
+        <span className="text-muted-foreground">Items (3)</span>
         <span className="tabular-nums">$32.50</span>
       </li>
       <li className="flex items-start justify-between">
@@ -129,7 +129,7 @@ Then the code:
     </ul>
   </CardContent>
   <CardFooter className="flex flex-col gap-2">
-    <Button className="w-full min-h-11">Pay this stay</Button>
+    <Button className="w-full min-h-11">Pay this order</Button>
     <Button variant="ghost" className="w-full min-h-11">View receipt</Button>
   </CardFooter>
 </Card>
@@ -141,7 +141,7 @@ Notice what's happening:
 - One `default` button, one `ghost` (rule 2.8).
 - `border-t-4 border-t-warning` accent using a semantic token (rule 8.2).
 - `items-baseline` on `$36.50` + `due now` (rule 4.4).
-- `text-xs uppercase tracking-wider` on the bay label (rule 4.8).
+- `text-xs uppercase tracking-wider` on the order-number label (rule 4.8).
 - `text-foreground` / `text-muted-foreground` / `border-t-warning` — every color is a token; three text colors max, two weights total (rule 2.2).
 - `min-h-11` keeps both buttons at the 44px touch-target minimum.
 

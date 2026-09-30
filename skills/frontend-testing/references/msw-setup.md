@@ -9,12 +9,12 @@ Mock Service Worker v2 intercepts HTTP requests at the network level, so your co
 
 There is **no global MSW server** — no `test/mocks/server.ts`, and nothing MSW-related in `vitest.setup.ts` (that file is polyfills-only). The wiring has two halves:
 
-1. **Handler catalog per feature** — handlers live in the feature's `testing/handlers.ts` (e.g., `features/stays/testing/handlers.ts` exports `buildAllHandlers()`). The same catalog powers both the browser dev-mode worker (`{app}/shared/mocks/browser.ts`) and node-side tests.
+1. **Handler catalog per feature** — handlers live in the feature's `testing/handlers.ts` (e.g., `features/orders/testing/handlers.ts` exports `buildAllHandlers()`). The same catalog powers both the browser dev-mode worker (`{app}/shared/mocks/browser.ts`) and node-side tests.
 2. **Server per test file** — each test file that exercises the network creates its own `setupServer` in `beforeAll` and tears it down in `afterAll`.
 
 ## Per-Test-File Server Setup
 
-The real pattern from `features/stays/api/stays.api.test.ts`:
+The pattern, e.g. in `features/orders/api/orders.api.test.ts`:
 
 ```tsx
 import type { SetupServer } from 'msw/node'
@@ -26,12 +26,12 @@ vi.mock('@/env', () => ({
 }))
 
 let server: SetupServer
-let stayApi: typeof import('./stays.api').stayApi
+let orderApi: typeof import('./orders.api').orderApi
 
 beforeAll(async () => {
   // Dynamic imports so the env mock is in place before the modules load
   const { buildAllHandlers } = await import('../testing/handlers')
-  stayApi = (await import('./stays.api')).stayApi
+  orderApi = (await import('./orders.api')).orderApi
 
   server = setupServer(...buildAllHandlers())
   server.listen({ onUnhandledRequest: 'error' })
@@ -136,7 +136,7 @@ Handler catalogs live inside the owning feature's `testing/` folder and export a
 import { http, HttpResponse } from 'msw'
 
 const authHandlers = [
-  http.post('*/user/warehouse-owner/login', async ({ request }) => {
+  http.post('*/auth/login', async ({ request }) => {
     const body = await request.json()
     return HttpResponse.json({
       accessToken: 'test-access-token',

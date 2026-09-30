@@ -6,6 +6,14 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+### Changed
+
+- **Examples use a neutral domain — the TruckBays one is gone.** Invariant 10 banned TruckBays values and the name never appeared, but the examples still spoke its domain: `TruckerNavbar` and `FuelMeter` in the seeded rules and the page template, a `stays` feature named as the "living example" `create-feature` should read, `warehouse-owner` login endpoints, bays, plates, leases, a trucker's parking card in `refactoring-ui`, a "Find Bay" i18n key. The model copies examples, so a fresh project got a navbar named after someone else's users. Every example now uses orders, a store, subscriptions and coupons (`AppNavbar`, `ProgressMeter`, `/auth/login`, `orders.api.ts`, `trackingNumber`); `create-feature` and its templates point at "the most complete feature already merged in the project" instead of a path that only exists in one codebase. 18 files in `skills/` and `rules/`, one line in `design-craft`.
+
+### Added
+
+- **`validate-skills.mjs` checks invariant 10 by vocabulary, not just by name.** A case-sensitive term list (trucker, bays, warehouse, fuel meter, metered, `cab_plate`, the `stays` identifiers, "bahía") runs over `skills/`, `agents/` and `rules/`. Run against the previous content it reports 50 hits; the prose word "stay" is deliberately not on it.
+
 ## 3.7.0 (2026-09-30)
 
 Comparison pass against [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT). Its content layer — 95 palettes, 56 font pairings, 57 style presets as CSV — was deliberately not imported: presets are the opposite of the direction-first stance in `design-craft`, and the catalogue's provenance is unverifiable. What it exposed instead were two missing mechanisms, both adopted below. The rejection is recorded in `.out-of-scope/`.

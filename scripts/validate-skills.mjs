@@ -399,6 +399,18 @@ for (const agentFile of readdirSync(join(root, 'agents')).filter((f) => f.endsWi
   }
 }
 
+// ---------- 6. No TruckBays vocabulary in generic content (invariant 10) ----------
+// The name alone is not enough: examples leaked the domain (TruckerNavbar,
+// stays, bays, warehouse-owner endpoints) while never saying "TruckBays".
+const PROJECT_TERMS = /[Tt]ruck[Bb]ays?|[Tt]rucker|\b[Tt]rucks?\b|[Ff]uel-?[Mm]eter|\b[Bb]ays?\b|bayNames|[Ww]arehouse|[Bb]ah[ií]as?|[Mm]etered|cab_plate|features\/stays|\bstays(?:Api|\.)|\bStay(?:Dto|Status)?\b/
+for (const file of [...walkMd(skillsDir), ...walkMd(join(root, 'agents')), ...walkMd(rulesDir)]) {
+  readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+    const m = line.match(PROJECT_TERMS)
+    if (m) fail(file, i + 1, `Project-specific term "${m[0]}" in generic content.`,
+      'Use a neutral example domain (orders, customers, subscriptions); project values live in docs/agents/project-conventions.md.')
+  })
+}
+
 // ---------- Report ----------
 if (errors.length) {
   console.error(`✗ ${errors.length} validation error(s):\n`)

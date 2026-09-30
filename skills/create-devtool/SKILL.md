@@ -70,9 +70,9 @@ Use the simple pattern when: ≤ 5 store fields, ≤ 2 queries, no payload const
 | **Wizard step info** | Page has a wizard/stepper | Step index, step name, total steps, isExpired |
 | **Computed API payload** | Page submits data (create/update) | Mirror the payload construction from the hook, show what would be sent |
 | **Pricing/breakdown** | Page shows prices | Raw pricing object from the API query cache |
-| **Coupon state** | Page has coupon input | Manual code, resolved ID, processing/invalid flags, warehouse coupons list with quick-apply buttons |
+| **Coupon state** | Page has coupon input | Manual code, resolved ID, processing/invalid flags, store coupons list with quick-apply buttons |
 | **Payment resolution** | Page collects payment | Stripe ID, DB ID, resolution path, type (card/bank) |
-| **Lease params** | Page has lease signing | warehouseId, start, end, totalPrice, bayNames, enabled flag, test-lease button |
+| **Subscription params** | Page starts a subscription | planId, start, end, totalPrice, seats, enabled flag, test-subscription button |
 | **TTL/expiry** | Store has `createdAt` or expiry | Computed time remaining |
 | **Completion checklist** | Wizard with required fields | List of steps with StatusDot showing done/pending |
 
@@ -355,6 +355,6 @@ Paths are relative to the features root defined in `.claude/rules/project-struct
 | DevTool | Complexity | Pattern | Path |
 |---------|-----------|---------|------|
 | BookingDevtool | Complex (wizard + coupon + payload + queries) | Hook + Component, 4 tabs | `features/booking/devtool/` |
-| ExtendDevtool | Medium (wizard + pricing + lease) | Inline, 2 tabs | `features/reservations/extend-reservation/components/extend-devtool.tsx` |
+| ExtendDevtool | Medium (wizard + pricing + subscription) | Inline, 2 tabs | `features/reservations/extend-reservation/components/extend-devtool.tsx` |
 | BookingsDevtool | Simple (list page + filters) | Hook + Component, 2 tabs | `features/bookings/devtool/` |
-| CancelBaysDevtool | Medium (wizard + store) | Inline, 2 tabs | `features/reservations/monthly/cancel-bays/components/` |
+| CancelSubscriptionDevtool | Medium (wizard + store) | Inline, 2 tabs | `features/subscriptions/cancel/components/` |

@@ -6,6 +6,8 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+## 3.7.1 (2026-09-30)
+
 ### Changed
 
 - **Examples use a neutral domain — the TruckBays one is gone.** Invariant 10 banned TruckBays values and the name never appeared, but the examples still spoke its domain: `TruckerNavbar` and `FuelMeter` in the seeded rules and the page template, a `stays` feature named as the "living example" `create-feature` should read, `warehouse-owner` login endpoints, bays, plates, leases, a trucker's parking card in `refactoring-ui`, a "Find Bay" i18n key. The model copies examples, so a fresh project got a navbar named after someone else's users. Every example now uses orders, a store, subscriptions and coupons (`AppNavbar`, `ProgressMeter`, `/auth/login`, `orders.api.ts`, `trackingNumber`); `create-feature` and its templates point at "the most complete feature already merged in the project" instead of a path that only exists in one codebase. 18 files in `skills/` and `rules/`, one line in `design-craft`.

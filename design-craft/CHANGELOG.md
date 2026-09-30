@@ -4,6 +4,8 @@ Work in progress goes under `## [Unreleased]`; a release cuts it into a dated ve
 
 ## [Unreleased]
 
+## 1.1.0 (2026-09-30)
+
 ### Added
 
 - **`design-review` — `references/runtime-evidence.md` and a step 3, "Open the interface".** The skill already said "no visual finding from source alone when runtime behavior decides it" and gave no mechanism, so in practice every review was static and half the escalation triggers — what clips at 320px, where focus lands, which pair renders on which background — were inference dressed as findings. The reference holds the method: a four-rung ladder (running instance → built preview → existing harness → static only) with an explicit refusal to start servers, install anything or trigger destructive actions; the viewport tiers with what each one catches that no other does; the keyboard, state and console walks; and what separates an observation from a guess. The coverage table gained a leading `runtime` row naming the rung reached, and at `static only` every runtime-decided domain reads `Not verified: no rendered instance` rather than `Clear`. `design-critic` carries read-only Chrome tools to work the ladder. Adapted from the browser-driven review agent in [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT); its severity ladder and report shape were not imported — this plugin already has one.

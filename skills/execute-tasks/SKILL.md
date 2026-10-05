@@ -297,7 +297,7 @@ the final report instead of a third implementer or a mid-run question.
 ### Step 5: Commit Checkpoint
 
 After every 2-3 deliverables pass all reviews (and after any single large one), **commit
-automatically** via the `git-commit` skill and record the SHA in PROGRESS.md — multi-day
+automatically** via the `git-commit` skill's *Pipeline checkpoint* mode (one commit, only the files PROGRESS.md lists for those deliverables plus PROGRESS.md, message `chore(checkpoint): <deliverable ids>`, no confirmation step) and record the SHA in PROGRESS.md — multi-day
 runs have carried ALL work uncommitted across dozens of compactions. A commit on the
 feature branch is cheap and reversible; losing a day of context is neither. Announce it in
 the running log rather than asking. **Never push** — publishing stays a user decision and
@@ -325,6 +325,8 @@ Run the project's build at two checkpoints:
 
 1. **After the final deliverable** passes all reviews (mandatory)
 2. **After any shared infrastructure deliverable** (modifies `shared/`, installs packages, or changes type definitions)
+
+The orchestrator runs only the build here (tests run inside implementers and `audit-branch`), so it stamps only the build: run the project's build command (from `docs/agents/project-conventions.md`) as `node "<plugin-root>/scripts/verify-stamp.mjs" record build -- <command>`. Never claim a test stamp from this skill — it does not run the suite. Any later write to the tree (PROGRESS.md included) makes a stamp stale, which is why the Run Report ends with the final build stamp.
 
 Do NOT build after every deliverable — the two checkpoints catch issues early enough.
 
@@ -402,6 +404,24 @@ now resolves by the triage rules in Step 4 and lands in the final report instead
 mid-run question.
 
 Projects that opted into the Iron-Law Stop hook (`.claude/iron-law.json`, seeded by `/setup-daher-skills`) get a mechanical gate on top of this: the turn cannot end with modified source files until the project's verify command passes.
+
+## Run Report
+
+Last step before handing off to `finish-feature`, after the holistic review and flow verification (so every agent is in it). `finish-feature` deletes PROGRESS.md, and with it the only record of where the run's time went; this file lets the concurrency cap and model choices be decided later from data, not impressions.
+
+1. Get the session id: `$CLAUDE_CODE_SESSION_ID` — the same `session_id` the heartbeat hook keys its directory by. If the variable is empty, use the newest directory under `~/.claude/heartbeats/` (or `$CLAUDE_HEARTBEAT_DIR`) that holds one of this run's agent ids.
+2. Write `docs/agents/runs/<feature>-<YYYY-MM-DD>.json`:
+   ```json
+   { "feature": "<feature>", "date": "<YYYY-MM-DD>", "session": "<session id>",
+     "report": <output of agent-status.mjs --report <session id> --json>,
+     "dispatchLog": [ { "deliverable": "D1", "model": "sonnet", "redispatches": 0,
+                        "fixRounds": 0, "filesPredicted": 1, "filesChanged": 1 } ] }
+   ```
+   `dispatchLog` is the PROGRESS.md Dispatch Log, one object per row.
+3. Commit it in a final Step 5 checkpoint — the run file is listed with PROGRESS.md — then record the SHA in PROGRESS.md.
+4. Final stamp: `verify-stamp.mjs check build -- <build command>`; on `stale:`, `record build -- <build command>`. Nothing is written after this, so `finish-feature` and the commit hook reuse it.
+
+**Done when:** the runs file parses as JSON (`node -e "JSON.parse(require('fs').readFileSync(process.argv[1]))" <file>`), it is in the checkpoint commit, and `check build -- <build command>` prints `fresh:`.
 
 ## Resuming After Context Clean
 

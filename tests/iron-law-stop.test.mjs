@@ -44,22 +44,35 @@ test('blocks the turn when sources changed and verify fails, with the output tai
   assert.match(r.stderr, /1 test failed/)
 })
 
+// The verify outcome is driven by an env var so flipping it does not touch the tree.
+const VERIFY_BY_ENV = 'exit ${IRON_LAW_TEST_EXIT:-0}'
+const failing = { env: { IRON_LAW_TEST_EXIT: '1' } }
+
 test('passes when verify succeeds and caches the PASS by working-tree hash', () => {
-  const root = repoWith('exit 0')
+  const root = repoWith(VERIFY_BY_ENV)
   writeAt(root, 'src/a.ts', 'changed\n')
   assert.equal(runHook('iron-law-stop.mjs', stop(root)).code, 0)
-  const marker = join(root, '.claude/.iron-law-pass')
+  const marker = join(root, '.git/claude/iron-law-pass')
   assert.ok(existsSync(marker), 'PASS marker written')
   const hash = readFileSync(marker, 'utf8').trim()
 
   // Same tree state, failing verify now → still 0, because the cached PASS matches.
-  writeAt(root, '.claude/iron-law.json', JSON.stringify({ verify: 'exit 1', timeoutSeconds: 10 }))
-  assert.equal(runHook('iron-law-stop.mjs', stop(root)).code, 0)
+  assert.equal(runHook('iron-law-stop.mjs', stop(root), failing).code, 0)
 
   // Tree changes → hash differs → verify runs again and blocks.
   writeAt(root, 'src/b.ts', 'new\n')
-  assert.equal(runHook('iron-law-stop.mjs', stop(root)).code, 2)
+  assert.equal(runHook('iron-law-stop.mjs', stop(root), failing).code, 2)
   assert.notEqual(readFileSync(marker, 'utf8').trim(), hash + 'x') // sanity: file still readable
+})
+
+test('a content edit to an already-dirty file invalidates the cached PASS', () => {
+  const root = repoWith(VERIFY_BY_ENV)
+  writeAt(root, 'src/a.ts', 'first edit\n')
+  assert.equal(runHook('iron-law-stop.mjs', stop(root)).code, 0) // PASS cached
+
+  // Same `git status --porcelain` (src/a.ts still just " M"), different content.
+  writeAt(root, 'src/a.ts', 'second edit, now broken\n')
+  assert.equal(runHook('iron-law-stop.mjs', stop(root), failing).code, 2)
 })
 
 test('exits 0 outside a git repo and on malformed input', () => {

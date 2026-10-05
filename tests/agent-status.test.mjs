@@ -126,3 +126,129 @@ test('an empty heartbeat root prints a hint, not an error', () => {
   assert.equal(r.code, 0)
   assert.match(r.stdout, /no agent heartbeats for \/tmp\/proj/)
 })
+
+const at = (iso) => new Date(iso).toISOString()
+
+/** Two finished sessions for /tmp/proj; s-new is the most recent one. */
+function reportFixture() {
+  const dir = tempProject('st-')
+  heartbeat(dir, 's-old', 'old1', {
+    status: 'done',
+    started_at: at('2026-10-01T10:00:00Z'),
+    last_activity_at: at('2026-10-01T10:05:00Z'),
+    ended_at: at('2026-10-01T10:05:00Z'),
+  })
+  heartbeat(dir, 's-new', 'impl1', {
+    agent_type: 'implementer',
+    status: 'done',
+    started_at: at('2026-10-02T10:00:00Z'),
+    last_activity_at: at('2026-10-02T10:02:00Z'),
+    ended_at: at('2026-10-02T10:02:00Z'),
+    tool_calls: 10,
+    files_written: ['a.ts', 'b.ts'],
+  })
+  heartbeat(dir, 's-new', 'impl2', {
+    agent_type: 'implementer',
+    status: 'done',
+    started_at: at('2026-10-02T10:01:00Z'),
+    last_activity_at: at('2026-10-02T10:04:00Z'),
+    ended_at: at('2026-10-02T10:04:00Z'),
+    tool_calls: 5,
+    files_written: ['c.ts'],
+  })
+  heartbeat(dir, 's-new', 'rev1', {
+    agent_type: 'quality-reviewer',
+    status: 'running',
+    started_at: at('2026-10-02T10:05:00Z'),
+    last_activity_at: at('2026-10-02T10:06:00Z'),
+    tool_calls: 4,
+  })
+  return dir
+}
+
+test('--report --json aggregates the most recent session per agent and per agent_type', () => {
+  const dir = reportFixture()
+  const r = run(['--dir', dir, '--cwd', '/tmp/proj', '--report', '--json'])
+  assert.equal(r.code, 0)
+  const out = JSON.parse(r.stdout)
+  assert.equal(out.session, 's-new')
+  const byId = Object.fromEntries(out.agents.map((a) => [a.agent_id, a]))
+  assert.deepEqual(Object.keys(byId).sort(), ['impl1', 'impl2', 'rev1'])
+  assert.deepEqual(byId.impl1, {
+    agent_id: 'impl1',
+    agent_type: 'implementer',
+    status: 'done',
+    duration_ms: 120_000,
+    tool_calls: 10,
+    files_written: 2,
+  })
+  assert.equal(byId.rev1.duration_ms, null) // still running: no ended_at
+  assert.deepEqual(out.totals.implementer, { agents: 2, duration_ms: 300_000, tool_calls: 15, files_written: 3 })
+  assert.deepEqual(out.totals['quality-reviewer'], { agents: 1, duration_ms: 0, tool_calls: 4, files_written: 0 })
+})
+
+test('--report <session> picks that session and prints a table with per-type totals', () => {
+  const dir = reportFixture()
+  const r = run(['--dir', dir, '--cwd', '/tmp/proj', '--report', 's-old'])
+  assert.equal(r.code, 0)
+  assert.match(r.stdout, /session s-old/)
+  assert.match(r.stdout, /old1\s+implementer\s+done\s+5m0s\s+3\s+0/)
+  assert.doesNotMatch(r.stdout, /impl1/)
+  assert.match(r.stdout, /implementer\s+1\s+5m0s\s+3\s+0/)
+})
+
+test('--report with no heartbeats prints a hint, not an error', () => {
+  const dir = tempProject('st-')
+  const r = run(['--dir', dir, '--cwd', '/tmp/proj', '--report'])
+  assert.equal(r.code, 0)
+  assert.match(r.stdout, /no agent heartbeats/)
+})
+
+/** A real implementer plus two phantom side-agent records (empty type, 0 tools, zero duration). */
+function phantomFixture() {
+  const dir = tempProject('st-')
+  const t = at('2026-10-03T09:00:00Z')
+  heartbeat(dir, 's-ph', 'real1', { status: 'done', started_at: t, last_activity_at: t, ended_at: at('2026-10-03T09:01:00Z') })
+  for (const id of ['ph1', 'ph2']) {
+    heartbeat(dir, 's-ph', id, {
+      agent_type: '',
+      status: 'done',
+      started_at: t,
+      last_activity_at: t,
+      ended_at: t,
+      tool_calls: 0,
+      last_tool: null,
+      result_head: 'the user prompt, echoed',
+    })
+  }
+  return dir
+}
+
+test('--report hides phantom records (empty agent_type, 0 tool calls) unless --all-records', () => {
+  const dir = phantomFixture()
+  const out = JSON.parse(run(['--dir', dir, '--cwd', '/tmp/proj', '--report', 's-ph', '--json']).stdout)
+  assert.deepEqual(out.agents.map((a) => a.agent_id), ['real1'])
+  assert.equal(out.totals[''], undefined)
+
+  const all = JSON.parse(run(['--dir', dir, '--cwd', '/tmp/proj', '--report', 's-ph', '--json', '--all-records']).stdout)
+  assert.deepEqual(all.agents.map((a) => a.agent_id).sort(), ['ph1', 'ph2', 'real1'])
+
+  const text = run(['--dir', dir, '--cwd', '/tmp/proj', '--report', 's-ph']).stdout
+  assert.match(text, /2 phantom record\(s\) hidden/)
+  assert.doesNotMatch(text, /ph1/)
+})
+
+test('--report without a session ignores sessions that only hold phantom records', () => {
+  const dir = phantomFixture()
+  const later = at('2026-10-04T09:00:00Z')
+  heartbeat(dir, 's-only-ph', 'ph9', {
+    agent_type: '',
+    status: 'done',
+    started_at: later,
+    last_activity_at: later,
+    ended_at: later,
+    tool_calls: 0,
+  })
+  const out = JSON.parse(run(['--dir', dir, '--cwd', '/tmp/proj', '--report', '--json']).stdout)
+  assert.equal(out.session, 's-ph')
+})

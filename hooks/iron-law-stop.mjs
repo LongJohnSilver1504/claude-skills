@@ -13,13 +13,17 @@
  * Loop/perf safety:
  * - `stop_hook_active` → exit 0 (never re-block a continuation we forced).
  * - No modified source files in the working tree → exit 0.
- * - Working-tree state hash matches the last PASS → exit 0 (no re-runs when
- *   nothing changed since the last successful verification).
+ * - Working-tree content fingerprint (hooks/lib/tree-fingerprint.mjs) matches
+ *   the last PASS → exit 0 (no re-runs when nothing changed since the last
+ *   successful verification). It hashes content, not `git status` names, so a
+ *   second edit to an already-dirty file re-runs verify. The PASS marker lives
+ *   at `<git-dir>/claude/iron-law-pass`, outside the working tree.
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
+import { join, dirname } from 'node:path'
 import { execSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
+import { treeFingerprint, markerPath as gitMarkerPath } from './lib/tree-fingerprint.mjs'
 
 let input
 try {
@@ -54,9 +58,11 @@ const touchedSource = status
   .filter((l) => /\.(ts|tsx|js|jsx|mjs)$/.test(l.trim()))
 if (touchedSource.length === 0) process.exit(0)
 
-const stateHash = createHash('sha256').update(status).digest('hex')
-const markerPath = join(cwd, '.claude/.iron-law-pass')
-if (existsSync(markerPath) && readFileSync(markerPath, 'utf8').trim() === stateHash) {
+// Content fingerprint; the names-only status hash is only a fallback if git
+// fails mid-way (never expected after `git status` succeeded).
+const stateHash = treeFingerprint(cwd) ?? createHash('sha256').update(status).digest('hex')
+const markerPath = gitMarkerPath(cwd, 'iron-law-pass')
+if (markerPath && existsSync(markerPath) && readFileSync(markerPath, 'utf8').trim() === stateHash) {
   process.exit(0)
 }
 
@@ -70,6 +76,7 @@ const result = spawnSync(config.verify, {
 
 if (result.status === 0) {
   try {
+    mkdirSync(dirname(markerPath), { recursive: true })
     writeFileSync(markerPath, stateHash + '\n')
   } catch {
     /* marker is an optimization, not a requirement */

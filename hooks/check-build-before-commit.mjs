@@ -11,10 +11,17 @@
  * - Looks for a build output (BUILD_MARKERS). If none exists, the project may
  *   not be a buildable app — allow.
  * - If any source file under SOURCE_DIRS is newer than the build output,
- *   block (exit 2) and tell Claude to run the project's build first.
+ *   block (exit 2) and tell Claude to run the project's build first —
+ *   unless `<git-dir>/claude/verify-stamps.json` holds a `build` stamp (any
+ *   command; written by scripts/verify-stamp.mjs) whose fingerprint matches the
+ *   current working tree: that build already passed against exactly this
+ *   content. The stamp is only trusted when the index equals the working tree
+ *   for tracked files (`git diff --quiet`); with unstaged changes the commit is
+ *   not the content the build saw, so the mtime check decides.
  */
 import { readFileSync, statSync, readdirSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { spawnSync } from 'node:child_process'
 
 const BUILD_MARKERS = ['.next/BUILD_ID', '.next', 'dist', 'build', 'out', '.output']
 const SOURCE_DIRS = ['src', 'app', 'pages', 'components', 'features', 'shared', 'lib']
@@ -76,7 +83,28 @@ for (const d of SOURCE_DIRS) {
   if (existsSync(p)) walk(p, 0)
 }
 
+/** True when a recorded build stamp matches the tree being committed. Never throws. */
+const buildStampMatches = async () => {
+  try {
+    // Loaded lazily: only a stale-by-mtime commit pays for the git calls.
+    const { treeFingerprint, markerPath } = await import(new URL('./lib/tree-fingerprint.mjs', import.meta.url).href)
+    const path = markerPath(cwd, 'verify-stamps.json')
+    if (!path) return false
+    const byCommand = JSON.parse(readFileSync(path, 'utf8'))?.build
+    if (!byCommand || typeof byCommand !== 'object') return false
+    const stored = Object.values(byCommand).map((s) => s?.fingerprint).filter((f) => typeof f === 'string' && f)
+    if (stored.length === 0) return false
+    // Unstaged tracked changes: what gets committed is not what was built.
+    if (spawnSync('git', ['diff', '--quiet'], { cwd, stdio: 'ignore' }).status !== 0) return false
+    const current = treeFingerprint(cwd)
+    return current !== null && stored.includes(current)
+  } catch {
+    return false
+  }
+}
+
 if (newestSource !== null && newestSource > buildMtime) {
+  if (await buildStampMatches()) process.exit(0)
   console.error(
     `Build is stale: ${newestPath} was modified after the last build. ` +
       `Run the project's build command (see docs/agents/project-conventions.md, e.g. \`pnpm build\`) ` +

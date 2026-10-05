@@ -87,7 +87,17 @@ For each group:
 
 ### Step 2: Confirm With the User
 
-**Always confirm with the user before creating any commit** (standing preference — never auto-commit). Present the planned groups with their draft messages and wait for approval before staging anything.
+**Always confirm with the user before creating any commit** (standing preference — never auto-commit), except the Pipeline checkpoint below. Present the planned groups with their draft messages and wait for approval before staging anything.
+
+### Pipeline checkpoint (exception to Step 2)
+
+When `execute-tasks` invokes this skill for a checkpoint, skip the confirmation and Step 1's grouping — it is **one** commit:
+
+- Stage by name only the files PROGRESS.md lists for the deliverables in this checkpoint, plus PROGRESS.md itself; on the final checkpoint, also the run report `docs/agents/runs/<feature>-<YYYY-MM-DD>.json` (this commit is the one that carries it). Anything else in `git status` stays unstaged — it is not part of those deliverables.
+- Message `chore(checkpoint): <deliverable ids>`.
+- Commit locally and **never push** — publishing is `finish-feature`'s decision.
+
+The user launching `execute-tasks` is the request. Every other invocation confirms.
 
 ### Step 3: Stage and Commit Each Group
 

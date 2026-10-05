@@ -51,7 +51,7 @@ Analyze the PRD complexity (features, integrations, edge cases) and recommend a 
 ### Question rules
 
 - Reference specific sections or statements from the PRD
-- Batch up to 3 bounded, **independent** questions per `AskUserQuestion` call (the tool supports 4 max). Fall back to one-at-a-time only when a question depends on the answer to another
+- Batch up to 4 bounded, **independent** questions per `AskUserQuestion` call (the tool supports 4 max). Fall back to one-at-a-time only when a question depends on the answer to another
 - When there's a clear best answer, mark that option "(Recommended)" and include a one-line rationale — don't make the user guess what you'd pick
 - Provide selectable options when the answer space is bounded
 - Acknowledge previous answers when building on them

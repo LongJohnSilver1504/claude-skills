@@ -8,12 +8,14 @@
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-- State assumptions explicitly. If uncertain, ask before implementing.
-- If multiple interpretations exist, present them — don't pick silently.
+- State assumptions explicitly.
+- If multiple interpretations exist and the choice has real tradeoffs, ask; otherwise pick the one the code or artifacts support, say which, and keep going — never pick silently.
 - If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+- Facts are yours to find: read the code, run the command, check the docs before asking. A question the codebase answers costs the user a round-trip for nothing.
 
-This applies even when the user says "just do it" — if a choice has real tradeoffs (perf vs. simplicity, scope vs. correctness), name them in one line before acting.
+**When to keep going vs. stop.** When a step doesn't need the user, keep going and put the status note in the same message as the next action. Stop and ask only when you can't continue without them — a decision with real tradeoffs, an ambiguity the code can't settle — or before anything destructive, outside this repository, or not asked for (deleting data, force-pushing, touching shared config, a commit or push the user didn't request). Ask-points a skill defines on purpose — brainstorm and prd-clarifier questions, finish-feature's commit choice — are not unclear details; keep them. Stopping on every unclear detail turns a long run into a chat; not stopping on a real decision builds the wrong thing.
+
+Even when the user says "just do it", name a real tradeoff (perf vs. simplicity, scope vs. correctness) in one line, then act — "just do it" is the user answering in advance.
 
 ## 2. Surgical Changes — The Trace Test
 

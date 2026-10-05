@@ -29,6 +29,8 @@ Lives in the same directory as the implementation plan. Updated after EVERY deli
 | D1 | sonnet | 0 | 0 | 1 → 1 |
 | D2 | sonnet | 1 (BLOCKED → opus) | 1 | 3 → 4 |
 
+The Dispatch Log is also copied, as the `dispatchLog` array next to `agent-status.mjs --report <session> --json`, into `docs/agents/runs/<feature>-<YYYY-MM-DD>.json` at the end of the run (shape and commit order: the execute-tasks skill's Run Report section) — PROGRESS.md is deleted by `finish-feature`, the run file is not.
+
 ## Decisions
 
 | When | Decision | Why |

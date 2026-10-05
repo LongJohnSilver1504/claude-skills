@@ -57,6 +57,8 @@ Process the merged findings per the `receiving-code-review` skill — **verify e
 
 Fresh evidence per `verification-before-completion.md` — never reuse pre-fix output:
 
+For each of the two commands below, first run `node "<plugin-root>/scripts/verify-stamp.mjs" check <test|build> -- <the exact command you would run>` (plugin root = `${CLAUDE_PLUGIN_ROOT}` if set, otherwise two levels above this skill's own directory). `fresh: …` means that exact command already passed on the same tracked content + env files: cite the printed line as the evidence and skip the re-run. `stale: …` means run it through `node "<plugin-root>/scripts/verify-stamp.mjs" record <test|build> -- <command>` and judge its output by the criteria below — `record` stamps any exit 0, so a 0-matched-files run that you would call FAIL is not a pass just because it got stamped. A stamp only stands for a run that met these criteria when it was recorded.
+
 1. The project's test command scoped to every touched feature (e.g. `pnpm vitest run {feature-dir}`) — **0 matched test files = FAIL**, not a pass.
 2. The project's build command (e.g. `pnpm build`). If it fails, dispatch one `implementer` under the **build-fix dispatch contract** defined in the `execute-tasks` skill (surgical, no suppression, re-run per fix, BLOCKED after 3 attempts) — a build-fix without that contract becomes a refactor or an `@ts-ignore`.
 3. **If fixes were applied**, one re-review pass over the fixed files only (same reviewers, narrowed scope). **Cap: 2 rounds total** — after the second round, stop fixing and report whatever remains.

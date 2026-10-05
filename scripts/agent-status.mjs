@@ -10,6 +10,8 @@
  *   node scripts/agent-status.mjs --watch                  # block; print ONE line on stall/done
  *   node scripts/agent-status.mjs --watch --silence 5 --poll 30 --timeout 240
  *   node scripts/agent-status.mjs --prune                  # delete session dirs idle > 7 days
+ *   node scripts/agent-status.mjs --report [session]       # run report: per agent + totals by agent_type
+ *   node scripts/agent-status.mjs --report [session] --all-records   # include phantom records
  *
  * Options:
  *   --cwd <path>        project dir to filter agents by (default: process.cwd())
@@ -21,6 +23,19 @@
  *   --timeout <min>     watch gives up after this long (default 240)
  *   --grace <sec>       watch waits this long for the first heartbeat (default 120)
  *   --json              machine-readable output instead of the table
+ *
+ * --report aggregates one session's heartbeats (read-only): per agent its
+ * agent_type, duration (ended_at − started_at; "-" while running), tool_calls,
+ * files_written count and status, then totals grouped by agent_type. Without a
+ * session id it reports the most recently active session of this project (the
+ * same --cwd/--session/--all filter as the table). Add --json for JSON.
+ * Pass the session id explicitly when you know it: it is the hook payload's
+ * `session_id`, which Claude Code also exposes as $CLAUDE_CODE_SESSION_ID.
+ *
+ * Phantom records are left out of the report by default: an empty agent_type
+ * AND 0 tool calls. Claude Code's internal side agents produce them (~40 per
+ * session; started_at === ended_at, result_head is the user's prompt) and they
+ * would drown the real agents. --all-records keeps them.
  *
  * --watch is designed for `Bash run_in_background`: it exits on the FIRST event worth
  * a notification and prints exactly one line, so the orchestrator gets one wake-up
@@ -62,11 +77,11 @@ const progressPath = opt('--progress', null)
 const asJson = has('--json')
 
 // ---------- read heartbeats ----------
-function readAgents() {
+function readAgents(onlySession = sessionFilter) {
   if (!existsSync(baseDir)) return []
   const agents = []
   for (const session of readdirSync(baseDir)) {
-    if (sessionFilter && session !== sessionFilter) continue
+    if (onlySession && session !== onlySession) continue
     const sdir = join(baseDir, session)
     let files
     try {
@@ -77,7 +92,8 @@ function readAgents() {
     for (const f of files) {
       try {
         const a = JSON.parse(readFileSync(join(sdir, f), 'utf8'))
-        if (!sessionFilter && cwdFilter && a.cwd && resolve(a.cwd) !== cwdFilter) continue
+        if (!onlySession && cwdFilter && a.cwd && resolve(a.cwd) !== cwdFilter) continue
+        Object.defineProperty(a, 'sessionDir', { value: session, enumerable: false })
         agents.push(a)
       } catch {
         /* half-written or foreign file — skip */
@@ -157,6 +173,104 @@ if (has('--prune')) {
     }
   }
   console.log(`pruned ${removed} session dir(s) idle for more than 7 days`)
+  process.exit(0)
+}
+
+// ---------- run report ----------
+const fmtDuration = (ms) => {
+  if (ms === null) return '-'
+  const s = Math.round(ms / 1000)
+  if (s < 60) return `${s}s`
+  const m = Math.floor(s / 60)
+  return m < 60 ? `${m}m${s % 60}s` : `${Math.floor(m / 60)}h${m % 60}m`
+}
+
+/** Internal side-agent record: no agent_type and no tool call. */
+export const isPhantom = (a) => !a.agent_type && !(a.tool_calls > 0)
+
+/** Pure aggregation over one session's heartbeats. */
+export function buildReport(agents) {
+  const rows = agents.map((a) => {
+    const start = Date.parse(a.started_at)
+    const end = a.ended_at ? Date.parse(a.ended_at) : NaN
+    return {
+      agent_id: a.agent_id,
+      agent_type: a.agent_type ?? '?',
+      status: a.status ?? '?',
+      duration_ms: Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) : null,
+      tool_calls: a.tool_calls ?? 0,
+      files_written: Array.isArray(a.files_written) ? a.files_written.length : 0,
+    }
+  })
+  const totals = {}
+  for (const r of rows) {
+    const t = (totals[r.agent_type] ??= { agents: 0, duration_ms: 0, tool_calls: 0, files_written: 0 })
+    t.agents++
+    t.duration_ms += r.duration_ms ?? 0
+    t.tool_calls += r.tool_calls
+    t.files_written += r.files_written
+  }
+  return { agents: rows, totals }
+}
+
+if (has('--report')) {
+  const next = argv[argv.indexOf('--report') + 1]
+  const keep = has('--all-records') ? () => true : (a) => !isPhantom(a)
+  let session = next !== undefined && !next.startsWith('--') ? next : sessionFilter
+  if (!session) {
+    // Most recently active session among this project's (real) agents.
+    const latest = readAgents().filter(keep).reduce(
+      (best, a) => (!best || String(a.last_activity_at) > String(best.last_activity_at) ? a : best),
+      null
+    )
+    session = latest?.sessionDir ?? null
+  }
+  const all = session ? readAgents(session) : []
+  const agents = all.filter(keep)
+  const hidden = all.length - agents.length
+  const report = { session, ...buildReport(agents) }
+  if (asJson) {
+    console.log(JSON.stringify(report, null, 2))
+  } else if (agents.length === 0) {
+    console.log(`no agent heartbeats for ${session ? `session ${session}` : cwdFilter ?? 'any project'} under ${baseDir}`)
+  } else {
+    const table = (cols, rows) => {
+      const width = Object.fromEntries(cols.map((c) => [c, Math.max(c.length, ...rows.map((r) => String(r[c]).length))]))
+      const line = (r) => cols.map((c) => String(r[c]).padEnd(width[c])).join('  ')
+      return [line(Object.fromEntries(cols.map((c) => [c, c]))), ...rows.map(line)].join('\n')
+    }
+    console.log(
+      `Run report: session ${session} (${agents.length} agent(s)` +
+        (hidden ? `; ${hidden} phantom record(s) hidden, --all-records shows them` : '') +
+        ')\n'
+    )
+    console.log(
+      table(
+        ['agent', 'type', 'status', 'duration', 'tools', 'files'],
+        report.agents.map((r) => ({
+          agent: r.agent_id,
+          type: r.agent_type,
+          status: r.status,
+          duration: fmtDuration(r.duration_ms),
+          tools: r.tool_calls,
+          files: r.files_written,
+        }))
+      )
+    )
+    console.log('\nTotals by agent_type (duration sums finished agents only)\n')
+    console.log(
+      table(
+        ['type', 'agents', 'duration', 'tools', 'files'],
+        Object.entries(report.totals).map(([type, t]) => ({
+          type,
+          agents: t.agents,
+          duration: fmtDuration(t.duration_ms),
+          tools: t.tool_calls,
+          files: t.files_written,
+        }))
+      )
+    )
+  }
   process.exit(0)
 }
 

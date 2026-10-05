@@ -26,6 +26,12 @@ No completion claims without fresh verification evidence. If you have not run th
 | "Flow works" | Smoke-walk with a screenshot per step + clean console + the concrete expected state visible — a rendered page alone is not proof |
 | "Dev server is running" | A valid app response from the port printed in THIS session's server output — not the assumed default port |
 
+## Verify Stamps
+
+`verify-stamp.mjs check <test|build> -- <command>` prints `fresh: …` only when that exact command exited 0 on the same tracked content + env files: the same worktree content (tracked and untracked, non-ignored), the same root `.env*` files, the same package install and Node version. That counts as fresh evidence for that command — cite the printed line. Pass the exact command you would otherwise run; a stamp for a different command (another scope, another flag) vouches for nothing. `stale: …` means re-run the command through `verify-stamp.mjs record` before claiming anything.
+
+A stamp proves exit 0, nothing more: it only stands for a pass if the run met the skill's own criteria when it was recorded (e.g. "0 matched test files = FAIL"), which is why `record` passes the output through for you to read. Not covered by the fingerprint: other gitignored inputs (codegen output, caches), untracked files inside submodules, and environment variables set outside `.env*` files — if any of those changed, re-run instead of citing the stamp.
+
 ## Red Flags
 
 Never use these phrases without running the verification first:

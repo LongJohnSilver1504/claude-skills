@@ -11,7 +11,7 @@ Verify the feature is ready, then help the user decide what to do with it.
 
 ### Step 1: Verify
 
-Run these checks in order:
+Run these checks in order. For tests and build, first run `node "<plugin-root>/scripts/verify-stamp.mjs" check <test|build> -- <the exact command of check 1 or 2>` (plugin root = `${CLAUDE_PLUGIN_ROOT}` if set, otherwise two levels above this skill's own directory): `fresh: …` means that exact command already passed on the same tracked content + env files, so cite the printed line and skip the re-run; `stale: …` means run the command through `node "<plugin-root>/scripts/verify-stamp.mjs" record <test|build> -- <command>` and read its output against the criteria below — `record` stamps any exit 0, so the 0-matched-files rule is still yours to apply. A stamp only stands for a run that met these criteria when it was recorded.
 
 1. **Feature tests:** the project's test command scoped to the feature (from `docs/agents/project-conventions.md`; e.g. `pnpm vitest run {feature-dir}`, where `{feature-dir}` comes from `.claude/rules/project-structure.md`).
    **If the glob matches 0 test files, treat verification as FAILED** — the path is wrong or tests are missing; never report a vacuous pass.
@@ -26,7 +26,7 @@ If tests or build fail, report the failures and ask the user:
 - **Continue anyway** — proceed to Step 2 despite failures
 - **Stop** — abort finalization
 
-**Done when:** you have fresh test output, fresh build output, and a `git status` snapshot from THIS session — or an explicit user decision to continue despite failures.
+**Done when:** you have fresh test output and fresh build output from THIS session — each either the command's own output or a `fresh:` line from `verify-stamp.mjs check` for that exact command — plus a `git status` snapshot from THIS session, or an explicit user decision to continue despite failures.
 
 ### Step 1.5: Browser Smoke-Walk (UI features — mandatory gate)
 

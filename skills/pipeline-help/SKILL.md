@@ -22,7 +22,7 @@ brainstorm → generate-prd → prd-clarifier → prd-to-ux → plan-implementat
 | 3 | `/prd-clarifier` | PRD | Clarifications merged into `PRD.md` | The PRD is already sharp |
 | 4 | `/prd-to-ux` | PRD | `UX-spec.md` | — |
 | 5 | `/plan-implementation` | Specs | Implementation plan | — |
-| 6 | `/execute-tasks` | Plan | Code + review gates | Built outside the pipeline → `/audit-branch` |
+| 6 | `/execute-tasks` | Plan | Code + review gates + `docs/agents/runs/<feature>-<date>.json` run report | Built outside the pipeline → `/audit-branch` |
 | 7 | `/finish-feature` | Code | Tests, build, commit / PR / discard | — |
 | 8 | `/generate-feature-doc` | Feature code | Feature `README.md` | Small features |
 

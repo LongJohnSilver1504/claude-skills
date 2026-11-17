@@ -104,11 +104,13 @@ From the `frontend-testing` skill's anti-pattern catalog:
 
 ### Findings
 
-| # | File:Line | Rule | Issue | Suggested Fix |
-|---|-----------|------|-------|---------------|
-| 1 | x.test.tsx:42 | Query Priority | Uses `getByTestId('submit-btn')` | `screen.getByRole('button', { name: /submit/i })` |
-| 2 | x.test.tsx:78 | No CSS | Asserts on `toHaveClass('text-destructive')` | Assert on visible error text instead |
-| 3 | y.test.ts:15 | Behavioral | Asserts on hook's `isLoading` state | Test through component: verify skeleton renders |
+| # | Severity | File:Line | Rule | Issue | Suggested Fix |
+|---|----------|-----------|------|-------|---------------|
+| 1 | TRIVIAL | x.test.tsx:42 | Query Priority | Uses `getByTestId('submit-btn')` | `screen.getByRole('button', { name: /submit/i })` |
+| 2 | ARCHITECTURAL | x.test.tsx:78 | No CSS | Asserts on `toHaveClass('text-destructive')` | Assert on visible error text instead |
+| 3 | ARCHITECTURAL | y.test.ts:15 | Behavioral | Asserts on hook's `isLoading` state | Test through component: verify skeleton renders |
+
+Severity is the tag the orchestrator triages on, the same two every reviewer uses: **TRIVIAL** — the test still proves the behavior and the fix is mechanical (a better query, a clearer name, structure); **ARCHITECTURAL** — the test gives false confidence (everything listed under FAIL below) and has to be rewritten against behavior.
 
 ### Summary
 - Total findings: {count}
@@ -117,11 +119,11 @@ From the `frontend-testing` skill's anti-pattern catalog:
 ## Status Rules
 
 - **PASS** — Zero findings
-- **CONCERNS** — Minor improvements that don't affect test correctness:
+- **CONCERNS** — Only TRIVIAL findings: minor improvements that don't affect test correctness:
   - Query priority could be better but tests still work
   - Test names could be more descriptive
   - Minor structural improvements
-- **FAIL** — Tests that give false confidence:
+- **FAIL** — Any ARCHITECTURAL finding: tests that give false confidence:
   - Asserting on implementation details (useState, internal calls)
   - Missing async handling (un-awaited userEvent, missing waitFor)
   - CSS assertions that will break on any style change

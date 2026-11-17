@@ -2,7 +2,7 @@
 
 What this suite gates: **the skill that fires is the skill the description promised.** Invariant 4 says every competing skill carries a `NOT for <competitor>` clause; until now nothing checked that the clause changed any behaviour. These cases do, mechanically, on every skill that has one.
 
-One case per skill with a `NOT for` clause. Each is a realistic user request in the phrasing this repo actually gets, with two deterministic graders:
+One case per skill with a `NOT for` clause, plus two tier cases (`pipeline-12`, `pipeline-13`) asserting that small work and already-understood work do not start the spec chain. Each is a realistic user request in the phrasing this repo actually gets, with two deterministic graders:
 
 | Grader | Type | Asserts |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ npm run eval -- --case 'pipeline-0[1-4]-*'   # a subset
 
 `npm run eval` filters on `--case 'pipeline-*'` on purpose: the root target also scans `design-craft/evals/`, and those cases belong to the other plugin. design-craft's own suite runs from `design-craft/` (see `design-craft/evals/README.md`).
 
-Each case is `runs: 1`, `max_turns: 4`, `allowed_tools: [Skill]`, with an `append_system_prompt` that stops the agent once it has routed. That keeps a full pass at roughly 20 seconds and $2–3 — routing is all these cases measure, so paying for the work afterwards would buy nothing.
+Each case is `runs: 1`, `max_turns: 4`, `allowed_tools: [Skill]`, with an `append_system_prompt` that stops the agent once it has routed. That keeps a full pass at about $2 (13 cases; an estimate from the per-case cost of earlier runs, not a fresh measurement) — routing is all these cases measure, so paying for the work afterwards would buy nothing.
 
 ## What a failure means
 

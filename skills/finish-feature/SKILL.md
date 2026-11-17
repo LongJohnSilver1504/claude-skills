@@ -42,6 +42,8 @@ If tests or build fail, report the failures and ask the user:
 2. **Staging (opt-in only)**: reuse a saved Playwright `storageState` file from a ONE-TIME manual login with a dedicated TEST user (never real user data). The state file lives in a gitignored path (e.g. `.playwright/`); when it's missing or expired, STOP and report "auth wall — needs a one-time manual login", don't attempt to script OTP/password flows.
 3. **Never**: credentials or OTPs in the repo/skill, auth bypasses in production code, or guessing at login forms.
 
+**Already walked by `execute-tasks`?** If the feature's PROGRESS.md reads `**Runtime**: PASS` and the build stamp from Step 1 printed `fresh:` (nothing changed since that run ended), cite that line and skip the walk. Any other Runtime value, a `stale:` stamp, or no PROGRESS.md → walk.
+
 Skip only for pure-logic, infrastructure, or docs-only changes — say so explicitly ("smoke-walk skipped: no UI surface"). Keep walks under ~15 steps; longer flows degrade browser-agent reliability — split or fall back to manual QA for the tail.
 
 **Keep the environment alive.** The lifecycle boundary is the user's iteration loop, not this turn: don't stop the dev server because the walk passed or the turn is ending — the user will likely iterate. Leave it running and include its URL in the report; stop it only in Cleanup below.

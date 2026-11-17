@@ -64,6 +64,8 @@ Per user preference, do NOT add `Co-Authored-By` lines.
 
 Ensure a successful build ran since the last source change — the plugin's `check-build-before-commit` hook blocks `git commit` when the build output is stale relative to source files. If stale (or unsure), run the project's build command (from `docs/agents/project-conventions.md`; e.g. `pnpm build`) and confirm it succeeds before proceeding. One fresh build covers all split commits in the same session.
 
+**Done when:** a build from this session exited 0 after the last source edit (its output, or a `fresh:` line from the plugin's `verify-stamp.mjs check build`).
+
 ### Step 1: Analyze and Group Changes
 
 Split changes into **multiple focused commits by layer/concern**. Never combine everything into one monolithic commit.
@@ -84,6 +86,8 @@ Not every commit group will apply — skip empty groups. If a group has only 1-2
 For each group:
 - Identify the type (feat/fix/refactor/chore/test/docs)
 - Draft subject line and body bullets
+
+**Done when:** every changed file in `git status` belongs to exactly one group or is named as deliberately left out, and each group has a drafted message.
 
 ### Step 2: Confirm With the User
 
@@ -111,6 +115,8 @@ For each approved group:
 ### Step 4: Verify
 
 Run `git status` after all commits to confirm clean working tree.
+
+**Done when:** `git log --oneline -<number of groups>` shows one commit per approved group and `git status` lists only the files you named as left out.
 
 ## Examples
 

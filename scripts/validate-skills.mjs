@@ -333,6 +333,25 @@ for (const file of [...walkMd(skillsDir), ...walkMd(join(root, 'agents'))]) {
   })
 }
 
+// The tier table (Bug / Small / Standard / Large) lives in the always-loaded rule and is
+// mirrored in pipeline-help. Two copies that drift make the router lie (invariant 5).
+{
+  const block = (file) => {
+    const m = readFileSync(file, 'utf8').match(/<!-- tier-table:start -->[\s\S]*?<!-- tier-table:end -->/)
+    return m ? m[0] : null
+  }
+  const ruleFile = join(rulesDir, 'working-principles.md')
+  const helpFile = join(skillsDir, 'pipeline-help', 'SKILL.md')
+  const [ruleBlock, helpBlock] = [block(ruleFile), block(helpFile)]
+  if (!ruleBlock || !helpBlock) {
+    fail(ruleBlock ? helpFile : ruleFile, null, 'Tier table markers (`<!-- tier-table:start/end -->`) not found.',
+      'Keep the tier table wrapped in its markers in both rules/working-principles.md and skills/pipeline-help/SKILL.md.')
+  } else if (ruleBlock !== helpBlock) {
+    fail(helpFile, null, "The tier table diverged from rules/working-principles.md's copy (they are deliberate mirrors).",
+      'Make both blocks byte-identical.')
+  }
+}
+
 // ---------- 4d. Routing evals cover every skill that claims a NOT-for boundary ----------
 // A `NOT for <competitor>` clause is a behavioural claim. Prose cannot check it, so
 // every skill that makes one carries a case in evals/ asserting the boundary holds.
@@ -396,6 +415,23 @@ for (const agentFile of readdirSync(join(root, 'agents')).filter((f) => f.endsWi
   } else if (/\b(Write|Edit|NotebookEdit)\b/.test(toolsMatch[1])) {
     fail(p, null, `Reviewer agent tools include a mutating tool: ${toolsMatch[1]}.`,
       'Reviewers read and report — remove Write/Edit/NotebookEdit.')
+  }
+  // The rest of invariant 8: the shared report contract and the anti-overengineering clause.
+  if (!content.includes('**Status:** PASS | CONCERNS | FAIL')) {
+    fail(p, null, 'Reviewer agent does not declare the shared report contract.',
+      'Add `**Status:** PASS | CONCERNS | FAIL` to its report format — the orchestrator triages on that line.')
+  }
+  if (!/TRIVIAL/.test(content) && !/CONCERNS \(if CONCERNS\)|### Compliance Matrix/.test(content)) {
+    fail(p, null, 'Reviewer agent tags no findings as TRIVIAL/ARCHITECTURAL and has no compliance matrix.',
+      'Tag findings TRIVIAL/ARCHITECTURAL (spec-reviewer: keep its compliance matrix) so triage can auto-fix or escalate.')
+  }
+  if (!/a clean PASS is a valid/i.test(content)) {
+    fail(p, null, 'Reviewer agent is missing the anti-overengineering clause.',
+      'State that being asked to review does not mean findings must exist — "a clean PASS is a valid, complete answer".')
+  }
+  if (!/120 lines/.test(content)) {
+    fail(p, null, 'Reviewer agent does not cap its report length.',
+      'Add the ≤120-line report cap — the orchestrator ingests every report.')
   }
 }
 

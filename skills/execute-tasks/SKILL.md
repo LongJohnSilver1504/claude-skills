@@ -56,7 +56,7 @@ Build the full paths: `{project-root}/.claude/rules/{rule-name}.md`. If a delive
 Visual components (`.tsx` with rendered UI) get the `refactoring-ui` skill injected:
 
 - **Implementer (Step 2):** invoke `refactoring-ui` (Build workflow) BEFORE writing JSX — prevents "looks generated" output.
-- **Quality reviewer (Step 4):** invoke `refactoring-ui` (Audit workflow) on each visual component, merging findings into the quality report.
+- **Quality reviewer (Step 4):** runs the `refactoring-ui` Audit workflow on each visual component and merges the findings into the quality report. The skill is preloaded in the agent's frontmatter (it has no Skill tool), so the dispatch prompt only has to ask for the audit.
 
 Inject only for component deliverables with rendered UI. Skip for hooks-only, pure-logic, API adapters, and type definitions. Pure layout wrappers (a `<div>` with `className` and `{children}`) may skip the Build injection but still get the Audit at review.
 
@@ -252,11 +252,12 @@ Agent tool (quality-reviewer):
     ## Files to Review
     {files the implementer changed}
 
-    ## Skills to Invoke
+    ## Design Audit
     {only for visual components:}
-    - Invoke the refactoring-ui skill (Audit workflow) on each visual component.
-      Merge its findings into your report: ARCHITECTURAL when they affect
-      hierarchy/layout (rules 2.x, 3.x), TRIVIAL for token/weight cleanup.
+    - Run the refactoring-ui Audit workflow (preloaded in your context) on each
+      visual component: {component paths}. Merge its findings into your report:
+      ARCHITECTURAL when they affect hierarchy/layout (rules 2.x, 3.x), TRIVIAL
+      for token/weight cleanup.
 
 Agent tool (test-reviewer — only if the deliverable includes test files):
   description: "Review test quality for D{N}"
@@ -389,6 +390,19 @@ After the review loop, walk each user flow from the UX spec through the code:
 
 **Done when:** every flow in the UX spec has been traced and each gap is either fixed or recorded.
 
+### Runtime Verification (UI features — before any "done")
+
+Tracing a flow through the code is not running it: a run has ended with a green build and a green suite on a feature that never loaded in the browser (CHANGELOG, Unreleased). If the feature has visual components or user flows, run the **Browser Smoke-Walk step of the `finish-feature` skill** now — that step only; its commit/PR offer waits for the user — and write the result on PROGRESS.md's `**Runtime**` line:
+
+- `PASS` — every walked step has a screenshot and showed its expected state.
+- `FAIL` — a failed step is a defect, not a note: dispatch `implementer` with the failing step plus its console/network output, re-run the final build, re-walk. Cap 2 rounds; after that the line stays `FAIL`.
+- `SKIPPED (no UI surface)` — pure logic, infrastructure or docs.
+- `NOT RUN ({reason})` — no browser tooling in this session, an auth wall, a dev server that will not start.
+
+The final report's first line is the Runtime value. On `FAIL` or `NOT RUN` it reads "built and reviewed, not verified in a browser" — never "done" or "working".
+
+**Done when:** PROGRESS.md's `**Runtime**` line holds one of those four values.
+
 ## Continuous Execution
 
 Do NOT ask user permission between deliverables. Run continuously per the Autonomy
@@ -407,17 +421,19 @@ Projects that opted into the Iron-Law Stop hook (`.claude/iron-law.json`, seeded
 
 ## Run Report
 
-Last step before handing off to `finish-feature`, after the holistic review and flow verification (so every agent is in it). `finish-feature` deletes PROGRESS.md, and with it the only record of where the run's time went; this file lets the concurrency cap and model choices be decided later from data, not impressions.
+Last step before handing off to `finish-feature`, after the holistic review, flow verification and runtime verification (so every agent is in it). `finish-feature` deletes PROGRESS.md, and with it the only record of where the run's time went; this file lets the concurrency cap and model choices be decided later from data, not impressions.
 
 1. Get the session id: `$CLAUDE_CODE_SESSION_ID` — the same `session_id` the heartbeat hook keys its directory by. If the variable is empty, use the newest directory under `~/.claude/heartbeats/` (or `$CLAUDE_HEARTBEAT_DIR`) that holds one of this run's agent ids.
 2. Write `docs/agents/runs/<feature>-<YYYY-MM-DD>.json`:
    ```json
    { "feature": "<feature>", "date": "<YYYY-MM-DD>", "session": "<session id>",
+     "runtime": "PASS",
      "report": <output of agent-status.mjs --report <session id> --json>,
-     "dispatchLog": [ { "deliverable": "D1", "model": "sonnet", "redispatches": 0,
-                        "fixRounds": 0, "filesPredicted": 1, "filesChanged": 1 } ] }
+     "dispatchLog": [ { "deliverable": "D1", "tier": "S", "model": "sonnet", "redispatches": 0,
+                        "fixRounds": 0, "filesPredicted": 1, "filesChanged": 1,
+                        "spec": "PASS", "quality": "SKIPPED (S)", "tests": "SKIPPED (S)" } ] }
    ```
-   `dispatchLog` is the PROGRESS.md Dispatch Log, one object per row.
+   `runtime` is PROGRESS.md's `**Runtime**` line. `dispatchLog` is the Dispatch Log joined to the deliverable table by `#`, one object per row, gate cells copied as written. `agent-status.mjs --aggregate docs/agents/runs` reads these files across runs (gate verdict rates, fix rounds, runtime results) — the numbers the tier and model thresholds are meant to be tuned on.
 3. Commit it in a final Step 5 checkpoint — the run file is listed with PROGRESS.md — then record the SHA in PROGRESS.md.
 4. Final stamp: `verify-stamp.mjs check build -- <build command>`; on `stale:`, `record build -- <build command>`. Nothing is written after this, so `finish-feature` and the commit hook reuse it.
 
@@ -446,6 +462,7 @@ If the user says "resume" or "continue executing": find the most recent PROGRESS
 - Update PROGRESS.md (rows and the Progress line) before moving to the next deliverable
 - Run build verification after the final deliverable and after shared-infra changes
 - Post-execution holistic review goes through `audit-branch` pipeline mode — never re-implement its loop here
+- A UI feature is not reported as done without a `**Runtime**` value; `FAIL` and `NOT RUN` lead the final report
 - Checkpoint commits are automatic (Step 5) and never pushed; ensure a fresh successful build before any commit (the plugin's `check-build-before-commit` hook enforces staleness)
 - Use the tier to size ceremony — sonnet + spec-only for S, opus + full gates for L; the tier is written down before dispatch so the user can override it
 - Before pausing for context (above 80%), write **Exact Next Step** in PROGRESS.md — the resumed session starts there, not from re-deriving state

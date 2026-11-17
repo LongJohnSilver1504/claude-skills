@@ -84,8 +84,19 @@ execute-tasks (orchestrator)
   │     │
   │     └── 4. Test reviewer agent ── checks test quality (if tests exist)
   │
-  └── Build verification ──── runs pnpm build to catch type errors
+  ├── Build verification ──── runs pnpm build to catch type errors
+  │
+  ├── Holistic review ─────── /audit-branch in pipeline mode
+  │
+  ├── Runtime verification ── walks the changed flow in a browser (UI features);
+  │                           PROGRESS.md records Runtime: PASS / FAIL / SKIPPED / NOT RUN
+  │
+  └── Run report ──────────── docs/agents/runs/<feature>-<date>.json
 ```
+
+**Not every request needs the whole pipeline.** Work is sized by understanding, risk and resumability — never by file count — into Bug / Small / Standard / Large (table in `rules/working-principles.md` §3, mirrored in `/pipeline-help`). Small work runs inline with no documents. Standard work that is already understood skips the PRD and UX spec: `/plan-implementation` in **direct mode** writes one document (the request verbatim, numbered specs, deliverables). The sizing criteria and the single-document idea are adapted from Organic Driven Development; the full spec chain stays for new screens and open product decisions.
+
+**Across runs:** `node scripts/agent-status.mjs --aggregate docs/agents/runs` reads the committed run reports and prints gate verdict rates, fix rounds per tier and model, and how many runs were actually walked in a browser.
 
 **How `/create-feature` and `/create-infrastructure` fit in:** The implementation plan (step 4) classifies each deliverable as either a **domain feature** (entities, API, CRUD) or **shared infrastructure** (providers, hooks, layouts). When the implementer agent builds a deliverable, it follows the scaffolding patterns from `/create-feature` or `/create-infrastructure` depending on the type.
 
@@ -284,7 +295,7 @@ The `rules/` directory contains 16 `.claude/rules/` seed files distilled from a 
 
 | Rule | What it covers |
 |------|---------------|
-| `working-principles.md` | Behavioral guardrails — think before coding, surgical changes, goal-driven execution |
+| `working-principles.md` | Behavioral guardrails — think before coding, surgical changes, sizing the work by tier, verifiable goals |
 | `verification-before-completion.md` | The Iron Law — no completion claims without fresh verification |
 | `project-structure.md` | Feature-based architecture, sub-feature pattern, tech stack reference |
 | `accessibility.md` | WCAG 2.1 AA compliance for mobile-first apps |
@@ -325,7 +336,7 @@ Instructions are advisory; hooks are deterministic. The plugin ships six (`hooks
 Every skill that competes with another carries a `NOT for <competitor>` clause in its description. `evals/` checks that the clause changes behaviour instead of just claiming to: one case per skill that has one, each a realistic request graded deterministically — the owning skill fires (`tool_used`, `min: 1`) and the competitor it names does not (`min: 0, max: 0`). No LLM judge.
 
 ```bash
-npm run eval                  # 10 pipeline cases, ~40s, ~$1.60 (needs a model)
+npm run eval                  # 13 pipeline cases, about $2 (needs a model)
 cd design-craft && npm run eval   # 11 design-craft cases, ~$1.44
 ```
 
@@ -344,6 +355,7 @@ Some skills were adapted from external sources. To pull updates, check the origi
 | `/writing-skills` | [obra/superpowers](https://github.com/obra/superpowers) (adapted) + [Anthropic skill authoring docs](https://docs.claude.com) |
 | `/test-mobile-app`, `/ios-simulator`, `/android-emulator` | Patterns distilled from [pingdotgg/t3code](https://github.com/pingdotgg/t3code) `.agents/skills`, itself partly adapted from OpenAI's [`build-ios-apps`](https://github.com/openai/plugins/tree/main/plugins/build-ios-apps) (MIT). Rewritten generically — no T3-specific commands, tooling, or stack assumptions carried over. |
 | `block-no-verify` + `block-lint-config-edits` hooks, reviewer "require proof" gate + false-positive catalog, build-fix dispatch contract, right-sizing tiers, `react-performance.md` + `frontend-security.md` rules, click-path audit, motion library contract | [affaan-m/ECC](https://github.com/affaan-m/ECC) — Everything Claude Code (MIT). Cherry-picked mechanisms only, rewritten to this pipeline's contracts (the CHANGELOG entry that ships them and `.out-of-scope/` record what was deliberately *not* adopted). |
+| Tier sizing by understanding / risk / resumability (the resume test) and `plan-implementation`'s single-document direct mode | [Gentleman-Programming/gentle-ai](https://github.com/Gentleman-Programming/gentle-ai) — Organic Driven Development. Ideas only, rewritten to this pipeline's artifacts; its memory layer and SDD-as-opt-in stance were not adopted. |
 | Routing eval suites (`evals/`), the browser-driven runtime phase in `design-reviewer` and `design-craft`'s design review | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT). Mechanisms only — its ~1.9 MB CSV catalog of palettes, font pairings and style presets was deliberately not imported; see `.out-of-scope/design-preset-catalog.md`. |
 
 These skills are snapshots — they don't auto-update. When the upstream source changes, review it and update the skill content manually.

@@ -14,7 +14,7 @@ Pick the single most important problem. If multiple exist, note the others as "R
 
 What must work for this to be considered done:
 
-- **Demo goal**: what outcome the demo clearly communicates
+- **Demo goal**: what outcome the demo clearly communicates — one flow a person can walk in the running app. The end-of-run browser smoke-walk walks exactly this
 - **Acceptance criteria**: 2–4 testable statements (use "Given/When/Then" or plain assertions)
 - **Non-goals**: what is intentionally out of scope
 
@@ -47,10 +47,11 @@ Only what the system must do. Use this table:
 
 Rules:
 
+- IDs are `R1`, `R2`… and never renumbered once written — the implementation plan's `Covers` field and the spec-reviewer's matrix cite them, so a renumbered ID silently points at a different requirement
 - Phrase as capabilities, not implementation ("supports X", not "use library Y")
 - Priority: P0 (must-have) or P1 (important). No P2s — those belong in a backlog, not a PRD
 - Keep the list tight — if it's longer than 10 rows, you're over-scoping
-- Every P0 carries a `Must not:` in Notes — the behavior that satisfies the letter of the requirement while breaking its intent ("Must not: charge the card before the shift is confirmed"; "Must not: show the empty state while the query is still loading"). It is the assertion the spec-reviewer would otherwise never write
+- Every P0 carries a `Must not:` in Notes — the behavior that satisfies the letter of the requirement while breaking its intent ("Must not: charge the card before the shift is confirmed"; "Must not: show the empty state while the query is still loading"). It is the assertion the spec-reviewer would otherwise never write; `plan-implementation` copies it into every deliverable that covers the requirement, which is the only way it reaches that reviewer
 
 ### 6. UX Decisions
 

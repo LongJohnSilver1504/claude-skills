@@ -20,6 +20,15 @@ Always write to file, not to conversation.
 
 Match the spec's length to what the feature needs: fill every pass section, but no filler, no restated PRD content, no boilerplate. A pass with nothing to add for this feature gets one line saying so — `plan-implementation` reads the whole file, and padding costs it context without adding decisions.
 
+## Rule files this skill reads
+
+Passes 7 and 8 lean on `.claude/rules/design-system-map.md`, `color-usage.md`, `layout-ownership.md` and `accessibility.md`. They are seed rules a project may not have installed. Check once, before Pass 1: `ls .claude/rules/`.
+
+- **Present** → read it at the pass that names it.
+- **Absent** → do not stop and do not invent its content. Take the facts from the code (installed components from `components.json` and the UI primitives directory it points at; tokens from the global stylesheet), mark the affected output `(no <rule>.md — derived from code)`, and name the missing files in the one-line summary you give with the spec's path: "missing rules: … — seed them with `/setup-daher-skills`".
+
+**Done when:** you can name which of the four files exist, before writing Pass 1.
+
 ## The 9 Passes
 
 Execute IN ORDER. No visual specs (colors, typography, layouts) until all 9 are complete.
@@ -201,7 +210,7 @@ For each interaction in Passes 3-5, verify it's expressible as "Given [state], w
 
 **After Passes 1-6 are complete**, map UX decisions to shadcn/ui components.
 
-**Reference:** Before mapping, read `.claude/rules/design-system-map.md` for the complete inventory of installed components.
+**Reference:** Before mapping, read `.claude/rules/design-system-map.md` for the inventory of installed components (if the project did not seed it, see *Rule files this skill reads*).
 
 **Required output:**
 ```markdown
@@ -263,7 +272,7 @@ Fetch the design context using Figma MCP tool before finalizing. Compare against
 
 **"Does this use the project's tokens, or invent a second palette?"**
 
-Read before writing: `.claude/rules/color-usage.md`, `.claude/rules/design-system-map.md`, `.claude/rules/layout-ownership.md`. Hierarchy and density come from the `refactoring-ui` skill — not from a new typeface or raw OKLCH.
+Read before writing (each one that exists — see *Rule files this skill reads*): `.claude/rules/color-usage.md`, `.claude/rules/design-system-map.md`, `.claude/rules/layout-ownership.md`. Hierarchy and density come from the `refactoring-ui` skill — not from a new typeface or raw OKLCH.
 
 **Required output:**
 ```markdown

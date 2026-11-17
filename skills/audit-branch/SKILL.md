@@ -31,6 +31,8 @@ Project commands (test, build) come from `docs/agents/project-conventions.md`; i
 
 The classification decides which reviewers run in Phase 2. An empty diff → report "nothing to audit" and stop.
 
+**Done when:** you hold the merge-base SHA and a changed-file list with every file classified, or you have reported "nothing to audit".
+
 ## Phase 2 — Fan Out Reviewers (parallel, one message)
 
 Dispatch all applicable reviewers **concurrently in a single message** — none depends on another:
@@ -45,6 +47,8 @@ Dispatch all applicable reviewers **concurrently in a single message** — none 
 
 Give each agent the changed-file list and the base ref — never "review the repo". Ask each to tag findings **TRIVIAL** or **ARCHITECTURAL**.
 
+**Done when:** every reviewer the table calls for returned a report, and each applicable row is accounted for — ran, or "not applicable" with the reason (no test files changed, no security trigger matched).
+
 ## Phase 3 — Triage
 
 Process the merged findings per the `receiving-code-review` skill — **verify each finding against the actual code before acting**; reviewers hallucinate. A finding that conflicts with a project rule in `.claude/rules/` is rejected, not applied. Its "Common false positives from AI reviewers" list is the reject-by-default catalog: a finding matching one of those patterns needs codebase-specific evidence to survive triage. For `code-reviewer` output, that evidence is the `Trigger:` / `Why unguarded:` lines its contract requires — an ARCHITECTURAL correctness finding without them is downgraded to `(possible)`. `/code-review` is a built-in with its own format and never carries those lines, so for its findings triage supplies the trigger itself by reading the code; it is never deprioritised for lacking a field it cannot emit.
@@ -52,6 +56,8 @@ Process the merged findings per the `receiving-code-review` skill — **verify e
 - **TRIVIAL** (mechanical, no design decision) → auto-fix: dispatch **one** `implementer` agent with the full consolidated list as its task spec — not one dispatch per finding.
 - **ARCHITECTURAL** (design/structure/behavior tradeoff) → present each to the user: fix or accept. Dispatch the `implementer` with the approved fixes only.
 - **Rejected** → record why (finding vs. code evidence or rule citation) for the report.
+
+**Done when:** every finding carries exactly one status — `fixed`, `accepted`, `rejected` (with its evidence) or `remaining` — and none was acted on without being checked against the code.
 
 ## Phase 4 — Re-verify
 
@@ -62,6 +68,8 @@ For each of the two commands below, first run `node "<plugin-root>/scripts/verif
 1. The project's test command scoped to every touched feature (e.g. `pnpm vitest run {feature-dir}`) — **0 matched test files = FAIL**, not a pass.
 2. The project's build command (e.g. `pnpm build`). If it fails, dispatch one `implementer` under the **build-fix dispatch contract** defined in the `execute-tasks` skill (surgical, no suppression, re-run per fix, BLOCKED after 3 attempts) — a build-fix without that contract becomes a refactor or an `@ts-ignore`.
 3. **If fixes were applied**, one re-review pass over the fixed files only (same reviewers, narrowed scope). **Cap: 2 rounds total** — after the second round, stop fixing and report whatever remains.
+
+**Done when:** you hold a `fresh:` line or this session's own output for the test command and for the build command, both judged against the criteria above.
 
 ## Pipeline Mode (called by `execute-tasks`)
 

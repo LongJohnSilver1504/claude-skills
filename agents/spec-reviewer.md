@@ -30,6 +30,8 @@ Implementer reports run optimistic and incomplete, so a compliance matrix built 
    - API endpoints → check the adapter file
    - Component behavior → check the component and its hook
    - Acceptance criteria → trace the code path that fulfills each one
+   - `Covers` IDs (`R#` / `S#`) → one matrix row per ID, so a requirement the deliverable claims but never implements shows as MISSING
+   - `Must not` lines → one row each, MET only when you can point at the code that prevents the forbidden behavior (a guard, an ordering, a disabled state). "Nothing does it" is not evidence — find the path where it could happen and show it is closed
 4. Build the compliance matrix (see format below)
 5. Check for extras — code that exists but has no corresponding spec requirement
 6. Determine overall status
@@ -40,11 +42,12 @@ Implementer reports run optimistic and incomplete, so a compliance matrix built 
 
 ### Compliance Matrix
 
-| Spec Requirement | Status | File:Line | Notes |
-|---|---|---|---|
-| {exact requirement text from spec} | MET | {file:line} | {how it's implemented} |
-| {exact requirement text from spec} | MISSING | — | {what's missing} |
-| {exact requirement text from spec} | PARTIAL | {file:line} | {what's incomplete} |
+| ID | Spec Requirement | Status | File:Line | Notes |
+|---|---|---|---|---|
+| {R#/S# from `Covers`, or —} | {exact requirement text from spec} | MET | {file:line} | {how it's implemented} |
+| {R#} | Must not: {exact text} | VIOLATED | {file:line} | {the path where the forbidden behavior happens} |
+| {ID} | {exact requirement text from spec} | MISSING | — | {what's missing} |
+| {ID} | {exact requirement text from spec} | PARTIAL | {file:line} | {what's incomplete} |
 
 ### Extras Found (scope creep)
 - {file:line} — {what was added that has no corresponding spec requirement}
@@ -65,6 +68,7 @@ Implementer reports run optimistic and incomplete, so a compliance matrix built 
   - A minor interpretation difference that doesn't affect behavior
 - **FAIL** — Any of these:
   - A functional requirement has status MISSING
+  - A `Must not` has status VIOLATED
   - A requirement has status PARTIAL and the missing part is critical
   - Major scope creep (entire features added that weren't in spec)
   - Implementation contradicts the spec (does the opposite of what was required)

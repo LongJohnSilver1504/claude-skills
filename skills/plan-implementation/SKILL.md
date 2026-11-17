@@ -24,7 +24,7 @@ Either the PRD (more artifacts = more precise extraction) or, in direct mode, th
 
 For Standard-tier work (tier table: `.claude/rules/working-principles.md` §3): the what is clear, there are no new screens and no open product decisions, but the work would not survive a stopped session — so it needs one document, not three.
 
-1. Read the code the request touches before writing anything.
+1. Read the code the request touches before writing anything — start from `docs/agents/feature-map.md` when the project has one.
 2. Copy the request **verbatim** into `## Request`. It is the contract; a paraphrase loses the exact strings the user will check against.
 3. Derive `## Specs`: one row per behavior — `S#`, the behavior quoting the request's own wording, and the check that proves it. `Must not` is filled only when the request states or plainly implies one ("no debe incluir reservas canceladas"); otherwise `—`. An invented `Must not` becomes a requirement nobody asked for, and the spec-reviewer will enforce it.
 4. Sort every gap the request leaves into one of two kinds:

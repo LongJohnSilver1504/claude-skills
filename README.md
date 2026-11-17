@@ -1,6 +1,6 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 26 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 29 skills that take you from a rough idea to a merged PR.
 
 **First run:** after installing, open your project and run `/setup-daher-skills`. It detects your stack (package manager, structure, base branch), seeds the convention rules and `docs/agents/project-conventions.md`, and wires your CLAUDE.md — every other skill reads those files. Skills that need missing config stop with `Run /setup-daher-skills first — missing <file>`.
 
@@ -155,6 +155,9 @@ Standalone runtime-verification skills for mobile targets (not part of the 8-ste
 | Skill | What it does |
 |-------|-------------|
 | `/systematic-debugging` | 4-phase process: reproduce, isolate, identify root cause, verify with test |
+| `/fix-ticket` | Bug-sized path from a tracker ticket: read the ticket and its evidence (recordings, session replays, backend), reproduce, state the cause, plan with a rubric-scored confidence, debate, then fix and open the PR |
+| `/feature-map` | Create or refresh `docs/agents/feature-map.md` — one row per feature (routes, directory, files to open first, backend endpoints, docs, status). A lock file plus a script and a SessionStart hook detect drift; the skill repairs it |
+| `/project-guardrails` | Generate guardrails fitted to one project: `.claude/guardrails.json` for the plugin's hook (self-testing rules), permission deny/ask rules, and a sandbox recommendation — each proposed only with evidence from the repository |
 
 ### Document & Review
 
@@ -320,7 +323,7 @@ cp ~/claude-skills/rules/error-handling.md .claude/rules/
 
 ## Hooks (Deterministic Guardrails)
 
-Instructions are advisory; hooks are deterministic. The plugin ships six (`hooks/hooks.json`), each covered by a stdin-driven test in `tests/` (`npm test`):
+Instructions are advisory; hooks are deterministic. The plugin ships eight (`hooks/hooks.json`), each covered by a stdin-driven test in `tests/` (`npm test`):
 
 | Hook | Event | What it does |
 |------|-------|--------------|
@@ -329,6 +332,8 @@ Instructions are advisory; hooks are deterministic. The plugin ships six (`hooks
 | `block-lint-config-edits` | PreToolUse (Write/Edit) | Blocks modifying an existing ESLint / Prettier / Biome / Stylelint config (creating one is allowed) — steers a failing lint back to the source instead of a weakened rule |
 | `block-raw-palette` | PreToolUse (Write/Edit) | Blocks raw Tailwind palette classes in `.tsx`/`.jsx` — only in projects that carry `.claude/rules/color-usage.md` |
 | `iron-law-stop` | Stop | Blocks ending a turn with modified source files until the project's verify command passes — **opt-in**, active only when `.claude/iron-law.json` exists (seeded by `/setup-daher-skills`) |
+| `project-guardrails` | PreToolUse (Bash, Write/Edit) | Enforces the project's own rules from `.claude/guardrails.json` — commands denied or sent to the user, protected paths, forbidden content inside a glob, credentials in a write or in a staged commit. **Opt-in** by that file's existence; every rule carries examples and `scripts/guardrails.mjs test` runs them. Edits to the guardrails file always ask; a file that does not validate blocks until fixed. `/project-guardrails` generates it from what the repository contains |
+| `feature-map-stale` | SessionStart | Says in one line when the project's feature map no longer matches the tree (a feature directory or route was added or removed since `docs/agents/feature-map.lock.json` was written) — **opt-in** by that file's existence, never blocks. `scripts/feature-map.mjs check` is the same comparison on demand |
 | `agent-heartbeat` | SubagentStart / PostToolUse / PostToolUseFailure / SubagentStop | Records every subagent's tool calls, files written and last-activity time in `~/.claude/heartbeats/<session>/<agent>.json` — never blocks. `scripts/agent-status.mjs` reads it to print a per-agent table with the run's `Progress: n/N gates`, or `--watch` to wake the orchestrator with one line when an agent goes silent (default 5 min). Design and recovery procedure: `skills/execute-tasks/references/AGENT-LIVENESS.md` |
 
 ## Routing Evals (Descriptions, Checked)

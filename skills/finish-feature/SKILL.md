@@ -68,6 +68,8 @@ Look for PROGRESS.md files to determine the base branch:
 
 Also check `.claude/pipeline/{feature}/` for any pipeline artifacts.
 
+**Feature map.** If `docs/agents/feature-map.lock.json` exists, run `node "<plugin-root>/scripts/feature-map.mjs" check`. Anything but `fresh` means this branch added, moved or removed a feature directory or a route: run the `feature-map` skill in update mode now, so the map ships in the same commit as the code it describes.
+
 ### Step 3: Present Options
 
 Use AskUserQuestion to present:

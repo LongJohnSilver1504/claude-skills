@@ -25,7 +25,7 @@ If a request mixes refactor + behavior change, split it: refactor first (this sk
 
 ## Phase 0 — Read First (both workflows, mandatory)
 
-1. **Map the slice.** `ls` the feature directory; Read every file you plan to touch, its co-located tests, and the feature barrel. Do not edit code you haven't read.
+1. **Map the slice.** If `docs/agents/feature-map.md` exists, read the feature's row first — directory, files to open first, the routes and endpoints it owns (the code wins where they disagree). `ls` the feature directory; Read every file you plan to touch, its co-located tests, and the feature barrel. Do not edit code you haven't read.
 2. **Load the relevant rules.** Read the `.claude/rules/` files matching what you'll touch (components → component-hook-separation, layout-ownership; hooks → tanstack-query; API → api-boundary, error-handling; anything → project-structure). Rules are the source of truth — never rely on memory of them.
 3. **Reuse check.** Before writing anything new, search for an existing solution: the project's ui root and its `custom/`, `shared/`, and sibling features. Use existing components **as-is** — if one almost fits, adapt the consumer, don't extend the shared component.
 4. **Consumer map.** Grep the call sites of every export you plan to change (repo-wide, not just the feature). This list is your blast radius — you'll re-check it in the final phase.

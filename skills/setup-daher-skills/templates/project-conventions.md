@@ -18,6 +18,12 @@
 | Locales | {e.g. en, es — or "none"} |
 | UI kit | {e.g. shadcn/ui + Tailwind v4} |
 | Test runner | {e.g. Vitest + React Testing Library + MSW v2} |
+| Ticket tracker + id prefix | {e.g. Linear, `ABC-` — or "none"} |
+| Branch format | {e.g. fix/ABC-123/short-slug — read off recent branches, not invented} |
+| Commit format | {e.g. fix(scope): Sentence (ABC-123)} |
+| Backend checkout | {absolute path to the API repo on this machine, verified to exist — or "none"} |
+| Evidence tools | {e.g. Jam recordings, LogRocket sessions, Sentry — what a bug ticket may link to} |
+| Investigation notes | {e.g. docs/investigations/ — where a cross-repo diagnosis is saved, or "ticket comment"} |
 
 ## Notes
 

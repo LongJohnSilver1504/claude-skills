@@ -35,7 +35,7 @@ If a changed line can't be traced to the ask, revert it.
 <!-- tier-table:start -->
 | Tier | Understanding | Resume test | Entry point |
 |------|---------------|-------------|-------------|
-| **Bug** | Behavior is wrong; the spec is not | — | `/systematic-debugging` (failing test first, then the fix). No pipeline. |
+| **Bug** | Behavior is wrong; the spec is not | — | `/systematic-debugging` (failing test first, then the fix); `/fix-ticket` when it arrives as a tracker ticket. No pipeline. |
 | **Small** | After reading the code you can state the change and the check that proves it | **Passes** — if the session stopped now, someone could finish from the original request and `git diff` alone | Inline, with the verifiable goals below; `/modify-feature` to extend or restructure a shipped feature. No plan document, no subagents. |
 | **Standard** | The what is clear; there is one real choice or one new contract (endpoint, screen, shared piece) | **Fails** — more than one session, separate deliverables, or requirements too long to survive compaction | `/plan-implementation` in direct mode (one document — the request verbatim, numbered specs, deliverables) → `/execute-tasks` → `/finish-feature`. New screens or open product decisions: `/generate-prd → /prd-to-ux` first. |
 | **Large** | Several open questions, cross-feature or shared infrastructure, a new external dependency, a public API, a contract nobody can verify yet | Fails | `/brainstorm`, then the full pipeline. |

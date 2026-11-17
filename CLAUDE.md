@@ -44,6 +44,17 @@ Don't hand-bump the version: the old manual checklist ran `--check` *before* the
 
 To see what changed between versions: `npm run changes -- 3.0.0 3.1.0`.
 
+## Baselines — before/after, on file
+
+`docs/baselines/<date>-<label>.json` are dated snapshots: repo metrics (sizes, gates, eval coverage), 30 days of real usage counted from session transcripts (skill invocations, subagent dispatches, reviewer verdicts, hook blocks — numbers only, no project names or session text), run-report aggregates, eval scores, and the 1–10 judgment with its evidence.
+
+```bash
+npm run baseline -- snapshot --label <name>                    # now, last 30 days of usage
+npm run baseline -- compare docs/baselines/<a>.json docs/baselines/<b>.json
+```
+
+Take one **before** a change that is meant to improve the workflow and one after it has seen real use — a snapshot taken right after editing skills measures the text, not the effect. To snapshot a past commit, `git worktree add` it and pass `--root`. The usage section depends on Claude Code's internal transcript format; the snapshot records the CLI version, and `compare` warns when it differs.
+
 ## Writing style for skills
 
 - `**Done when:**` gates on numbered steps — prefer a runnable check over a descriptive condition.

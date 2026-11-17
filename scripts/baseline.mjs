@@ -17,7 +17,7 @@
  *   --no-usage           skip the transcript scan (a tree nobody has used yet)
  *   --no-validators      skip running the tree's validator
  *   --runs <dir>         run reports to aggregate (agent-status.mjs --aggregate)
- *   --eval-result <file> an aggregate-result.json from `claude plugin eval`
+ *   --eval-result <file> an aggregate-result.json from `claude plugin eval` (repeatable: one per suite)
  *   --scores <file>      the maintainer's judgment: { overall, dimensions: { name: { score, confidence, evidence } } }
  *
  * What a snapshot holds — numbers only. No project names, no paths, no session text:
@@ -248,6 +248,27 @@ export async function measureUsage({ projects, since, until, plugins }) {
   return out
 }
 
+// ---------- evals ----------
+/** One or more `claude plugin eval` results → totals plus a score per case. */
+export function mergeEvalResults(results) {
+  const out = { claudeVersion: results[0]?.claudeVersion ?? null, costUsd: 0, partial: false, aggregates: { casesTotal: 0, casesPassed: 0 }, cases: {} }
+  for (const r of results) {
+    out.costUsd += Number(r.costUsd) || 0
+    out.partial ||= r.partial === true
+    for (const c of Array.isArray(r.cases) ? r.cases : []) {
+      const score = c.aggregates?.score ?? null
+      // A later file overrides an earlier one for the same case (a re-run after a grader fix).
+      out.cases[c.name] = { score, ...(c.aggregates?.delta !== undefined ? { delta: c.aggregates.delta } : {}) }
+    }
+  }
+  const scores = Object.values(out.cases).map((c) => c.score).filter((s) => typeof s === 'number')
+  out.aggregates.casesTotal = Object.keys(out.cases).length
+  out.aggregates.casesPassed = scores.filter((s) => s === 1).length
+  out.aggregates.overallScore = scores.length ? Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(4)) : null
+  out.costUsd = Number(out.costUsd.toFixed(4))
+  return out
+}
+
 // ---------- snapshot ----------
 async function snapshot() {
   const label = opt('--label', null)
@@ -286,11 +307,8 @@ async function snapshot() {
     const { dir: _dir, ...agg } = JSON.parse(r.stdout)
     snap.runs = agg
   }
-  const evalFile = opt('--eval-result', null)
-  if (evalFile) {
-    const e = readJson(resolve(evalFile))
-    snap.evals = { claudeVersion: e.claudeVersion ?? null, aggregates: e.aggregates ?? null, costUsd: e.costUsd ?? e.aggregates?.costUsd ?? null }
-  }
+  const evalFiles = argv.flatMap((a, i) => (a === '--eval-result' && argv[i + 1] !== undefined ? [argv[i + 1]] : []))
+  if (evalFiles.length) snap.evals = mergeEvalResults(evalFiles.map((f) => readJson(resolve(f))))
   const scoresFile = opt('--scores', null)
   if (scoresFile) snap.judgment = readJson(resolve(scoresFile))
 
@@ -340,7 +358,7 @@ export function compareSnapshots(a, b) {
   const usageOf = (s) => (s.usage ? (({ window: _w, note: _n, ...rest }) => rest)(s.usage) : null)
   section('usage', usageOf(a), usageOf(b))
   section('runs', a.runs, b.runs)
-  section('evals', a.evals?.aggregates, b.evals?.aggregates)
+  section('evals', a.evals && { aggregates: a.evals.aggregates, cases: a.evals.cases }, b.evals && { aggregates: b.evals.aggregates, cases: b.evals.cases })
   section('judgment', a.judgment, b.judgment)
   return {
     before: { label: a.label, sha: a.repo?.sha ?? null, createdAt: a.createdAt, claudeVersion: a.claudeVersion ?? null, usageWindow: a.usage?.window ?? null },

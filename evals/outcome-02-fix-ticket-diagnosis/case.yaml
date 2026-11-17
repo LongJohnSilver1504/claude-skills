@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: outcome-02-fix-ticket-diagnosis
+context:
+  scaffold_script: fixture.sh

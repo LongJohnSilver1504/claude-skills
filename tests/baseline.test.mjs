@@ -159,3 +159,26 @@ test('bad invocations exit 1 with a usage line', () => {
   assert.match(run(['snapshot', '--label', 'Bad Label']).stderr, /--label/)
   assert.equal(run(['compare', 'only-one.json']).code, 1)
 })
+
+test('snapshot merges eval results into totals and a score per case; compare shows a case that moved', () => {
+  const out = tempProject('baseline-out-')
+  const dir = tempProject('baseline-evals-')
+  const result = (name, cases) => {
+    const file = join(dir, name)
+    writeFileSync(file, JSON.stringify({ schemaVersion: 1, claudeVersion: '9.9.9', costUsd: 0.5, cases: cases.map(([n, score]) => ({ name: n, aggregates: { score } })) }))
+    return file
+  }
+  const routing = result('routing.json', [['pipeline-01-alpha', 1], ['pipeline-02-beta', 1]])
+  const outcomeBefore = result('outcome-a.json', [['outcome-01-plan', 0.5]])
+  const outcomeAfter = result('outcome-b.json', [['outcome-01-plan', 1]])
+  const tree = pluginTree()
+  run(['snapshot', '--label', 'a', '--root', tree, '--out', out, '--date', '2026-11-01', '--no-validators', '--no-usage', '--eval-result', routing, '--eval-result', outcomeBefore])
+  run(['snapshot', '--label', 'b', '--root', tree, '--out', out, '--date', '2026-11-02', '--no-validators', '--no-usage', '--eval-result', routing, '--eval-result', outcomeAfter])
+  const a = JSON.parse(readFileSync(join(out, '2026-11-01-a.json'), 'utf8'))
+  assert.deepEqual(a.evals.aggregates, { casesTotal: 3, casesPassed: 2, overallScore: 0.8333 })
+  assert.equal(a.evals.costUsd, 1)
+  assert.deepEqual(a.evals.cases['outcome-01-plan'], { score: 0.5 })
+  const text = run(['compare', join(out, '2026-11-01-a.json'), join(out, '2026-11-02-b.json')]).stdout
+  assert.match(text, /cases\.outcome-01-plan\.score: 0\.5 → 1 {2}\(\+0\.50\)/)
+  assert.match(text, /aggregates\.casesPassed: 2 → 3/)
+})

@@ -68,6 +68,8 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 - Add assertions or logging at layer boundaries
 - Binary search: if the data is correct at layer 2 but wrong at layer 3, the bug is in layer 3
 - Each check should take 1-2 minutes — don't spend 10 minutes on one layer
+- **Temporary logging carries a tag.** Prefix every log line you add with one unique marker (e.g. `[DEBUG-4f2a]`). Phase 4 ends by grepping for it — a debug line that ships is a second bug
+- **Change one thing at a time.** Two changes between runs and you no longer know which one moved the result
 - For errors surfacing deep in a call stack (bad value from far away): [references/root-cause-tracing.md](references/root-cause-tracing.md)
 - For state that "jumps" (a wizard step resets, a selection clears, a toggle undoes itself) in Zustand stores or multi-step flows — a class the single-symptom trace misses: [references/click-path-audit.md](references/click-path-audit.md) builds the store's side-effect map and traces every handler on the screen
 
@@ -89,6 +91,8 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
    - **Wrong merge:** Recent change introduced a regression (check git blame)
 
 4. Read existing tests for the isolated area — what IS tested vs what ISN'T?
+
+   **When the cause does not fall out of the reading,** stop guessing in place: write down three to five hypotheses, ranked, each one falsifiable — it names the observation that would rule it out ("if the response already carries `null`, the mapper is not the cause"). Show the list to the user before testing them; they often know which one is impossible. Test in rank order, one at a time.
 
 5. State the root cause in one sentence:
    > "The bug occurs because `{function}` assumes `{assumption}`, but when `{condition}`, the value is actually `{actual}`."
@@ -122,7 +126,9 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 5. **Run the build:** the project's build command (e.g. `pnpm build`)
    - No type errors introduced
 
-**Done when:** New test passes, existing tests pass, build passes.
+6. **Remove the scaffolding:** Grep for the debug tag from Phase 2 and delete every hit, along with any throwaway script or probe.
+
+**Done when:** New test passes, existing tests pass, build passes, and a Grep for the debug tag returns nothing.
 
 ## Reporting
 

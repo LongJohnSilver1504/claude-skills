@@ -12,6 +12,7 @@ Profiles: **L** lite · **S** standard · **X** strict (each includes the one be
 |----|:------:|--------|--------------|-------|------------------|
 | `deny-recursive-delete-outside` | L | deny | always | A recursive delete aimed at `/`, `~`, `$HOME` or a parent directory | `^rm\s+(?:-[a-zA-Z]*r[a-zA-Z]*\s+\|--recursive\s+)+(?:-\S+\s+)*(?:/\|~\|\$HOME\|\.\.)` |
 | `deny-pipe-to-shell` | L | deny | always | Downloading a script straight into an interpreter | `^(?:curl\|wget)\b.*\|\s*(?:ba\|z)?sh\b` — tried against the whole command, so the pipe is visible |
+| `ask-discard-uncommitted` | L | ask | always | Commands that throw away uncommitted work with no way back: `git reset --hard`, `git clean -f`, `git checkout .`, `git restore .` | `^git\s+(?:reset\s+--hard\|clean\s+-[a-zA-Z]*f\|checkout\s+(?:--\s+)?\.(?:\s\|$)\|restore\s+(?!--staged\s+\.)(?:--\S+\s+)*\.(?:\s\|$))` — `git restore --staged .` only unstages and is left alone |
 | `deny-history-rewrite-shared` | L | deny | a shared branch exists | Deleting a shared branch, locally or on the remote | `^git\s+(?:branch\s+-D\|push\b.*--delete)\b.*(?<![\w/-])(?:<base>\|<release>)(?![\w/-])` |
 | `no-force-push-shared` | S | deny | a base or release branch exists | Force-pushing a branch other people pull | `^git\s+push\b(?=.*(?:--force\|\s-f\b))(?=.*(?<![\w/-])(?:<base>\|<release>)(?![\w/-]))` |
 | `ask-push-shared` | S | ask | the team merges by PR | A direct push to the base branch | `^git\s+push\b.*(?<![\w/-])(?:<base>)(?![\w/-])` |
@@ -96,4 +97,4 @@ Limits to state: it covers shell commands only (not file tools, hooks or connect
 
 ## Sources
 
-Permission deny/ask lists, the destructive-command and pipe-to-shell guards, commit-time secret scanning and the sandbox baseline are adapted from two public write-ups — dwarvesf/claude-guardrails and Cordum's Claude Code security guide — rewritten as data for one tested hook. Their prompt-injection output scanner was not adopted: it warns without blocking and is noisy on security text.
+Permission deny/ask lists, the destructive-command and pipe-to-shell guards, commit-time secret scanning and the sandbox baseline are adapted from two public write-ups — dwarvesf/claude-guardrails and Cordum's Claude Code security guide — rewritten as data for one tested hook. Their prompt-injection output scanner was not adopted: it warns without blocking and is noisy on security text. `ask-discard-uncommitted` follows the command list of Matt Pocock's `git-guardrails-claude-code` skill — as `ask` rather than a block, because discarding work is sometimes exactly what the user wants.

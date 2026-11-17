@@ -341,9 +341,12 @@ Instructions are advisory; hooks are deterministic. The plugin ships eight (`hoo
 Every skill that competes with another carries a `NOT for <competitor>` clause in its description. `evals/` checks that the clause changes behaviour instead of just claiming to: one case per skill that has one, each a realistic request graded deterministically — the owning skill fires (`tool_used`, `min: 1`) and the competitor it names does not (`min: 0, max: 0`). No LLM judge.
 
 ```bash
-npm run eval                  # 13 pipeline cases, about $2 (needs a model)
+npm run eval                  # routing: 17 pipeline cases — 2.22 USD as reported on 2026-11-17
+npm run eval:outcome          # outcome: 6 exams x 2 runs in scaffolded workspaces — 4.29 USD, capped at 10
 cd design-craft && npm run eval   # 11 design-craft cases, ~$1.44
 ```
+
+Runs are child `claude` sessions on the credential you are logged in with — no API key. **Outcome exams** (`evals/outcome-*`) go past routing: each builds a small workspace, runs a skill or a reviewer agent in it, and grades what it produced — a plan that keeps the request verbatim and invents no `Must not`, a ticket diagnosis with the cause as `file:line` and no edit before approval, a reviewer that finds the seeded violation and leaves the clean file alone. Every one traces to a row in `evals/FAILURES.md`, the ledger of failures seen in real use. `scripts/baseline.mjs` stores the scores next to repo and usage metrics in `docs/baselines/`, so two dated files answer "did that change help?".
 
 `node scripts/validate-skills.mjs` runs the free half on every PR: a skill with a `NOT for` clause and no case fails, and so does a grader naming a skill that does not exist. It is a **regression gate on descriptions**, not a quality measure — every case passed the first time it ran, and their value is the next edit that widens a trigger or drops a clause. Details and honest limits in [`evals/README.md`](evals/README.md).
 
@@ -361,6 +364,7 @@ Some skills were adapted from external sources. To pull updates, check the origi
 | `/test-mobile-app`, `/ios-simulator`, `/android-emulator` | Patterns distilled from [pingdotgg/t3code](https://github.com/pingdotgg/t3code) `.agents/skills`, itself partly adapted from OpenAI's [`build-ios-apps`](https://github.com/openai/plugins/tree/main/plugins/build-ios-apps) (MIT). Rewritten generically — no T3-specific commands, tooling, or stack assumptions carried over. |
 | `block-no-verify` + `block-lint-config-edits` hooks, reviewer "require proof" gate + false-positive catalog, build-fix dispatch contract, right-sizing tiers, `react-performance.md` + `frontend-security.md` rules, click-path audit, motion library contract | [affaan-m/ECC](https://github.com/affaan-m/ECC) — Everything Claude Code (MIT). Cherry-picked mechanisms only, rewritten to this pipeline's contracts (the CHANGELOG entry that ships them and `.out-of-scope/` record what was deliberately *not* adopted). |
 | Tier sizing by understanding / risk / resumability (the resume test) and `plan-implementation`'s single-document direct mode | [Gentleman-Programming/gentle-ai](https://github.com/Gentleman-Programming/gentle-ai) — Organic Driven Development. Ideas only, rewritten to this pipeline's artifacts; its memory layer and SDD-as-opt-in stance were not adopted. |
+| `systematic-debugging`'s ranked falsifiable hypotheses, one-variable-at-a-time and tagged debug logging; `fix-ticket`'s needs-info comment, AI-disclosure line and recommended-answer questions; the `ask-discard-uncommitted` guardrail | [mattpocock/skills](https://github.com/mattpocock/skills) — `diagnosing-bugs`, `triage`, `grilling`, `git-guardrails-claude-code`. Mechanics only, rewritten to this pipeline's skills. |
 | Routing eval suites (`evals/`), the browser-driven runtime phase in `design-reviewer` and `design-craft`'s design review | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT). Mechanisms only — its ~1.9 MB CSV catalog of palettes, font pairings and style presets was deliberately not imported; see `.out-of-scope/design-preset-catalog.md`. |
 
 These skills are snapshots — they don't auto-update. When the upstream source changes, review it and update the skill content manually.

@@ -378,9 +378,29 @@ if (!existsSync(evalsDir)) {
       fail(caseDir, null, 'Eval case has no graders — it can never fail.', 'Add a grader under graders/.')
       continue
     }
+    // Outcome exams grade what a run produced, in a scaffolded workspace — not which skill fired.
+    if (c.startsWith('outcome-')) {
+      const prompt = readFileSync(join(caseDir, 'prompt.md'), 'utf8')
+      const types = graders.map((g) => readFileSync(join(gradersDir, g), 'utf8').match(/^type:\s*(\S+)/m)?.[1])
+      if (!/^tags:\s*\[[^\]]*\boutcome\b/m.test(prompt)) {
+        fail(join(caseDir, 'prompt.md'), null, 'Outcome exam is not tagged `outcome`.', 'Add `outcome` to `tags:` — `npm run eval:outcome` and the coordinator select by it.')
+      }
+      if (!types.some((t) => t && t !== 'tool_used')) {
+        fail(caseDir, null, 'Outcome exam has only `tool_used` graders — it grades routing, not a result.',
+          'Add a grader on what the run produced (file_exists, regex on a file, llm), or rename the case pipeline-NN-….')
+      }
+      const scaffold = existsSync(join(caseDir, 'case.yaml'))
+        ? readFileSync(join(caseDir, 'case.yaml'), 'utf8').match(/^\s*scaffold_script:\s*(\S+)/m)?.[1]
+        : null
+      if (scaffold && !existsSync(join(caseDir, scaffold))) {
+        fail(join(caseDir, 'case.yaml'), null, `scaffold_script \`${scaffold}\` does not exist in the case directory.`, 'Add the script or fix the name.')
+      }
+    }
     for (const g of graders) {
       const gPath = join(gradersDir, g)
       const gText = readFileSync(gPath, 'utf8')
+      // Only a Skill grader names a skill; Bash/Edit/Agent graders match on the call's input.
+      if (!/^tool:\s*Skill\s*$/m.test(gText)) continue
       const match = gText.match(/^input_match:\s*(\S+)\s*$/m)
       if (!match) continue
       const target = match[1]

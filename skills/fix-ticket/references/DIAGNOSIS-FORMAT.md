@@ -75,9 +75,25 @@ When the fix belongs to the backend or another service and nobody asked for that
 Short, for the people on the ticket — not the investigation log.
 
 ```markdown
+_Written by an AI agent working with {user}._
+
 **Cause:** {one sentence}
 **Fix:** {PR link} — {one line}
 **Verified:** {how: the test, the ticket's steps walked}
 ```
 
-No personal data from a recording, no session URLs that carry a token.
+### Needs info
+
+When the investigation stalls on something only the reporter knows. It tells them what is already settled, so they are not asked twice.
+
+```markdown
+_Written by an AI agent working with {user}._
+
+**Established so far**
+- {fact, with where it comes from: the recording, the code, the handler}
+
+**Still needed from the reporter**
+- {one specific thing — an account, the exact steps, the build — and what it would let us confirm}
+```
+
+Every comment the agent posts opens with the disclosure line: people on the ticket should know what they are replying to. No personal data from a recording, no session URLs that carry a token.

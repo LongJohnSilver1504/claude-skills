@@ -17,7 +17,8 @@ This repo is a Claude Code **plugin**: 29 skills, 6 agents, 8 hooks, and 19 seed
 10. **No TruckBays values in generic content.** Project-specific values (package manager, base branch, error surface, viewport container) live in the seeded `docs/agents/project-conventions.md`; skills reference the file, with `pnpm`-style commands only as examples ("e.g. `pnpm build`").
 11. **Retired means deleted.** Removing a skill = delete the directory + remove every reference (README, pipeline-help, plugin counts) + CHANGELOG entry naming the replacement. No deprecated/ graveyard.
 12. **Rejected ideas live in `.out-of-scope/`.** One file per concept with the decision and the why — check it before proposing "new" ideas.
-13. **A `NOT for` clause is checked, not asserted.** Every skill whose description carries one has a routing case in `evals/` — a realistic request, a `tool_used` grader (`min: 1`) for the owning skill and one (`min: 0, max: 0`) for the competitor it names. `validate-skills.mjs` fails when a `NOT for` skill has no case or a grader names a skill that does not exist; `npm run eval` runs the cases themselves (about $2, needs a model). It is a regression gate on descriptions, not a quality measure — see `evals/README.md`.
+13. **A `NOT for` clause is checked, not asserted.** Every skill whose description carries one has a routing case in `evals/` — a realistic request, a `tool_used` grader (`min: 1`) for the owning skill and one (`min: 0, max: 0`) for the competitor it names. `validate-skills.mjs` fails when a `NOT for` skill has no case or a grader names a skill that does not exist; `npm run eval` runs the cases themselves (2.22 USD for 17 cases as reported on 2026-11-17; runs on the logged-in credential). It is a regression gate on descriptions, not a quality measure — see `evals/README.md`.
+15. **A real failure becomes an exam.** `evals/FAILURES.md` lists every failure seen in real use with the case that covers it (or "not covered" and what an exam would need). A fix for a failure lands with its ledger row. Outcome exams (`evals/outcome-*`, `npm run eval:outcome`) run a skill or agent in a scaffolded workspace and grade what it produced; cases tagged `holdout` are never read while tuning a skill. The validator requires every outcome case to be tagged, to grade a result (not only routing) and to have its scaffold script.
 14. **Every released version is recoverable.** It has a `claude-skills--vX.Y.Z` tag at the commit that shipped it and a `## X.Y.Z (date)` CHANGELOG section (validator enforces the section for the current version). Without both, "go back to the version before it broke" is guesswork.
 
 ## Releases
@@ -52,6 +53,8 @@ To see what changed between versions: `npm run changes -- 3.0.0 3.1.0`.
 npm run baseline -- snapshot --label <name>                    # now, last 30 days of usage
 npm run baseline -- compare docs/baselines/<a>.json docs/baselines/<b>.json
 ```
+
+The maintainer-only `exam-coordinator` skill (`.claude/skills/`, not shipped) ties these together: `mine` drafts exams from real failures, `run` executes both suites and records a baseline with the scores, `review` classifies failed exams and proposes diffs — it never applies one.
 
 Take one **before** a change that is meant to improve the workflow and one after it has seen real use — a snapshot taken right after editing skills measures the text, not the effect. To snapshot a past commit, `git worktree add` it and pass `--root`. The usage section depends on Claude Code's internal transcript format; the snapshot records the CLI version, and `compare` warns when it differs.
 

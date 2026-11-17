@@ -82,7 +82,8 @@ Say what the plan covers: the whole ticket, or a named part of it. The confidenc
 Below 60 the thing you present is the next investigation step, not a fix — debate that instead. Between 60 and 79:
 
 1. **Facts the repo, the evidence or the backend can answer** — go and find them. A question the code answers costs the user a round-trip for nothing.
-2. **Questions only the user can answer** — at most four, in one `AskUserQuestion` call, each saying what it would unlock ("which account reproduces it → lets me run rung 2").
+2. **Questions only the user can answer** — at most four, in one `AskUserQuestion` call, each saying what it would unlock ("which account reproduces it → lets me run rung 2"). Put the answer you would pick first, worded so that choosing it is the fast path — a question with no recommendation hands the user your work.
+3. **Facts only the reporter has** (the account, the exact steps, the build) — you cannot ask them from here. Offer the *needs info* comment from the format reference, to post on the ticket if the user says yes.
 
 Recompute, then present: in plan mode through `ExitPlanMode`; otherwise show the plan and wait. Several tickets get the table from the format reference, one row each, so the user can pick which to proceed with. When the user pushes back, check the claim against the code before answering — the debate is there to find what the investigation missed, not to defend it.
 

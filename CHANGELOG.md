@@ -6,6 +6,8 @@ Work in progress is recorded under `## [Unreleased]` as it lands; `npm run relea
 
 ## [Unreleased]
 
+## 3.8.0 (2026-11-19)
+
 Adoption pass on two Anthropic posts — *Getting the most out of Opus 5.5* (stop rule, authoring checks) and *How we made claude.ai faster* (measure first, don't repeat a passing run).
 
 Second pass, from an audit of the last 30 days of real sessions (one full pipeline run, 56 reviewer verdicts) plus a read of Organic Driven Development (Gentleman-Programming/gentle-ai). The audit found failures the validators cannot see; ODD supplied two ideas for the pipeline's weakest points — sizing and the missing middle path. Its memory layer and "SDD only on request" stance were not adopted: the full spec chain still earns its cost on new screens and open product decisions.

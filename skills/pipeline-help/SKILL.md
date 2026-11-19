@@ -18,26 +18,30 @@ brainstorm → generate-prd → prd-clarifier → prd-to-ux → plan-implementat
 | # | Skill | Input | Output | Skip when |
 |---|-------|-------|--------|-----------|
 | 1 | `/brainstorm` | Rough idea | `DESIGN.md` | The feature is already clear |
-| 2 | `/generate-prd` | Idea / DESIGN | `PRD.md` | — (entry point for specs) |
+| 2 | `/generate-prd` | Idea / DESIGN | `PRD.md` | Standard tier with no new screens or product decisions → `/plan-implementation` direct mode |
 | 3 | `/prd-clarifier` | PRD | Clarifications merged into `PRD.md` | The PRD is already sharp |
-| 4 | `/prd-to-ux` | PRD | `UX-spec.md` | — |
-| 5 | `/plan-implementation` | Specs | Implementation plan | — |
-| 6 | `/execute-tasks` | Plan | Code + review gates + `docs/agents/runs/<feature>-<date>.json` run report | Built outside the pipeline → `/audit-branch` |
+| 4 | `/prd-to-ux` | PRD | `UX-spec.md` | No PRD (direct mode) |
+| 5 | `/plan-implementation` | Specs — or, in direct mode, the request itself (Standard tier, no PRD) | Implementation plan | — |
+| 6 | `/execute-tasks` | Plan | Code + review gates + browser smoke-walk (`Runtime` line) + `docs/agents/runs/<feature>-<date>.json` run report | Built outside the pipeline → `/audit-branch` |
 | 7 | `/finish-feature` | Code | Tests, build, commit / PR / discard | — |
 | 8 | `/generate-feature-doc` | Feature code | Feature `README.md` | Small features |
 
-## Quick Start — pick the entry by blast radius
+## Quick Start — pick the entry by tier
 
-Score the request on three signals and take the **highest** tier any of them reaches. State the tier in one line before starting so the user can override it.
+Classify the request and state the tier in one line before starting so the user can override it. The table is the same one every session already carries in `.claude/rules/working-principles.md` §3 (a project whose copy predates it re-seeds the rule with `/setup-daher-skills`):
 
-| Tier | Files | New contract / dependency | Ambiguity | Entry point |
-|------|-------|---------------------------|-----------|-------------|
-| **Bug** | any | none — behavior is wrong, spec is not | none | `/systematic-debugging` (failing test first, then the fix). No pipeline. |
-| **Small** | 1–4, inside one feature | none, or one internal hook/component | clear once you read the code | `/modify-feature` for extend/refactor; or `/plan-implementation → /execute-tasks → /finish-feature` when several files need review gates |
-| **Standard** | 5+, or fewer with a new contract | new endpoint, new screen, new shared piece | one real choice to make | `/generate-prd → /prd-to-ux → /plan-implementation → /execute-tasks → /finish-feature` |
-| **Large** | cross-feature or shared infra | new external dep, public API, `UNVERIFIED` contracts | multiple open questions | `/brainstorm` first, then the full pipeline |
+<!-- tier-table:start -->
+| Tier | Understanding | Resume test | Entry point |
+|------|---------------|-------------|-------------|
+| **Bug** | Behavior is wrong; the spec is not | — | `/systematic-debugging` (failing test first, then the fix); `/fix-ticket` when it arrives as a tracker ticket. No pipeline. |
+| **Small** | After reading the code you can state the change and the check that proves it | **Passes** — if the session stopped now, someone could finish from the original request and `git diff` alone | Inline, with the verifiable goals below; `/modify-feature` to extend or restructure a shipped feature. No plan document, no subagents. |
+| **Standard** | The what is clear; there is one real choice or one new contract (endpoint, screen, shared piece) | **Fails** — more than one session, separate deliverables, or requirements too long to survive compaction | `/plan-implementation` in direct mode (one document — the request verbatim, numbered specs, deliverables) → `/execute-tasks` → `/finish-feature`. New screens or open product decisions: `/generate-prd → /prd-to-ux` first. |
+| **Large** | Several open questions, cross-feature or shared infrastructure, a new external dependency, a public API, a contract nobody can verify yet | Fails | `/brainstorm`, then the full pipeline. |
 
-File count alone never promotes past Small — the contract and ambiguity columns do. Tie-breaker: anything touching auth, user input, external HTML/URLs, token storage or env access is **at least Standard** — the quality gate is where `frontend-security.md` runs. Inside `/execute-tasks` the same idea repeats per deliverable (tier S/M/L in PROGRESS.md decides how many reviewers each one gets).
+Risk raises the tier, size does not: anything touching auth, user input, external HTML or URLs, token or PII storage, env access, irreversible data effects personal data leaving the system, or a contract other code depends on is **at least Standard** — the review gates are where `frontend-security.md` runs. A change with no test that would catch its regression gets that test first, at any tier.
+<!-- tier-table:end -->
+
+Inside `/execute-tasks` the same idea repeats per deliverable (tier S/M/L in PROGRESS.md decides how many reviewers each one gets).
 
 ## Artifacts
 
@@ -52,7 +56,10 @@ Each skill reads the previous artifact, not the conversation. Fresh session betw
 | Extend or restructure a shipped feature | `/modify-feature` |
 | Write tests | `/frontend-testing` |
 | Something is broken | `/systematic-debugging` |
+| A bug ticket to investigate, plan with a confidence, and fix | `/fix-ticket` |
 | Build or audit UI | `/refactoring-ui` |
 | Dev-only debug panel | `/create-devtool` |
 | Review a branch built without the pipeline | `/audit-branch` |
+| An index of where each feature lives, for agents | `/feature-map` |
+| Guardrails fitted to this project (blocked commands, protected paths, secrets) | `/project-guardrails` |
 | Commit / PR | `/git-commit`, `/finish-feature` |

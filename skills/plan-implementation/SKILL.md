@@ -1,6 +1,6 @@
 ---
 name: plan-implementation
-description: Bridge design artifacts (PRD, UX spec with embedded test matrix) into a structured implementation plan. Classifies deliverables as domain features or shared infrastructure, extracts specs, orders by dependencies, and detects shared patterns. Use when a PRD/UX spec is ready to become a build plan — after prd-to-ux, when planning feature scaffolding, or when user says "implementation plan", "what to build first", "plan the features".
+description: Bridge design artifacts (PRD, UX spec with embedded test matrix) into a structured implementation plan. Classifies deliverables as domain features or shared infrastructure, extracts specs, orders by dependencies, and detects shared patterns. Use when a PRD/UX spec is ready to become a build plan — after prd-to-ux, when planning feature scaffolding, or when user says "implementation plan", "what to build first", "plan the features". Also plans directly from a clear request with no PRD (direct mode) when the work is too big to finish from the diff alone.
 argument-hint: <path/to/PRD.md or feature dir containing PRD.md + UX-spec.md>
 ---
 
@@ -10,14 +10,29 @@ Bridge between design artifacts and code scaffolding. Read PRD and UX spec (whic
 
 - **create-feature** — domain features with entities, API endpoints, CRUD (lives in `features/`)
 - **create-infrastructure** — shared infrastructure: providers, hooks, layouts, i18n, config (lives in `shared/`)
+- **modify-feature** (Extend) — new code inside a feature that already ships: classified as a Domain Feature deliverable marked `(Extension)`, its spec lists only what is added or changed, and nothing is re-scaffolded
 
 ## Required Inputs
 
-At minimum: the PRD. More artifacts = more precise extraction.
+Either the PRD (more artifacts = more precise extraction) or, in direct mode, the request itself.
 
 1. **PRD** — the product requirements document
 2. **Clarified PRD** — if prd-clarifier was used (optional)
 3. **UX Specification** — from prd-to-ux (includes test matrix in Pass 9)
+
+### Direct mode — no PRD
+
+For Standard-tier work (tier table: `.claude/rules/working-principles.md` §3): the what is clear, there are no new screens and no open product decisions, but the work would not survive a stopped session — so it needs one document, not three.
+
+1. Read the code the request touches before writing anything — start from `docs/agents/feature-map.md` when the project has one.
+2. Copy the request **verbatim** into `## Request`. It is the contract; a paraphrase loses the exact strings the user will check against.
+3. Derive `## Specs`: one row per behavior — `S#`, the behavior quoting the request's own wording, and the check that proves it. `Must not` is filled only when the request states or plainly implies one ("no debe incluir reservas canceladas"); otherwise `—`. An invented `Must not` becomes a requirement nobody asked for, and the spec-reviewer will enforce it.
+4. Sort every gap the request leaves into one of two kinds:
+   - **The codebase or its docs already answer it** (the list's existing filters, where similar buttons sit, a backend doc that gives the response shape) → follow the precedent and record it under `## Request` as `Assumption: … (precedent: file)`. A precedent that answers only part of a spec (the doc shows the endpoint but not the parameter the spec needs) is recorded as `Open: …` on the same list and named in your closing summary — it is the first thing the implementer will hit.
+   - **Nothing answers it and the user would notice the choice** (which columns leave the system, who may trigger it, a new endpoint with no doc, mock or real response to check against) → direct mode ends: ask when it is one question, hand off to `generate-prd` when there are several.
+5. Continue at Step 1 with the Specs table as the requirement source — it stands in for every PRD and UX-spec section the steps below name. Save as `{feature}-{change}-implementation-plan.md` (e.g. `reservations-export-implementation-plan.md`) in the directory of the feature being changed, or of the new feature (`.claude/rules/project-structure.md`).
+
+**Done when:** every sentence of the request that asks for behavior maps to an `S#`, every `S#` has a check, and every gap is either an `Assumption:` with its precedent or a question you asked.
 
 ## Process
 
@@ -39,7 +54,7 @@ From PRD: Section 4 (core use case steps → features), Section 5 (capabilities 
 
 From UX Spec: Pass 2 (concept groups → features), Pass 5 (elements with state tables → features), layout components → infrastructure.
 
-Output a classification table with: name, source reference, type (Domain Feature / Infrastructure), primary concept.
+Output a classification table with: name, source reference, type (Domain Feature / Infrastructure), primary concept. A deliverable that adds to an existing feature keeps that feature's name and is marked `Domain Feature (Extension)`.
 
 **If ALL candidates are infrastructure** (no entities, no CRUD), state explicitly that create-feature does not apply and all deliverables use create-infrastructure.
 
@@ -50,6 +65,8 @@ For each candidate, produce a spec block.
 **Domain Feature spec** — include: feature name (singular, lowercase), entity fields with types, API endpoints with HTTP methods, which CRUD operations are needed, UX components mapped to build prompts, whether a Zustand store is needed and why, domain-specific errors.
 
 **Contract verification (required per API endpoint):** for every endpoint in a domain feature spec, include a `verified-against` field stating what the request/response shape was checked against — one of: `real API`, `MSW mock`, `backend doc`, or `UNVERIFIED`. Zod schemas drifting from real API responses is a recurring bug class; `UNVERIFIED` endpoints must be flagged prominently in the plan so implementers and reviewers know the schema is a guess, not a contract.
+
+**Traceability (every spec block):** `Covers` lists the requirement IDs the deliverable fulfils (PRD `R#`, or `S#` in direct mode); `Must not` copies each covered requirement's `Must not:` verbatim; `Acceptance criteria` lists the PRD and UX test-matrix (Pass 9) statements the deliverable makes true. The `spec-reviewer` receives only the deliverable spec — what is not copied here is never checked.
 
 **Infrastructure spec** — include: name, type (one of the Deliverable Type Catalog entries in the `create-infrastructure` skill: Provider, Shared hook, Layout component/hook/barrel, i18n namespace, Shared utility, Config/Foundation, Test page), target file path, dependencies on other deliverables, acceptance criteria, props/API surface, exports.
 
@@ -110,15 +127,17 @@ If you cannot make a spec item concrete, it needs to be broken down further or c
 
 ### Step 5: Write the Plan
 
-Save as `{prd-basename}-implementation-plan.md` in the same directory as the source PRD, following [references/PLAN-FORMAT.md](references/PLAN-FORMAT.md) (source paths, summary table, classification, shared infrastructure, ordered spec blocks).
+Save as `{prd-basename}-implementation-plan.md` in the same directory as the source PRD (direct mode: the name and place from its step 5), following [references/PLAN-FORMAT.md](references/PLAN-FORMAT.md) (source paths, summary table, classification, shared infrastructure, ordered spec blocks).
 
 **Done when:** the plan file exists and every item in the Validation Checklist below is checked.
 
 ## Validation Checklist
 
-- [ ] Every PRD functional requirement maps to at least one deliverable
+- [ ] Every requirement ID (`R#` / `S#`) appears in at least one deliverable's `Covers`, and every `Covers` names an ID that exists
+- [ ] Every P0 `Must not:` appears verbatim in the deliverables that cover it
+- [ ] Direct mode: `## Request` is the user's wording, unedited
 - [ ] Every deliverable is classified as Domain Feature or Infrastructure
-- [ ] Domain features have: entity fields with types, endpoints, operations
+- [ ] Domain features have: entity fields with types, endpoints, operations, acceptance criteria
 - [ ] Every API endpoint has a contract-verification field (`real API` / `MSW mock` / `backend doc` / `UNVERIFIED`)
 - [ ] Infrastructure deliverables have: type, location, dependencies, acceptance criteria
 - [ ] Implementation order respects dependencies
@@ -136,7 +155,7 @@ Read the feature's existing artifacts (`.claude/pipeline/{feature}/` and the fea
 Use the `AskUserQuestion` tool for the transition (never numbered text options), with a one-line summary of what was completed. Options:
 
 - **execute-tasks** (primary, default) — invoke `/execute-tasks` with the path to the implementation plan. Recommend starting a fresh session first (`/clear`) — the plan IS the context.
-- **Manual scaffolding** — only when the user explicitly wants one deliverable by hand: `/create-feature` (domain feature) or `/create-infrastructure` (infrastructure deliverable) with the spec
+- **Manual scaffolding** — only when the user explicitly wants one deliverable by hand: `/create-feature` (domain feature), `/create-infrastructure` (infrastructure deliverable) or `/modify-feature` (extension of a shipped feature) with the spec
 - **Something else** — do something different
 
 
@@ -148,4 +167,5 @@ Use the `AskUserQuestion` tool for the transition (never numbered text options),
 | **execute-tasks** | Downstream (primary) — consumes the plan and executes it with subagents |
 | **create-feature** | Downstream (manual alternative) — scaffolds one domain feature by hand |
 | **create-infrastructure** | Downstream (manual alternative) — scaffolds one infrastructure deliverable by hand |
+| **modify-feature** | Downstream (manual alternative) — adds an `(Extension)` deliverable to a shipped feature by hand |
 | **react-clean-architecture** | Reference — informs layer decisions during extraction |

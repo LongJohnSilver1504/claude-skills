@@ -17,7 +17,7 @@ Two workflows over existing code: **Extend** (add code to a shipped feature) and
 | Shared plumbing (provider, layout, i18n namespace) | `create-infrastructure` |
 | Bug — something behaves wrong | `systematic-debugging` |
 | Visual polish or design audit only | `refactoring-ui` |
-| Behavior changes, new user-visible capability, or multi-feature impact | Pipeline: `brainstorm` / `generate-prd` |
+| Behavior changes, new user-visible capability, or multi-feature impact | Pipeline, at the tier `.claude/rules/working-principles.md` §3 gives: `plan-implementation` direct mode when the what is clear, `generate-prd` or `brainstorm` when it is not |
 | Add code inside an existing feature | **This skill — Extend** |
 | Restructure existing code, zero behavior change | **This skill — Refactor** |
 
@@ -25,10 +25,12 @@ If a request mixes refactor + behavior change, split it: refactor first (this sk
 
 ## Phase 0 — Read First (both workflows, mandatory)
 
-1. **Map the slice.** `ls` the feature directory; Read every file you plan to touch, its co-located tests, and the feature barrel. Do not edit code you haven't read.
+1. **Map the slice.** If `docs/agents/feature-map.md` exists, read the feature's row first — directory, files to open first, the routes and endpoints it owns (the code wins where they disagree). `ls` the feature directory; Read every file you plan to touch, its co-located tests, and the feature barrel. Do not edit code you haven't read.
 2. **Load the relevant rules.** Read the `.claude/rules/` files matching what you'll touch (components → component-hook-separation, layout-ownership; hooks → tanstack-query; API → api-boundary, error-handling; anything → project-structure). Rules are the source of truth — never rely on memory of them.
 3. **Reuse check.** Before writing anything new, search for an existing solution: the project's ui root and its `custom/`, `shared/`, and sibling features. Use existing components **as-is** — if one almost fits, adapt the consumer, don't extend the shared component.
 4. **Consumer map.** Grep the call sites of every export you plan to change (repo-wide, not just the feature). This list is your blast radius — you'll re-check it in the final phase.
+
+**Done when:** you can list the files you will touch (each one Read), the rule files you loaded, and the call sites of every export you will change.
 
 ## Workflow A — Extend
 
@@ -58,6 +60,8 @@ If a request mixes refactor + behavior change, split it: refactor first (this sk
    - **If a Zustand action, a store-driven effect, or a query invalidation changed**, run the click-path audit (a reference of the `systematic-debugging` skill): map which keys the action sets and which it resets that it does not own, then trace every handler on the affected screen. A refactor that moves state is where "the wizard jumps back a step" bugs are born, and the test suite rarely pins them.
 2. **Fresh verification** (verification-before-completion.md): `pnpm vitest run {feature-dir}` — if the glob matches 0 test files, that's a FAIL, not a pass — and `pnpm build`. For Refactor: the suite must be green with **zero assertion changes**; an assertion you "had to" change means behavior changed — reclassify and tell the user.
 3. **Report honestly**: what changed, what was reused vs created, any drift/smells noticed but not fixed.
+
+**Done when:** the report quotes the test command with its count and the build result from THIS session, the consumer re-grep shows no stale call site, and — for Refactor — `git diff` on the existing test files shows no changed assertion.
 
 ## Next Step
 

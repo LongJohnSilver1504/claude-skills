@@ -42,6 +42,8 @@ If tests or build fail, report the failures and ask the user:
 2. **Staging (opt-in only)**: reuse a saved Playwright `storageState` file from a ONE-TIME manual login with a dedicated TEST user (never real user data). The state file lives in a gitignored path (e.g. `.playwright/`); when it's missing or expired, STOP and report "auth wall — needs a one-time manual login", don't attempt to script OTP/password flows.
 3. **Never**: credentials or OTPs in the repo/skill, auth bypasses in production code, or guessing at login forms.
 
+**Already walked by `execute-tasks`?** If the feature's PROGRESS.md reads `**Runtime**: PASS` and the build stamp from Step 1 printed `fresh:` (nothing changed since that run ended), cite that line and skip the walk. Any other Runtime value, a `stale:` stamp, or no PROGRESS.md → walk.
+
 Skip only for pure-logic, infrastructure, or docs-only changes — say so explicitly ("smoke-walk skipped: no UI surface"). Keep walks under ~15 steps; longer flows degrade browser-agent reliability — split or fall back to manual QA for the tail.
 
 **Keep the environment alive.** The lifecycle boundary is the user's iteration loop, not this turn: don't stop the dev server because the walk passed or the turn is ending — the user will likely iterate. Leave it running and include its URL in the report; stop it only in Cleanup below.
@@ -65,6 +67,8 @@ Look for PROGRESS.md files to determine the base branch:
 4. If not found, use the base/integration branch from `docs/agents/project-conventions.md`; only ask the user when no convention is documented, and offer to record the answer there
 
 Also check `.claude/pipeline/{feature}/` for any pipeline artifacts.
+
+**Feature map.** If `docs/agents/feature-map.lock.json` exists, run `node "<plugin-root>/scripts/feature-map.mjs" check`. Anything but `fresh` means this branch added, moved or removed a feature directory or a route: run the `feature-map` skill in update mode now, so the map ships in the same commit as the code it describes.
 
 ### Step 3: Present Options
 

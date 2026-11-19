@@ -31,6 +31,9 @@ Gather every fact you can without asking:
 | i18n / locales | `public/locales/*`, i18n config files |
 | Test runner | `vitest.config.*` / `jest.config.*` |
 | UI kit | `components.json` (shadcn), Tailwind version in `package.json` |
+| Ticket id prefix, branch and commit format | `git log -50 --format=%s` and `git branch -r` — the pattern most branches and subjects actually follow |
+| Backend checkout | A path named in CLAUDE.md or the docs — **`ls` it before recording it**; a path that does not exist is recorded as "not found", never copied as-is |
+| Evidence tools | `package.json` dependencies and init code: session replay, error tracker, recording SDKs |
 
 **Done when:** every row above has a value or an explicit "not found".
 
@@ -63,7 +66,8 @@ Decisions to resolve (skip any that detection settled unambiguously):
 
 1. Re-read each written file — confirm valid content (JSON parses, markdown has no placeholders left).
 2. Report: files written, files skipped and why, values chosen.
-3. Point the user at the pipeline: "Start with `/brainstorm` (vague idea) or `/generate-prd` (clear feature); `/pipeline-help` explains the full flow."
+3. Offer the two per-project add-ons, one line each: `/feature-map` (an index of where each feature lives, kept honest by a lock file and a session-start check) and `/project-guardrails` (blocked commands, protected paths and secret scanning fitted to what this repository contains).
+4. Point the user at the pipeline: "Start with `/brainstorm` (vague idea) or `/generate-prd` (clear feature); `/pipeline-help` explains the full flow."
 
 **Done when:** the report lists every file with its path and the user knows the next command.
 

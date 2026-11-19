@@ -12,6 +12,7 @@ Lives in the same directory as the implementation plan. Updated after EVERY deli
 **Base Branch**: {branch execution started from}
 **Status**: In Progress | Complete | Blocked
 **Progress**: {filled gate cells}/{deliverables × 4} gates ({percent}%)
+**Runtime**: pending | PASS | FAIL | SKIPPED (no UI surface) | NOT RUN ({reason})
 
 ## Deliverables
 
@@ -29,7 +30,7 @@ Lives in the same directory as the implementation plan. Updated after EVERY deli
 | D1 | sonnet | 0 | 0 | 1 → 1 |
 | D2 | sonnet | 1 (BLOCKED → opus) | 1 | 3 → 4 |
 
-The Dispatch Log is also copied, as the `dispatchLog` array next to `agent-status.mjs --report <session> --json`, into `docs/agents/runs/<feature>-<YYYY-MM-DD>.json` at the end of the run (shape and commit order: the execute-tasks skill's Run Report section) — PROGRESS.md is deleted by `finish-feature`, the run file is not.
+The Dispatch Log is also copied — joined to the deliverable table by `#`, so each object carries its tier and gate cells — as the `dispatchLog` array next to `agent-status.mjs --report <session> --json`, into `docs/agents/runs/<feature>-<YYYY-MM-DD>.json` at the end of the run (shape and commit order: the execute-tasks skill's Run Report section) — PROGRESS.md is deleted by `finish-feature`, the run file is not.
 
 ## Decisions
 
@@ -85,6 +86,7 @@ review and finish-feature read this}
 
 - `**Base Branch**` is mandatory — `finish-feature` uses it for PR targets and `audit-branch` for diff scoping.
 - Update the table before moving to the next deliverable, never in batches.
+- `**Runtime**` starts as `pending` and is set by the Runtime Verification step, after the holistic review. It is the only line that says the feature was run, not just built: `PASS` needs a walked flow with screenshots, and a run that could not walk records `NOT RUN ({reason})` instead of leaving `pending`. `finish-feature` reuses a `PASS` when nothing changed since.
 - The Files Changed list is append-only and complete — reviews are dispatched from it.
 - The `Spec`/`Quality`/`Tests` columns are the **review-gate join ledger**: when independent
   deliverables are implemented concurrently, each row records its own gates as they return.

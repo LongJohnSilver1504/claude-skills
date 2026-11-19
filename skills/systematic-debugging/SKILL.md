@@ -1,11 +1,11 @@
 ---
 name: systematic-debugging
-description: Structured 4-phase debugging process — reproduce, isolate, identify root cause, verify with test. Use when user says "debug", "investigate", "figure out why", "root cause", "why is this broken", or has a bug that needs systematic analysis rather than quick fixes.
+description: Structured 4-phase debugging process — reproduce, isolate, identify root cause, verify with test. Use when user says "debug", "investigate", "figure out why", "root cause", "why is this broken", or has a bug that needs systematic analysis rather than quick fixes. NOT for a bug that arrives as a tracker ticket with outside evidence to read first — recordings, session replays, the backend (fix-ticket, which runs this skill for the reproduction and the fix).
 ---
 
 # Systematic Debugging
 
-4-phase root cause process. Each phase has explicit exit criteria — never skip ahead.
+4-phase root cause process. Each phase ends on a `Done when` gate — never skip ahead.
 
 **First move, before any production edit: reproduce the bug as a new failing test** and watch it fail for the right reason. A test that was written but not run is not a reproduction; a fix without one is a tweak you cannot tell apart from luck. Phase 4 turns that test green.
 
@@ -26,6 +26,7 @@ description: Structured 4-phase debugging process — reproduce, isolate, identi
    - If there's a failing test → Read it and run it
    - If no test exists → Try to create a minimal one
    - If it's UI-only → Identify the component and its hook
+   - If you do not know where the code lives → read `docs/agents/feature-map.md` when the project has one (route and feature → directory); the code wins where the two disagree
 
 3. Document:
    ```
@@ -34,7 +35,7 @@ description: Structured 4-phase debugging process — reproduce, isolate, identi
    **Reproduction:** {steps or test command}
    ```
 
-**Exit criteria:** The bug can be reliably triggered — you can show it happening.
+**Done when:** The bug can be reliably triggered — you can show it happening.
 
 ## Phase 2: Isolate
 
@@ -67,10 +68,12 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 - Add assertions or logging at layer boundaries
 - Binary search: if the data is correct at layer 2 but wrong at layer 3, the bug is in layer 3
 - Each check should take 1-2 minutes — don't spend 10 minutes on one layer
+- **Temporary logging carries a tag.** Prefix every log line you add with one unique marker (e.g. `[DEBUG-4f2a]`). Phase 4 ends by grepping for it — a debug line that ships is a second bug
+- **Change one thing at a time.** Two changes between runs and you no longer know which one moved the result
 - For errors surfacing deep in a call stack (bad value from far away): [references/root-cause-tracing.md](references/root-cause-tracing.md)
 - For state that "jumps" (a wizard step resets, a selection clears, a toggle undoes itself) in Zustand stores or multi-step flows — a class the single-symptom trace misses: [references/click-path-audit.md](references/click-path-audit.md) builds the store's side-effect map and traces every handler on the screen
 
-**Exit criteria:** Bug is localized to a specific file and function. You can say: "The bug is in `{file}:{function}` because `{reason}`."
+**Done when:** Bug is localized to a specific file and function. You can say: "The bug is in `{file}:{function}` because `{reason}`."
 
 ## Phase 3: Identify Root Cause
 
@@ -89,10 +92,12 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 
 4. Read existing tests for the isolated area — what IS tested vs what ISN'T?
 
+   **When the cause does not fall out of the reading,** stop guessing in place: write down three to five hypotheses, ranked, each one falsifiable — it names the observation that would rule it out ("if the response already carries `null`, the mapper is not the cause"). Show the list to the user before testing them; they often know which one is impossible. Test in rank order, one at a time.
+
 5. State the root cause in one sentence:
    > "The bug occurs because `{function}` assumes `{assumption}`, but when `{condition}`, the value is actually `{actual}`."
 
-**Exit criteria:** Root cause can be stated in one sentence with specific code references.
+**Done when:** Root cause can be stated in one sentence with specific code references.
 
 ## Phase 4: Verify
 
@@ -121,7 +126,9 @@ The project has clear layers. Check them in this order (domain bugs are cheapest
 5. **Run the build:** the project's build command (e.g. `pnpm build`)
    - No type errors introduced
 
-**Exit criteria:** New test passes, existing tests pass, build passes.
+6. **Remove the scaffolding:** Grep for the debug tag from Phase 2 and delete every hit, along with any throwaway script or probe.
+
+**Done when:** New test passes, existing tests pass, build passes, and a Grep for the debug tag returns nothing.
 
 ## Reporting
 
@@ -131,6 +138,16 @@ After each phase, briefly report what you found:
 > **Phase 2:** Isolated to `{file}:{function}`
 > **Phase 3:** Root cause — {one sentence}
 > **Phase 4:** Fixed — test passes, build passes
+
+## Next Step
+
+Use `AskUserQuestion` for the transition, with a one-line summary (cause, fix, test). Options:
+
+- **Commit** — via the `git-commit` skill (a `fix(scope):` commit, separate from any refactor)
+- **Finish** — the `finish-feature` skill, when this fix is the last piece of a branch
+- **Leave it** — keep the working tree as is
+
+When this skill was started by `fix-ticket`, return to it instead: it owns the branch, the PR and the ticket.
 
 ## Rules
 

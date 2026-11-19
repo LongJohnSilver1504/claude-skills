@@ -10,6 +10,10 @@ Convention rules live in `.claude/rules/` — they are the single source of trut
 
 **Pipeline:** `/brainstorm` → `/generate-prd` → `/prd-clarifier` → `/prd-to-ux` → `/plan-implementation` → `/execute-tasks` → `/finish-feature` → `/generate-feature-doc`. Run `/pipeline-help` for the full guide.
 
+**Size the work first:** before any change, classify it — Bug / Small / Standard / Large — by how well it is understood, its risk, and whether someone could finish it from the request and `git diff` alone; never by file count. State the tier in one line, then take that tier's entry point. Table: `.claude/rules/working-principles.md` §3, or `/pipeline-help`.
+
+**Where features live:** `docs/agents/feature-map.md`, when the project has one (`/feature-map` creates it) — read it before searching for a feature's code. It is an index: where it and the code disagree, the code wins.
+
 **Working with the user:**
 - When a step doesn't need the user, keep going; put status notes in the same message as the next action. Stop and ask only when you can't continue without them, or before anything destructive, outside this repo, or not asked for (a commit or push included). Full rule: `.claude/rules/working-principles.md`.
 - Once a question is answered, treat that answer as done — don't reopen it unless the user asks.

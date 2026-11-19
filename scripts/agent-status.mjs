@@ -12,6 +12,7 @@
  *   node scripts/agent-status.mjs --prune                  # delete session dirs idle > 7 days
  *   node scripts/agent-status.mjs --report [session]       # run report: per agent + totals by agent_type
  *   node scripts/agent-status.mjs --report [session] --all-records   # include phantom records
+ *   node scripts/agent-status.mjs --aggregate [dir]        # across runs: gate verdicts, fix rounds, runtime (default dir: docs/agents/runs)
  *
  * Options:
  *   --cwd <path>        project dir to filter agents by (default: process.cwd())
@@ -36,6 +37,13 @@
  * AND 0 tool calls. Claude Code's internal side agents produce them (~40 per
  * session; started_at === ended_at, result_head is the user's prompt) and they
  * would drown the real agents. --all-records keeps them.
+ *
+ * --aggregate reads every run file execute-tasks committed (`<feature>-<date>.json`:
+ * { runtime, report, dispatchLog }) and answers the questions one run cannot: how
+ * often each gate returns PASS / CONCERNS / FAIL, how many fix rounds and
+ * re-dispatches each tier and model costs, and how many runs were actually walked
+ * in a browser. Read-only; files that are not valid run files are counted as
+ * skipped, and fields an older run file lacks are counted as `unrecorded`.
  *
  * --watch is designed for `Bash run_in_background`: it exits on the FIRST event worth
  * a notification and prints exactly one line, so the orchestrator gets one wake-up
@@ -211,6 +219,79 @@ export function buildReport(agents) {
     t.files_written += r.files_written
   }
   return { agents: rows, totals }
+}
+
+// ---------- aggregate across run files ----------
+/** Leading verdict of a cell: "CONCERNS (1 trivial, auto-fixed)" → CONCERNS, "NOT RUN (…)" → NOT_RUN. */
+const verdict = (cell) => {
+  if (cell === undefined || cell === null || cell === '' || cell === '-') return 'unrecorded'
+  const m = String(cell).trim().toUpperCase().match(/^(NOT RUN|N\/A|[A-Z_]+)/)
+  return m ? m[0].replace(' ', '_') : 'OTHER'
+}
+const bump = (obj, key, by = 1) => {
+  obj[key] = (obj[key] ?? 0) + by
+}
+
+/** Pure aggregation over parsed run files. */
+export function aggregateRuns(runs) {
+  const out = { runs: runs.length, runtime: {}, gates: { spec: {}, quality: {}, tests: {} }, byTier: {}, byModel: {}, agentTotals: {} }
+  for (const run of runs) {
+    bump(out.runtime, verdict(run.runtime))
+    for (const d of Array.isArray(run.dispatchLog) ? run.dispatchLog : []) {
+      for (const gate of ['spec', 'quality', 'tests']) bump(out.gates[gate], verdict(d[gate]))
+      for (const [group, key] of [[out.byTier, d.tier ?? 'unrecorded'], [out.byModel, d.model ?? 'unrecorded']]) {
+        const g = (group[key] ??= { deliverables: 0, fixRounds: 0, redispatches: 0 })
+        g.deliverables++
+        g.fixRounds += Number(d.fixRounds) || 0
+        g.redispatches += Number(d.redispatches) || 0
+      }
+    }
+    for (const [type, t] of Object.entries(run.report?.totals ?? {})) {
+      const g = (out.agentTotals[type] ??= { agents: 0, duration_ms: 0, tool_calls: 0 })
+      g.agents += t.agents ?? 0
+      g.duration_ms += t.duration_ms ?? 0
+      g.tool_calls += t.tool_calls ?? 0
+    }
+  }
+  return out
+}
+
+if (has('--aggregate')) {
+  const next = argv[argv.indexOf('--aggregate') + 1]
+  const dir = resolve(next !== undefined && !next.startsWith('--') ? next : join('docs', 'agents', 'runs'))
+  const runs = []
+  let skipped = 0
+  for (const f of existsSync(dir) ? readdirSync(dir).filter((x) => x.endsWith('.json')).sort() : []) {
+    try {
+      const run = JSON.parse(readFileSync(join(dir, f), 'utf8'))
+      if (run && typeof run === 'object' && (run.report || run.dispatchLog)) runs.push(run)
+      else skipped++
+    } catch {
+      skipped++
+    }
+  }
+  const agg = { dir, skipped_files: skipped, ...aggregateRuns(runs) }
+  if (asJson) {
+    console.log(JSON.stringify(agg, null, 2))
+  } else if (runs.length === 0) {
+    console.log(`no run files under ${dir}${skipped ? ` (${skipped} file(s) skipped: not a run file)` : ''} — execute-tasks writes one per run`)
+  } else {
+    const counts = (o) => Object.entries(o).map(([k, v]) => `${k} ${v}`).join(' · ') || '-'
+    console.log(`Aggregate over ${runs.length} run(s) in ${dir}${skipped ? ` (${skipped} file(s) skipped)` : ''}\n`)
+    console.log(`Runtime (browser walk): ${counts(agg.runtime)}`)
+    for (const gate of ['spec', 'quality', 'tests']) console.log(`Gate ${gate}: ${counts(agg.gates[gate])}`)
+    const per = (label, group) => {
+      for (const [k, g] of Object.entries(group)) {
+        console.log(`${label} ${k}: ${g.deliverables} deliverable(s) · ${(g.fixRounds / g.deliverables).toFixed(2)} fix rounds each · ${g.redispatches} re-dispatch(es)`)
+      }
+    }
+    per('Tier', agg.byTier)
+    per('Model', agg.byModel)
+    for (const [type, t] of Object.entries(agg.agentTotals)) {
+      console.log(`Agents ${type}: ${t.agents} · ${fmtDuration(t.duration_ms)} · ${t.tool_calls} tool calls`)
+    }
+  }
+  process.exit(0)
 }
 
 if (has('--report')) {

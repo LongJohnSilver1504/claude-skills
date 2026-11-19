@@ -21,7 +21,7 @@ Then customize them to match your project's conventions.
 
 | File | Scope |
 |------|-------|
-| `working-principles.md` | Behavioral guardrails — think before coding, surgical changes, goal-driven execution |
+| `working-principles.md` | Behavioral guardrails — think before coding, surgical changes, sizing the work by tier, verifiable goals |
 | `verification-before-completion.md` | The Iron Law — no completion claims without fresh verification |
 | `project-structure.md` | Feature-based architecture, sub-feature pattern, tech stack reference |
 | `accessibility.md` | WCAG 2.1 AA standards, touch targets, contrast, ARIA |

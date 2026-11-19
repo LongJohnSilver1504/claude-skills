@@ -1,6 +1,6 @@
 # Claude Skills
 
-A complete feature development pipeline for Claude Code — 26 skills that take you from a rough idea to a merged PR.
+A complete feature development pipeline for Claude Code — 29 skills that take you from a rough idea to a merged PR.
 
 **First run:** after installing, open your project and run `/setup-daher-skills`. It detects your stack (package manager, structure, base branch), seeds the convention rules and `docs/agents/project-conventions.md`, and wires your CLAUDE.md — every other skill reads those files. Skills that need missing config stop with `Run /setup-daher-skills first — missing <file>`.
 
@@ -84,8 +84,19 @@ execute-tasks (orchestrator)
   │     │
   │     └── 4. Test reviewer agent ── checks test quality (if tests exist)
   │
-  └── Build verification ──── runs pnpm build to catch type errors
+  ├── Build verification ──── runs pnpm build to catch type errors
+  │
+  ├── Holistic review ─────── /audit-branch in pipeline mode
+  │
+  ├── Runtime verification ── walks the changed flow in a browser (UI features);
+  │                           PROGRESS.md records Runtime: PASS / FAIL / SKIPPED / NOT RUN
+  │
+  └── Run report ──────────── docs/agents/runs/<feature>-<date>.json
 ```
+
+**Not every request needs the whole pipeline.** Work is sized by understanding, risk and resumability — never by file count — into Bug / Small / Standard / Large (table in `rules/working-principles.md` §3, mirrored in `/pipeline-help`). Small work runs inline with no documents. Standard work that is already understood skips the PRD and UX spec: `/plan-implementation` in **direct mode** writes one document (the request verbatim, numbered specs, deliverables). The sizing criteria and the single-document idea are adapted from Organic Driven Development; the full spec chain stays for new screens and open product decisions.
+
+**Across runs:** `node scripts/agent-status.mjs --aggregate docs/agents/runs` reads the committed run reports and prints gate verdict rates, fix rounds per tier and model, and how many runs were actually walked in a browser.
 
 **How `/create-feature` and `/create-infrastructure` fit in:** The implementation plan (step 4) classifies each deliverable as either a **domain feature** (entities, API, CRUD) or **shared infrastructure** (providers, hooks, layouts). When the implementer agent builds a deliverable, it follows the scaffolding patterns from `/create-feature` or `/create-infrastructure` depending on the type.
 
@@ -144,6 +155,9 @@ Standalone runtime-verification skills for mobile targets (not part of the 8-ste
 | Skill | What it does |
 |-------|-------------|
 | `/systematic-debugging` | 4-phase process: reproduce, isolate, identify root cause, verify with test |
+| `/fix-ticket` | Bug-sized path from a tracker ticket: read the ticket and its evidence (recordings, session replays, backend), reproduce, state the cause, plan with a rubric-scored confidence, debate, then fix and open the PR |
+| `/feature-map` | Create or refresh `docs/agents/feature-map.md` — one row per feature (routes, directory, files to open first, backend endpoints, docs, status). A lock file plus a script and a SessionStart hook detect drift; the skill repairs it |
+| `/project-guardrails` | Generate guardrails fitted to one project: `.claude/guardrails.json` for the plugin's hook (self-testing rules), permission deny/ask rules, and a sandbox recommendation — each proposed only with evidence from the repository |
 
 ### Document & Review
 
@@ -284,7 +298,7 @@ The `rules/` directory contains 16 `.claude/rules/` seed files distilled from a 
 
 | Rule | What it covers |
 |------|---------------|
-| `working-principles.md` | Behavioral guardrails — think before coding, surgical changes, goal-driven execution |
+| `working-principles.md` | Behavioral guardrails — think before coding, surgical changes, sizing the work by tier, verifiable goals |
 | `verification-before-completion.md` | The Iron Law — no completion claims without fresh verification |
 | `project-structure.md` | Feature-based architecture, sub-feature pattern, tech stack reference |
 | `accessibility.md` | WCAG 2.1 AA compliance for mobile-first apps |
@@ -309,7 +323,7 @@ cp ~/claude-skills/rules/error-handling.md .claude/rules/
 
 ## Hooks (Deterministic Guardrails)
 
-Instructions are advisory; hooks are deterministic. The plugin ships six (`hooks/hooks.json`), each covered by a stdin-driven test in `tests/` (`npm test`):
+Instructions are advisory; hooks are deterministic. The plugin ships eight (`hooks/hooks.json`), each covered by a stdin-driven test in `tests/` (`npm test`):
 
 | Hook | Event | What it does |
 |------|-------|--------------|
@@ -318,6 +332,8 @@ Instructions are advisory; hooks are deterministic. The plugin ships six (`hooks
 | `block-lint-config-edits` | PreToolUse (Write/Edit) | Blocks modifying an existing ESLint / Prettier / Biome / Stylelint config (creating one is allowed) — steers a failing lint back to the source instead of a weakened rule |
 | `block-raw-palette` | PreToolUse (Write/Edit) | Blocks raw Tailwind palette classes in `.tsx`/`.jsx` — only in projects that carry `.claude/rules/color-usage.md` |
 | `iron-law-stop` | Stop | Blocks ending a turn with modified source files until the project's verify command passes — **opt-in**, active only when `.claude/iron-law.json` exists (seeded by `/setup-daher-skills`) |
+| `project-guardrails` | PreToolUse (Bash, Write/Edit) | Enforces the project's own rules from `.claude/guardrails.json` — commands denied or sent to the user, protected paths, forbidden content inside a glob, credentials in a write or in a staged commit. **Opt-in** by that file's existence; every rule carries examples and `scripts/guardrails.mjs test` runs them. Edits to the guardrails file always ask; a file that does not validate blocks until fixed. `/project-guardrails` generates it from what the repository contains |
+| `feature-map-stale` | SessionStart | Says in one line when the project's feature map no longer matches the tree (a feature directory or route was added or removed since `docs/agents/feature-map.lock.json` was written) — **opt-in** by that file's existence, never blocks. `scripts/feature-map.mjs check` is the same comparison on demand |
 | `agent-heartbeat` | SubagentStart / PostToolUse / PostToolUseFailure / SubagentStop | Records every subagent's tool calls, files written and last-activity time in `~/.claude/heartbeats/<session>/<agent>.json` — never blocks. `scripts/agent-status.mjs` reads it to print a per-agent table with the run's `Progress: n/N gates`, or `--watch` to wake the orchestrator with one line when an agent goes silent (default 5 min). Design and recovery procedure: `skills/execute-tasks/references/AGENT-LIVENESS.md` |
 
 ## Routing Evals (Descriptions, Checked)
@@ -325,9 +341,12 @@ Instructions are advisory; hooks are deterministic. The plugin ships six (`hooks
 Every skill that competes with another carries a `NOT for <competitor>` clause in its description. `evals/` checks that the clause changes behaviour instead of just claiming to: one case per skill that has one, each a realistic request graded deterministically — the owning skill fires (`tool_used`, `min: 1`) and the competitor it names does not (`min: 0, max: 0`). No LLM judge.
 
 ```bash
-npm run eval                  # 10 pipeline cases, ~40s, ~$1.60 (needs a model)
+npm run eval                  # routing: 17 pipeline cases — 2.22 USD as reported on 2026-11-17
+npm run eval:outcome          # outcome: 6 exams x 2 runs in scaffolded workspaces — 4.29 USD, capped at 10
 cd design-craft && npm run eval   # 11 design-craft cases, ~$1.44
 ```
+
+Runs are child `claude` sessions on the credential you are logged in with — no API key. **Outcome exams** (`evals/outcome-*`) go past routing: each builds a small workspace, runs a skill or a reviewer agent in it, and grades what it produced — a plan that keeps the request verbatim and invents no `Must not`, a ticket diagnosis with the cause as `file:line` and no edit before approval, a reviewer that finds the seeded violation and leaves the clean file alone. Every one traces to a row in `evals/FAILURES.md`, the ledger of failures seen in real use. `scripts/baseline.mjs` stores the scores next to repo and usage metrics in `docs/baselines/`, so two dated files answer "did that change help?".
 
 `node scripts/validate-skills.mjs` runs the free half on every PR: a skill with a `NOT for` clause and no case fails, and so does a grader naming a skill that does not exist. It is a **regression gate on descriptions**, not a quality measure — every case passed the first time it ran, and their value is the next edit that widens a trigger or drops a clause. Details and honest limits in [`evals/README.md`](evals/README.md).
 
@@ -344,6 +363,8 @@ Some skills were adapted from external sources. To pull updates, check the origi
 | `/writing-skills` | [obra/superpowers](https://github.com/obra/superpowers) (adapted) + [Anthropic skill authoring docs](https://docs.claude.com) |
 | `/test-mobile-app`, `/ios-simulator`, `/android-emulator` | Patterns distilled from [pingdotgg/t3code](https://github.com/pingdotgg/t3code) `.agents/skills`, itself partly adapted from OpenAI's [`build-ios-apps`](https://github.com/openai/plugins/tree/main/plugins/build-ios-apps) (MIT). Rewritten generically — no T3-specific commands, tooling, or stack assumptions carried over. |
 | `block-no-verify` + `block-lint-config-edits` hooks, reviewer "require proof" gate + false-positive catalog, build-fix dispatch contract, right-sizing tiers, `react-performance.md` + `frontend-security.md` rules, click-path audit, motion library contract | [affaan-m/ECC](https://github.com/affaan-m/ECC) — Everything Claude Code (MIT). Cherry-picked mechanisms only, rewritten to this pipeline's contracts (the CHANGELOG entry that ships them and `.out-of-scope/` record what was deliberately *not* adopted). |
+| Tier sizing by understanding / risk / resumability (the resume test) and `plan-implementation`'s single-document direct mode | [Gentleman-Programming/gentle-ai](https://github.com/Gentleman-Programming/gentle-ai) — Organic Driven Development. Ideas only, rewritten to this pipeline's artifacts; its memory layer and SDD-as-opt-in stance were not adopted. |
+| `systematic-debugging`'s ranked falsifiable hypotheses, one-variable-at-a-time and tagged debug logging; `fix-ticket`'s needs-info comment, AI-disclosure line and recommended-answer questions; the `ask-discard-uncommitted` guardrail | [mattpocock/skills](https://github.com/mattpocock/skills) — `diagnosing-bugs`, `triage`, `grilling`, `git-guardrails-claude-code`. Mechanics only, rewritten to this pipeline's skills. |
 | Routing eval suites (`evals/`), the browser-driven runtime phase in `design-reviewer` and `design-craft`'s design review | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT). Mechanisms only — its ~1.9 MB CSV catalog of palettes, font pairings and style presets was deliberately not imported; see `.out-of-scope/design-preset-catalog.md`. |
 
 These skills are snapshots — they don't auto-update. When the upstream source changes, review it and update the skill content manually.

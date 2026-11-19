@@ -252,3 +252,58 @@ test('--report without a session ignores sessions that only hold phantom records
   const out = JSON.parse(run(['--dir', dir, '--cwd', '/tmp/proj', '--report', '--json']).stdout)
   assert.equal(out.session, 's-ph')
 })
+
+const runFile = (dir, name, body) => {
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, name), typeof body === 'string' ? body : JSON.stringify(body))
+}
+
+test('--aggregate --json counts gate verdicts, runtime and fix rounds across run files', () => {
+  const dir = join(tempProject(), 'runs')
+  runFile(dir, 'a-2026-11-01.json', {
+    feature: 'a',
+    runtime: 'PASS',
+    report: { totals: { implementer: { agents: 2, duration_ms: 60000, tool_calls: 10, files_written: 3 } } },
+    dispatchLog: [
+      { deliverable: 'D1', tier: 'S', model: 'sonnet', redispatches: 0, fixRounds: 0, spec: 'PASS', quality: 'SKIPPED (S)', tests: 'SKIPPED (S)' },
+      { deliverable: 'D2', tier: 'M', model: 'sonnet', redispatches: 1, fixRounds: 2, spec: 'PASS', quality: 'CONCERNS (1 trivial, auto-fixed)', tests: 'FAIL' },
+    ],
+  })
+  // An older run file: no runtime line, no gate cells in the dispatch log.
+  runFile(dir, 'b-2026-10-01.json', {
+    feature: 'b',
+    report: { totals: { implementer: { agents: 1, duration_ms: 30000, tool_calls: 5, files_written: 1 } } },
+    dispatchLog: [{ deliverable: 'D1', model: 'opus', redispatches: 0, fixRounds: 1 }],
+  })
+  runFile(dir, 'broken.json', '{ not json')
+  runFile(dir, 'unrelated.json', { hello: 'world' })
+
+  const out = JSON.parse(run(['--aggregate', dir, '--json']).stdout)
+  assert.equal(out.runs, 2)
+  assert.equal(out.skipped_files, 2)
+  assert.deepEqual(out.runtime, { PASS: 1, unrecorded: 1 })
+  assert.deepEqual(out.gates.spec, { PASS: 2, unrecorded: 1 })
+  assert.deepEqual(out.gates.quality, { SKIPPED: 1, CONCERNS: 1, unrecorded: 1 })
+  assert.deepEqual(out.gates.tests, { SKIPPED: 1, FAIL: 1, unrecorded: 1 })
+  assert.deepEqual(out.byTier.M, { deliverables: 1, fixRounds: 2, redispatches: 1 })
+  assert.deepEqual(out.byModel.sonnet, { deliverables: 2, fixRounds: 2, redispatches: 1 })
+  assert.deepEqual(out.agentTotals.implementer, { agents: 3, duration_ms: 90000, tool_calls: 15 })
+})
+
+test('--aggregate prints a readable summary, and a hint when the directory has no run files', () => {
+  const dir = join(tempProject(), 'runs')
+  const empty = run(['--aggregate', dir])
+  assert.equal(empty.code, 0)
+  assert.match(empty.stdout, /no run files under/)
+
+  runFile(dir, 'a-2026-11-01.json', {
+    runtime: 'NOT RUN (no browser tooling)',
+    dispatchLog: [{ deliverable: 'D1', tier: 'L', model: 'opus', redispatches: 0, fixRounds: 1, spec: 'FAIL', quality: 'PASS', tests: 'N/A' }],
+  })
+  const text = run(['--aggregate', dir]).stdout
+  assert.match(text, /Aggregate over 1 run\(s\)/)
+  assert.match(text, /Runtime \(browser walk\): NOT_RUN 1/)
+  assert.match(text, /Gate spec: FAIL 1/)
+  assert.match(text, /Gate tests: N\/A 1/)
+  assert.match(text, /Tier L: 1 deliverable\(s\) · 1\.00 fix rounds each/)
+})

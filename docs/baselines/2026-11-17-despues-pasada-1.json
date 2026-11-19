@@ -1,0 +1,258 @@
+{
+  "schema": 1,
+  "label": "despues-pasada-1",
+  "createdAt": "2026-11-17T09:06:21.609Z",
+  "claudeVersion": "2.1.322 (Claude Code)",
+  "method": "repo: file counts under --root. usage: assistant tool_use Skill + <command-name> slash invocations, subagent meta agentType, last **Status:** line per reviewer transcript, is_error tool results naming a hooks/<script>. Counts only.",
+  "repo": {
+    "sha": "2d645e139d1322ba335c30aec9cdddc7a53be81d",
+    "dirty": true,
+    "version": "3.7.1",
+    "totals": {
+      "skills": 26,
+      "skillLines": 4297,
+      "gates": 39,
+      "skillsWithoutGates": 11,
+      "skillsWithNotFor": 11,
+      "agents": 6,
+      "hooks": 6,
+      "rules": 19,
+      "tests": 94
+    },
+    "evalCases": {
+      "pipeline": 13
+    },
+    "gradersByType": {
+      "tool_used": 26
+    },
+    "validatorPasses": true,
+    "skills": {
+      "android-emulator": {
+        "lines": 70,
+        "gates": 2,
+        "references": 0,
+        "notFor": true,
+        "descriptionChars": 531
+      },
+      "audit-branch": {
+        "lines": 119,
+        "gates": 4,
+        "references": 0,
+        "notFor": true,
+        "descriptionChars": 727
+      },
+      "brainstorm": {
+        "lines": 144,
+        "gates": 1,
+        "references": 0,
+        "notFor": false,
+        "descriptionChars": 342
+      },
+      "create-devtool": {
+        "lines": 196,
+        "gates": 1,
+        "references": 1,
+        "notFor": true,
+        "descriptionChars": 379
+      },
+      "create-feature": {
+        "lines": 172,
+        "gates": 0,
+        "references": 2,
+        "notFor": true,
+        "descriptionChars": 532
+      },
+      "create-infrastructure": {
+        "lines": 153,
+        "gates": 0,
+        "references": 2,
+        "notFor": true,
+        "descriptionChars": 340
+      },
+      "execute-tasks": {
+        "lines": 469,
+        "gates": 8,
+        "references": 2,
+        "notFor": false,
+        "descriptionChars": 292
+      },
+      "finish-feature": {
+        "lines": 125,
+        "gates": 2,
+        "references": 0,
+        "notFor": false,
+        "descriptionChars": 220
+      },
+      "frontend-testing": {
+        "lines": 392,
+        "gates": 0,
+        "references": 4,
+        "notFor": true,
+        "descriptionChars": 475
+      },
+      "generate-feature-doc": {
+        "lines": 173,
+        "gates": 0,
+        "references": 1,
+        "notFor": false,
+        "descriptionChars": 217
+      },
+      "generate-prd": {
+        "lines": 83,
+        "gates": 1,
+        "references": 1,
+        "notFor": false,
+        "descriptionChars": 320
+      },
+      "git-commit": {
+        "lines": 184,
+        "gates": 3,
+        "references": 0,
+        "notFor": false,
+        "descriptionChars": 171
+      },
+      "ios-simulator": {
+        "lines": 58,
+        "gates": 2,
+        "references": 0,
+        "notFor": true,
+        "descriptionChars": 490
+      },
+      "modify-feature": {
+        "lines": 76,
+        "gates": 2,
+        "references": 0,
+        "notFor": true,
+        "descriptionChars": 712
+      },
+      "pipeline-help": {
+        "lines": 63,
+        "gates": 0,
+        "references": 0,
+        "notFor": false,
+        "descriptionChars": 205
+      },
+      "plan-implementation": {
+        "lines": 172,
+        "gates": 2,
+        "references": 1,
+        "notFor": false,
+        "descriptionChars": 558
+      },
+      "prd-clarifier": {
+        "lines": 94,
+        "gates": 1,
+        "references": 0,
+        "notFor": false,
+        "descriptionChars": 333
+      },
+      "prd-to-ux": {
+        "lines": 387,
+        "gates": 2,
+        "references": 1,
+        "notFor": false,
+        "descriptionChars": 404
+      },
+      "prototype": {
+        "lines": 31,
+        "gates": 0,
+        "references": 0,
+        "notFor": false,
+        "descriptionChars": 426
+      },
+      "react-clean-architecture": {
+        "lines": 357,
+        "gates": 0,
+        "references": 3,
+        "notFor": false,
+        "descriptionChars": 219
+      },
+      "receiving-code-review": {
+        "lines": 235,
+        "gates": 0,
+        "references": 0,
+        "notFor": false,
+        "descriptionChars": 234
+      },
+      "refactoring-ui": {
+        "lines": 166,
+        "gates": 0,
+        "references": 3,
+        "notFor": true,
+        "descriptionChars": 1015
+      },
+      "setup-daher-skills": {
+        "lines": 75,
+        "gates": 5,
+        "references": 0,
+        "notFor": false,
+        "descriptionChars": 168
+      },
+      "systematic-debugging": {
+        "lines": 151,
+        "gates": 0,
+        "references": 4,
+        "notFor": false,
+        "descriptionChars": 263
+      },
+      "test-mobile-app": {
+        "lines": 76,
+        "gates": 3,
+        "references": 0,
+        "notFor": true,
+        "descriptionChars": 400
+      },
+      "writing-skills": {
+        "lines": 76,
+        "gates": 0,
+        "references": 1,
+        "notFor": true,
+        "descriptionChars": 420
+      }
+    }
+  },
+  "usage": null,
+  "runs": null,
+  "evals": null,
+  "judgment": {
+    "overall": 8,
+    "source": "estimate after pass 1 (commit 2d645e1), before any real use — to be confirmed or corrected by the next snapshot with usage",
+    "dimensions": {
+      "maintenance": {
+        "score": 9,
+        "confidence": "high",
+        "evidence": "validators pass, 88 tests; reviewer contract now enforced"
+      },
+      "deterministicVerification": {
+        "score": 8.5,
+        "confidence": "high",
+        "evidence": "tier-table mirror and full invariant 8 checked by the validator"
+      },
+      "specAndTraceability": {
+        "score": 8,
+        "confidence": "medium",
+        "evidence": "R#/S# ids, Covers + Must not on every deliverable, spec-reviewer matrix by id — untested in a real run"
+      },
+      "ceremonyFitsSize": {
+        "score": 8.5,
+        "confidence": "medium",
+        "evidence": "tier table in an always-loaded rule, direct-mode plans — two subagent trials only"
+      },
+      "runtimeTruth": {
+        "score": 8,
+        "confidence": "medium-high",
+        "evidence": "Runtime Verification step in execute-tasks — not yet exercised by a real feature"
+      },
+      "learningLoop": {
+        "score": 6.5,
+        "confidence": "medium",
+        "evidence": "agent-status --aggregate, 13 routing cases; no outcome evals yet"
+      },
+      "adoption": {
+        "score": 6,
+        "confidence": "low",
+        "evidence": "depends on habit, not on skill text"
+      }
+    }
+  }
+}
